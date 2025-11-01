@@ -1,0 +1,4 @@
+[submodule "microsoft/typescript-go"]
+	path = microsoft/typescript-go
+	url = https://github.com/microsoft/typescript-go
+	branch = main
