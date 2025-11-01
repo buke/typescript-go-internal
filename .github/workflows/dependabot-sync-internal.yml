@@ -1,0 +1,109 @@
+name: dependabot-sync-internal
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '.gitmodules'
+      - 'microsoft/typescript-go/**'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: dependabot-sync-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    env:
+      PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+    steps:
+      - name: Checkout PR head branch
+        uses: actions/checkout@v4
+        with:
+          # Check out the fork/branch that Dependabot opened
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Ensure submodules are up to date
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --recursive
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run sync script
+        shell: bash
+        run: |
+          chmod +x scripts/sync-internal.sh
+          SYNC_VERBOSE=1 SYNC_GENERATE=full SYNC_TS_SYMLINK=1 SYNC_TS_SYMLINK_CLEAN=1 \
+            ./scripts/sync-internal.sh
+
+      - name: Commit changes (if any)
+        id: commit
+        shell: bash
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            # Ensure we are on a local branch that tracks the PR head
+            git checkout -B "$PR_BRANCH"
+            git add -A
+            git commit -m "chore(sync): mirror internal packages into pkg/ (auto)"
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No changes to commit."
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Push back to Dependabot branch
+        if: steps.commit.outputs.has_changes == 'true'
+        id: pushback
+        shell: bash
+        continue-on-error: true
+        run: |
+          set +e
+          git push origin "$PR_BRANCH"
+          status=$?
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Prepare fallback (undo commit to re-use working tree)
+        if: steps.commit.outputs.has_changes == 'true' && steps.pushback.outputs.status != '0'
+        shell: bash
+        run: |
+          # Keep changes staged for create-pull-request to commit
+          git reset --soft HEAD~1
+
+      - name: Fallback PR to Dependabot branch
+        if: steps.commit.outputs.has_changes == 'true' && steps.pushback.outputs.status != '0'
+        id: cpr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          title: "chore(sync): mirror internal packages (follow-up for #${{ env.PR_NUMBER }})"
+          body: |
+            Follow-up automation for Dependabot PR #${{ env.PR_NUMBER }}.
+            This PR contains generated sync changes that could not be pushed directly to the Dependabot branch.
+          commit-message: "chore(sync): mirror internal packages into pkg/ (auto)"
+          branch: "bot/dependabot-sync-${{ env.PR_NUMBER }}"
+          base: ${{ env.PR_BRANCH }}
+          labels: dependencies, submodule
+
+      - name: Comment on original PR with fallback link
+        if: steps.cpr.outputs.pull-request-url != ''
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ env.PR_NUMBER }}
+          body: |
+            Created a follow-up PR with sync changes: ${{ steps.cpr.outputs.pull-request-url }}
