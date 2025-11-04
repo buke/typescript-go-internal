@@ -1,0 +1,88 @@
+package fourslash_test
+
+import (
+	"testing"
+
+	"github.com/buke/typescript-go-internal/pkg/fourslash"
+	. "github.com/buke/typescript-go-internal/pkg/fourslash/tests/util"
+	"github.com/buke/typescript-go-internal/pkg/ls"
+	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/pkg/testutil"
+)
+
+func TestCompletionsGenericIndexedAccess4(t *testing.T) {
+	t.Parallel()
+
+	defer testutil.RecoverAndFail(t, "Panic on fourslash test")
+	const content = `interface CustomElements {
+  'component-one': {
+      foo?: string;
+  },
+  'component-two': {
+      bar?: string;
+  }
+}
+
+interface Options<T extends keyof CustomElements> {
+  props: CustomElements[T];
+}
+
+declare function create<T extends 'hello' | 'goodbye'>(name: T, options: Options<T extends 'hello' ? 'component-one' : 'component-two'>): void;
+declare function create<T extends keyof CustomElements>(name: T, options: Options<T>): void;
+
+create('hello', { props: { /*1*/ } })
+create('goodbye', { props: { /*2*/ } })
+create('component-one', { props: { /*3*/ } });`
+	f := fourslash.NewFourslash(t, nil /*capabilities*/, content)
+	f.VerifyCompletions(t, "1", &fourslash.CompletionsExpectedList{
+		IsIncomplete: false,
+		ItemDefaults: &fourslash.CompletionsExpectedItemDefaults{
+			CommitCharacters: &DefaultCommitCharacters,
+			EditRange:        Ignored,
+		},
+		Items: &fourslash.CompletionsExpectedItems{
+			Exact: []fourslash.CompletionsExpectedItem{
+				&lsproto.CompletionItem{
+					Label:      "foo?",
+					InsertText: PtrTo("foo"),
+					FilterText: PtrTo("foo"),
+					SortText:   PtrTo(string(ls.SortTextOptionalMember)),
+				},
+			},
+		},
+	})
+	f.VerifyCompletions(t, "2", &fourslash.CompletionsExpectedList{
+		IsIncomplete: false,
+		ItemDefaults: &fourslash.CompletionsExpectedItemDefaults{
+			CommitCharacters: &DefaultCommitCharacters,
+			EditRange:        Ignored,
+		},
+		Items: &fourslash.CompletionsExpectedItems{
+			Exact: []fourslash.CompletionsExpectedItem{
+				&lsproto.CompletionItem{
+					Label:      "bar?",
+					InsertText: PtrTo("bar"),
+					FilterText: PtrTo("bar"),
+					SortText:   PtrTo(string(ls.SortTextOptionalMember)),
+				},
+			},
+		},
+	})
+	f.VerifyCompletions(t, "3", &fourslash.CompletionsExpectedList{
+		IsIncomplete: false,
+		ItemDefaults: &fourslash.CompletionsExpectedItemDefaults{
+			CommitCharacters: &DefaultCommitCharacters,
+			EditRange:        Ignored,
+		},
+		Items: &fourslash.CompletionsExpectedItems{
+			Exact: []fourslash.CompletionsExpectedItem{
+				&lsproto.CompletionItem{
+					Label:      "foo?",
+					InsertText: PtrTo("foo"),
+					FilterText: PtrTo("foo"),
+					SortText:   PtrTo(string(ls.SortTextOptionalMember)),
+				},
+			},
+		},
+	})
+}
