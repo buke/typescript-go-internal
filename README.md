@@ -1,5 +1,7 @@
 # typescript-go-internal
 
+English | [简体中文](README_zh-cn.md)
+
 [![Test](https://github.com/buke/typescript-go-internal/actions/workflows/go-test.yml/badge.svg)](https://github.com/buke/typescript-go-internal/actions/workflows/go-test.yml)
 [![codecov](https://codecov.io/gh/buke/typescript-go-internal/graph/badge.svg)](https://codecov.io/gh/buke/typescript-go-internal)
 [![Go Report Card](https://goreportcard.com/badge/github.com/buke/typescript-go-internal)](https://goreportcard.com/report/github.com/buke/typescript-go-internal)
@@ -45,4 +47,16 @@ After syncing, commit changes normally. Baseline files live under `testdata/base
 
 ## License
 
-See [LICENSE](./LICENSE).
+This project is licensed under the Apache License 2.0 - see the [LICENSE](./LICENSE) file for details.
+
+### Attribution
+
+This repository contains derivative works based on:
+- [`microsoft/typescript-go`](https://github.com/microsoft/typescript-go) (Apache 2.0)  
+  Copyright (c) Microsoft Corporation
+- [`microsoft/TypeScript`](https://github.com/microsoft/TypeScript) (Apache 2.0)  
+  Copyright (c) Microsoft Corporation
+
+See [NOTICE](./NOTICE) for full attribution details.
+
+**This project is not affiliated with or endorsed by Microsoft Corporation.**

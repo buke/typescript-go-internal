@@ -1,0 +1,15 @@
+typescript-go-internal
+
+This product contains software derived from the following projects:
+
+1. microsoft/typescript-go
+   Copyright (c) Microsoft Corporation
+   Licensed under the Apache License 2.0
+   https://github.com/microsoft/typescript-go
+
+2. microsoft/TypeScript
+   Copyright (c) Microsoft Corporation
+   Licensed under the Apache License 2.0
+   https://github.com/microsoft/TypeScript
+
+All original copyrights remain with their respective owners.
