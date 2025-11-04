@@ -1,0 +1,8 @@
+--- old.numericIndexerConstraint.js
++++ new.numericIndexerConstraint.js
+@@= skipped -7, +7 lines =@@
+
+ //// [numericIndexerConstraint.js]
+ class C {
++    0;
+ }

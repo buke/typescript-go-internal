@@ -1,0 +1,11 @@
+--- old.stringNamedPropertyAccess.js
++++ new.stringNamedPropertyAccess.js
+@@= skipped -26, +26 lines =@@
+
+ //// [stringNamedPropertyAccess.js]
+ class C {
++    "a b";
++    static "c d";
+ }
+ var c;
+ var r1 = c["a b"];

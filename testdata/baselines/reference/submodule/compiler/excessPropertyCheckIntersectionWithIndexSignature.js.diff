@@ -1,0 +1,10 @@
+--- old.excessPropertyCheckIntersectionWithIndexSignature.js
++++ new.excessPropertyCheckIntersectionWithIndexSignature.js
+@@= skipped -17, +17 lines =@@
+
+
+ //// [excessPropertyCheckIntersectionWithIndexSignature.js]
+-"use strict";
+ // Repro from #51875
+ let x;
+ x = { y: { a: 0 } }; // Error

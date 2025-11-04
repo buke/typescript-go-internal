@@ -1,0 +1,10 @@
+--- old.deeplyNestedConditionalTypes.js
++++ new.deeplyNestedConditionalTypes.js
+@@= skipped -108, +108 lines =@@
+
+
+ //// [deeplyNestedConditionalTypes.js]
+-"use strict";
+
+
+ //// [deeplyNestedConditionalTypes.d.ts]

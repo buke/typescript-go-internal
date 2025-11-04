@@ -1,0 +1,10 @@
+--- old.propertyParameterWithQuestionMark.js
++++ new.propertyParameterWithQuestionMark.js
+@@= skipped -12, +12 lines =@@
+
+ //// [propertyParameterWithQuestionMark.js]
+ class C {
++    x;
+     constructor(x) {
+         this.x = x;
+     }

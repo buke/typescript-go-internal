@@ -1,0 +1,14 @@
+--- old.genericImplements.js
++++ new.genericImplements.js
+@@= skipped -23, +23 lines =@@
+
+ //// [genericImplements.js]
+ class A {
++    a;
+ }
+ ;
+ class B {
++    b;
+ }
+ ;
+ // OK

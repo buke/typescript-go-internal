@@ -1,0 +1,10 @@
+--- old.inheritanceStaticAccessorOverridingProperty.js
++++ new.inheritanceStaticAccessorOverridingProperty.js
+@@= skipped -15, +15 lines =@@
+
+ //// [inheritanceStaticAccessorOverridingProperty.js]
+ class a {
++    static x;
+ }
+ class b extends a {
+     static get x() {

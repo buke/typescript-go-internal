@@ -1,0 +1,18 @@
+--- old.derivedClassWithPrivateStaticShadowingProtectedStatic.js
++++ new.derivedClassWithPrivateStaticShadowingProtectedStatic.js
+@@= skipped -23, +23 lines =@@
+
+ //// [derivedClassWithPrivateStaticShadowingProtectedStatic.js]
+ class Base {
++    static x;
+     static fn() {
+         return '';
+     }
+@@= skipped -8, +9 lines =@@
+ }
+ // should be error
+ class Derived extends Base {
++    static x;
+     static fn() {
+         return '';
+     }

@@ -1,0 +1,10 @@
+--- old.invalidVoidValues.js
++++ new.invalidVoidValues.js
+@@= skipped -39, +39 lines =@@
+ x = E;
+ x = E.A;
+ class C {
++    foo;
+ }
+ var a;
+ x = a;

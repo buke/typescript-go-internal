@@ -45,13 +45,6 @@ if [[ -z "$MODULE_PATH" ]]; then
   exit 1
 fi
 
-# Submodule check (optional)
-# if [[ ! -d "$UPSTREAM_SUBMODULE/.git" ]]; then
-#   echo "Submodule not initialized: ${UPSTREAM_SUBMODULE}"
-#   echo "Run: git submodule update --init --recursive"
-#   exit 1
-# fi
-
 echo "Module: ${MODULE_PATH}"
 echo "Sync:   ${SRC_DIR}  ->  ${DEST_DIR}"
 
@@ -157,6 +150,23 @@ cleanup_ts_symlink() {
   fi
 }
 
+# Copy testdata from submodule into repo (self-contained for CI/tests)
+copy_testdata() {
+  local src="${UPSTREAM_SUBMODULE}/testdata"
+  local dst="testdata"
+  if [[ ! -d "${src}" ]]; then
+    echo "Skip testdata copy: source not found: ${src}"
+    return 0
+  fi
+  # If dest is a symlink, remove it
+  if [[ -L "${dst}" ]]; then
+    rm -f "${dst}"
+  fi
+  mkdir -p "${dst}"
+  rsync -a --delete "${src}/" "${dst}/"
+  echo "Copied testdata: ${src} -> ${dst}"
+}
+
 # Tidy before generation
 echo "Running: go mod tidy (pre-generate)"
 GOWORK="${GOWORK:-off}" go mod tidy
@@ -192,5 +202,8 @@ run_generate
 # Tidy after generation
 echo "Running: go mod tidy (post-generate)"
 GOWORK=off go mod tidy || true
+
+# Ensure testdata is present in repo (copy from submodule)
+copy_testdata
 
 echo "Sync complete."

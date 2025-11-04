@@ -1,0 +1,10 @@
+--- old.accessStaticMemberFromInstanceMethod01.js
++++ new.accessStaticMemberFromInstanceMethod01.js
+@@= skipped -10, +10 lines =@@
+
+ //// [accessStaticMemberFromInstanceMethod01.js]
+ class C {
++    foo;
+     static bar() {
+         let k = foo;
+     }

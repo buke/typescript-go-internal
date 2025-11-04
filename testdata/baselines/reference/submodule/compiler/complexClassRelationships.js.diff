@@ -1,0 +1,10 @@
+--- old.complexClassRelationships.js
++++ new.complexClassRelationships.js
+@@= skipped -62, +62 lines =@@
+     }
+ }
+ class Base {
++    ownerCollection;
+ }
+ class Thing {
+     get Components() { return null; }

@@ -1,0 +1,10 @@
+--- old.interfaceExtendingClass.js
++++ new.interfaceExtendingClass.js
+@@= skipped -22, +22 lines =@@
+
+ //// [interfaceExtendingClass.js]
+ class Foo {
++    x;
+     y() { }
+     get Z() {
+         return 1;

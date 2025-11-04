@@ -1,0 +1,10 @@
+--- old.classHeritageWithTrailingSeparator.js
++++ new.classHeritageWithTrailingSeparator.js
+@@= skipped -6, +6 lines =@@
+
+ //// [classHeritageWithTrailingSeparator.js]
+ class C {
++    foo;
+ }
+ class D extends C {
+ }

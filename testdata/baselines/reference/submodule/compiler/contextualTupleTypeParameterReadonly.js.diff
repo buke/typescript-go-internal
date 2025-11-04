@@ -1,0 +1,10 @@
+--- old.contextualTupleTypeParameterReadonly.js
++++ new.contextualTupleTypeParameterReadonly.js
+@@= skipped -23, +23 lines =@@
+
+
+ //// [contextualTupleTypeParameterReadonly.js]
+-"use strict";
+ const cases = [
+     [1, '1'],
+     [2, '2'],

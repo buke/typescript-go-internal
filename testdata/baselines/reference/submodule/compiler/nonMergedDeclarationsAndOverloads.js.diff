@@ -1,0 +1,10 @@
+--- old.nonMergedDeclarationsAndOverloads.js
++++ new.nonMergedDeclarationsAndOverloads.js
+@@= skipped -11, +11 lines =@@
+
+ //// [nonMergedDeclarationsAndOverloads.js]
+ class A {
++    m1;
+     f() { }
+     m1(a) {
+     }

@@ -1,0 +1,10 @@
+--- old.invalidBooleanAssignments.js
++++ new.invalidBooleanAssignments.js
+@@= skipped -39, +39 lines =@@
+ })(E || (E = {}));
+ var e = x;
+ class C {
++    foo;
+ }
+ var f = x;
+ var g = x;

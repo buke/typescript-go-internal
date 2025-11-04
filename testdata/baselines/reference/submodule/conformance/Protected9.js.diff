@@ -1,0 +1,10 @@
+--- old.Protected9.js
++++ new.Protected9.js
+@@= skipped -6, +6 lines =@@
+
+ //// [Protected9.js]
+ class C {
++    p;
+     constructor(p) {
+         this.p = p;
+     }

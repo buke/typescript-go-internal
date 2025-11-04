@@ -1,0 +1,10 @@
+--- old.wrappedAndRecursiveConstraints.js
++++ new.wrappedAndRecursiveConstraints.js
+@@= skipped -20, +20 lines =@@
+ //// [wrappedAndRecursiveConstraints.js]
+ // no errors expected
+ class C {
++    data;
+     constructor(data) {
+         this.data = data;
+     }

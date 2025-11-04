@@ -1,0 +1,81 @@
+--- old.jsDeclarationsTypeAliases.js
++++ new.jsDeclarationsTypeAliases.js
+@@= skipped -87, +87 lines =@@
+     return { x: "" + x };
+ }
+ class ExportedThing {
+-    constructor() {
+-        this.z = "ok";
+-    }
++    z = "ok";
+ }
+ module.exports = {
+     doTheThing,
+     ExportedThing,
+ };
+ class LocalThing {
+-    constructor() {
+-        this.y = "ok";
+-    }
++    y = "ok";
+ }
+
+
+ //// [index.d.ts]
++export {};
+ export type PropName = string | number | symbol;
+-/**
+- * Callback
+- */
+ export type NumberToStringCb = (a: number) => string;
+ export type MixinName<T> = T & {
+     name: string;
+ };
+-/**
+- * Identity function
+- */
+ export type Identity<T> = (x: T) => T;
++/**
++ * @typedef {string | number | symbol} PropName
++ */
++/**
++ * Callback
++ *
++ * @callback NumberToStringCb
++ * @param {number} a
++ * @returns {string}
++ */
++/**
++ * @template T
++ * @typedef {T & {name: string}} MixinName
++ */
++/**
++ * Identity function
++ *
++ * @template T
++ * @callback Identity
++ * @param {T} x
++ * @returns {T}
++ */
+ //// [mixed.d.ts]
+ export type SomeType = {
+     x: string;
+@@= skipped -39, +52 lines =@@
+  * @param {number} x
+  * @returns {SomeType}
+  */
+-export function doTheThing(x: number): SomeType;
+-export class ExportedThing {
++declare function doTheThing(x: number): SomeType;
++declare class ExportedThing {
+     z: string;
+ }
++declare const _default: {
++    doTheThing: typeof doTheThing;
++    ExportedThing: typeof ExportedThing;
++};
++export = _default;
+ declare class LocalThing {
+     y: string;
+ }
+-export {};

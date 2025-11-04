@@ -1,0 +1,10 @@
+--- old.interfaceWithPropertyOfEveryType.js
++++ new.interfaceWithPropertyOfEveryType.js
+@@= skipped -45, +45 lines =@@
+
+ //// [interfaceWithPropertyOfEveryType.js]
+ class C {
++    foo;
+ }
+ function f1() { }
+ var M;

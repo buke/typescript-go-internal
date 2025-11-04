@@ -1,0 +1,20 @@
+--- old.jsDeclarationsExportAssignedClassExpression.js
++++ new.jsDeclarationsExportAssignedClassExpression.js
+@@= skipped -21, +21 lines =@@
+
+
+ //// [index.d.ts]
+-export = Thing;
+-declare class Thing {
+-    /**
+-     * @param {number} p
+-     */
+-    constructor(p: number);
+-    t: number;
+-}
++declare const _default: {
++    new (p: number): {
++        t: number;
++    };
++};
++export = _default;

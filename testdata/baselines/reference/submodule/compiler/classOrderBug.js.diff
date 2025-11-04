@@ -1,0 +1,10 @@
+--- old.classOrderBug.js
++++ new.classOrderBug.js
+@@= skipped -18, +18 lines =@@
+
+ //// [classOrderBug.js]
+ class bar {
++    baz;
+     constructor() {
+         this.baz = new foo();
+     }

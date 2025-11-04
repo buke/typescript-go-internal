@@ -1,0 +1,10 @@
+--- old.staticVisibility2.js
++++ new.staticVisibility2.js
+@@= skipped -9, +9 lines =@@
+
+ //// [staticVisibility2.js]
+ class Square {
++    static sideLength;
+     constructor(sideLength) {
+         this.sideLength = sideLength;
+     }

@@ -1,0 +1,28 @@
+--- old.noInfer.js
++++ new.noInfer.js
+@@= skipped -84, +84 lines =@@
+
+
+ //// [noInfer.js]
+-"use strict";
+ // NoInfer<T> is erased for primitives
+ foo1('foo', 'foo'); // ok
+ foo1('foo', 'bar'); // error
+@@= skipped -20, +19 lines =@@
+ doWork(comp, {}); // error
+ const mutate1 = mutate((a, b) => b);
+ class OkClass {
++    clazz;
++    _value;
+     constructor(clazz, _value) {
+         this.clazz = clazz;
+         this._value = _value;
+@@= skipped -9, +11 lines =@@
+     }
+ }
+ class OkClass2 {
++    clazz;
++    _value;
+     constructor(clazz, _value) {
+         this.clazz = clazz;
+         this._value = _value;

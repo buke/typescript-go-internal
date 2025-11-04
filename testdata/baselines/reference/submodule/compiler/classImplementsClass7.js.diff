@@ -1,0 +1,10 @@
+--- old.classImplementsClass7.js
++++ new.classImplementsClass7.js
+@@= skipped -9, +9 lines =@@
+
+ //// [classImplementsClass7.js]
+ class A {
++    x;
+ }
+ class B {
+ }

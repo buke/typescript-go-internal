@@ -1,0 +1,11 @@
+--- old.contextualTyping15.js
++++ new.contextualTyping15.js
+@@= skipped -4, +4 lines =@@
+
+ //// [contextualTyping15.js]
+ class foo {
+-    constructor() {
+-        this.bar = function () { return 1; };
+-    }
++    bar = function () { return 1; };
+ }

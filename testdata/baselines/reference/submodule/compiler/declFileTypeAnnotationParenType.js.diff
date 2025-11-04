@@ -1,0 +1,10 @@
+--- old.declFileTypeAnnotationParenType.js
++++ new.declFileTypeAnnotationParenType.js
+@@= skipped -12, +12 lines =@@
+
+ //// [declFileTypeAnnotationParenType.js]
+ class c {
++    p;
+ }
+ var x = [() => new c()];
+ var y = [() => new c()];

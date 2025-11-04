@@ -1,0 +1,10 @@
+--- old.typeGuardOfFormTypeOfNotEqualHasNoEffect.js
++++ new.typeGuardOfFormTypeOfNotEqualHasNoEffect.js
+@@= skipped -38, +38 lines =@@
+
+ //// [typeGuardOfFormTypeOfNotEqualHasNoEffect.js]
+ class C {
++    p;
+ }
+ ;
+ var strOrNum;

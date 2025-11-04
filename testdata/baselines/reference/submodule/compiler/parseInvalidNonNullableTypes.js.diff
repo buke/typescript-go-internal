@@ -1,0 +1,10 @@
+--- old.parseInvalidNonNullableTypes.js
++++ new.parseInvalidNonNullableTypes.js
+@@= skipped -25, +25 lines =@@
+
+
+ //// [parseInvalidNonNullableTypes.js]
+-"use strict";
+ function f1(a) {
+     return true;
+ }

@@ -1,0 +1,10 @@
+--- old.interfaceImplementation4.js
++++ new.interfaceImplementation4.js
+@@= skipped -16, +16 lines =@@
+
+ //// [interfaceImplementation4.js]
+ class C5 {
++    iNum;
++    iAny;
+     iFn() { }
+ }

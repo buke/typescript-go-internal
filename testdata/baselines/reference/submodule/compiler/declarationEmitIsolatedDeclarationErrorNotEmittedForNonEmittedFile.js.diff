@@ -1,0 +1,20 @@
+--- old.declarationEmitIsolatedDeclarationErrorNotEmittedForNonEmittedFile.js
++++ new.declarationEmitIsolatedDeclarationErrorNotEmittedForNonEmittedFile.js
+@@= skipped -64, +64 lines =@@
+ exports.middleware = trpc.middleware;
+ exports.router = trpc.router;
+ exports.publicProcedure = trpc.procedure;
++
++
++//// [index.d.ts]
++export declare const middleware: <TNewParams extends Record<string, any>>(fn: import("@trpc/server/middleware").MiddlewareFunction<{
++    _config: import("@trpc/server/internals/config").RootConfig<{
++        errorShape: import("@trpc/server/internals/utils").ErrorFormatterShape<never>;
++    }>;
++}, TNewParams>) => import("@trpc/server/middleware").MiddlewareBuilder<{
++    _config: import("@trpc/server/internals/config").RootConfig<{
++        errorShape: import("@trpc/server/internals/utils").ErrorFormatterShape<never>;
++    }>;
++}, TNewParams>;
++export declare const router: {};
++export declare const publicProcedure: {};

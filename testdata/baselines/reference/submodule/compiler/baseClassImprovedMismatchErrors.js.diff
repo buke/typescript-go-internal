@@ -1,0 +1,22 @@
+--- old.baseClassImprovedMismatchErrors.js
++++ new.baseClassImprovedMismatchErrors.js
+@@= skipped -21, +21 lines =@@
+
+ //// [baseClassImprovedMismatchErrors.js]
+ class Base {
++    n;
+     fn() {
+         return 10;
+     }
+ }
+ class Derived extends Base {
++    n;
+     fn() {
+         return 10;
+     }
+ }
+ class DerivedInterface {
++    n;
+     fn() {
+         return 10;
+     }

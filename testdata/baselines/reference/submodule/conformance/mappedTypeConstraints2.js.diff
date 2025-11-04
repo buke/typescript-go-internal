@@ -1,0 +1,10 @@
+--- old.mappedTypeConstraints2.js
++++ new.mappedTypeConstraints2.js
+@@= skipped -86, +86 lines =@@
+
+
+ //// [mappedTypeConstraints2.js]
+-"use strict";
+ function f1(obj, key) {
+     const x = obj[key];
+ }

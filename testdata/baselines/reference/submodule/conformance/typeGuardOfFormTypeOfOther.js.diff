@@ -1,0 +1,10 @@
+--- old.typeGuardOfFormTypeOfOther.js
++++ new.typeGuardOfFormTypeOfOther.js
+@@= skipped -84, +84 lines =@@
+
+ //// [typeGuardOfFormTypeOfOther.js]
+ class C {
++    p;
+ }
+ ;
+ var str;

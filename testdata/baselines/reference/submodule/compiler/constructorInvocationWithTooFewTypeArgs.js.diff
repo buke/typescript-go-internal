@@ -1,0 +1,10 @@
+--- old.constructorInvocationWithTooFewTypeArgs.js
++++ new.constructorInvocationWithTooFewTypeArgs.js
+@@= skipped -13, +13 lines =@@
+
+ //// [constructorInvocationWithTooFewTypeArgs.js]
+ class D {
++    x;
++    y;
+ }
+ var d = new D();

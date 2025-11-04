@@ -1,0 +1,10 @@
+--- old.omitTypeHelperModifiers01.js
++++ new.omitTypeHelperModifiers01.js
+@@= skipped -23, +23 lines =@@
+
+
+ //// [omitTypeHelperModifiers01.js]
+-"use strict";
+ function f(x) {
+     const b = x.b;
+     x.b = "hello";

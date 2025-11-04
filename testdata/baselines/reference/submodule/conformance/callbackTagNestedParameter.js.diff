@@ -1,0 +1,17 @@
+--- old.callbackTagNestedParameter.js
++++ new.callbackTagNestedParameter.js
+@@= skipped -28, +28 lines =@@
+  * @param {number} [person.age]
+  * @returns {void}
+  */
+-/**
+- * For each person, calls your callback.
+- * @param {WorksWithPeopleCallback} callback
+- * @returns {void}
+- */
+-declare function eachPerson(callback: WorksWithPeopleCallback): void;
+-type WorksWithPeopleCallback = (person: {
++export type WorksWithPeopleCallback = (person: {
+     name: string;
+     age?: number;
+ }) => void;

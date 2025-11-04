@@ -1,0 +1,10 @@
+--- old.destructuringTempOccursAfterPrologue.js
++++ new.destructuringTempOccursAfterPrologue.js
+@@= skipped -10, +10 lines =@@
+ function test(p) {
+     'use strict';
+     'use strong';
++    'use strict';
++    'use strong';
+     p = { prop: p } = p;
+ }

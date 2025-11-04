@@ -1,0 +1,10 @@
+--- old.extendAndImplementTheSameBaseType2.js
++++ new.extendAndImplementTheSameBaseType2.js
+@@= skipped -19, +19 lines =@@
+
+ //// [extendAndImplementTheSameBaseType2.js]
+ class C {
++    foo;
+     bar() {
+         return null;
+     }

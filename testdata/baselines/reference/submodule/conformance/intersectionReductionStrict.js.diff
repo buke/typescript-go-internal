@@ -1,0 +1,10 @@
+--- old.intersectionReductionStrict.js
++++ new.intersectionReductionStrict.js
+@@= skipped -100, +100 lines =@@
+
+
+ //// [intersectionReductionStrict.js]
+-"use strict";
+ ab.kind; // Error
+ let a = x;
+ // Repro from #31663

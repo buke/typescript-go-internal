@@ -1,0 +1,9 @@
+--- old.parserConstructorDeclaration10.js
++++ new.parserConstructorDeclaration10.js
+@@= skipped -6, +6 lines =@@
+
+ //// [parserConstructorDeclaration10.js]
+ class C {
+-    constructor(): number { }
++    constructor() { }
+ }

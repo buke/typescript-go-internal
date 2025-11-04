@@ -1,0 +1,10 @@
+--- old.promiseChaining.js
++++ new.promiseChaining.js
+@@= skipped -14, +14 lines =@@
+
+ //// [promiseChaining.js]
+ class Chain {
++    value;
+     constructor(value) {
+         this.value = value;
+     }

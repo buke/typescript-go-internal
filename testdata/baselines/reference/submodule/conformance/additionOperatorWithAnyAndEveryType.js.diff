@@ -1,0 +1,10 @@
+--- old.additionOperatorWithAnyAndEveryType.js
++++ new.additionOperatorWithAnyAndEveryType.js
+@@= skipped -43, +43 lines =@@
+ //// [additionOperatorWithAnyAndEveryType.js]
+ function foo() { }
+ class C {
++    a;
+     static foo() { }
+ }
+ var E;

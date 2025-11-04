@@ -1,0 +1,10 @@
+--- old.varianceAnnotationValidation.js
++++ new.varianceAnnotationValidation.js
+@@= skipped -30, +30 lines =@@
+
+
+ //// [varianceAnnotationValidation.js]
+-"use strict";
+ // Repro from #49607
+ ;
+ class Dog {

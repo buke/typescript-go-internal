@@ -1,0 +1,10 @@
+--- old.constructorWithSuperAndPrologue.es5.js
++++ new.constructorWithSuperAndPrologue.es5.js
+@@= skipped -29, +29 lines =@@
+ class B extends A {
+     constructor() {
+         "ngInject";
++        "ngInject";
+         console.log("B");
+         super();
+     }

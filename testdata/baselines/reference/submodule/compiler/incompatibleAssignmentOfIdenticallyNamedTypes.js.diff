@@ -1,0 +1,10 @@
+--- old.incompatibleAssignmentOfIdenticallyNamedTypes.js
++++ new.incompatibleAssignmentOfIdenticallyNamedTypes.js
+@@= skipped -12, +12 lines =@@
+
+ //// [incompatibleAssignmentOfIdenticallyNamedTypes.js]
+ class Foo {
++    x;
+     fn() {
+         this.x = a;
+     }

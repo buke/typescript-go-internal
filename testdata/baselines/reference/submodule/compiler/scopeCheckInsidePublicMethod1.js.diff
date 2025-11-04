@@ -1,0 +1,10 @@
+--- old.scopeCheckInsidePublicMethod1.js
++++ new.scopeCheckInsidePublicMethod1.js
+@@= skipped -9, +9 lines =@@
+
+ //// [scopeCheckInsidePublicMethod1.js]
+ class C {
++    static s;
+     a() {
+         s = 1; // ERR
+     }

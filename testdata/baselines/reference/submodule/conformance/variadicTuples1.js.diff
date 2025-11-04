@@ -1,0 +1,19 @@
+--- old.variadicTuples1.js
++++ new.variadicTuples1.js
+@@= skipped -425, +425 lines =@@
+
+
+ //// [variadicTuples1.js]
+-"use strict";
+ // Variadics in tuple types
+ // Variadics in array literals
+ function tup2(t, u) {
+@@= skipped -354, +353 lines =@@
+     y?: number;
+     z?: boolean;
+ }): void;
+-declare function callApi<T extends unknown[] = [], U = void>(method: (...args: [...T, object]) => U): (...args: [...T]) => U;
++declare function callApi<T extends unknown[] = [], U = void>(method: (...args: [...T, object]) => U): (...args: T) => U;
+ type Numbers = number[];
+ type Unbounded = [...Numbers, boolean];
+ declare const data: Unbounded;

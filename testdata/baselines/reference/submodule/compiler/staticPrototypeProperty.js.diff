@@ -1,0 +1,8 @@
+--- old.staticPrototypeProperty.js
++++ new.staticPrototypeProperty.js
+@@= skipped -13, +13 lines =@@
+     static prototype() { }
+ }
+ class C2 {
++    static prototype;
+ }

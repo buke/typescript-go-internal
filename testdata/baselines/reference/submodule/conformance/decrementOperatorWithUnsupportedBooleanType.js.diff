@@ -1,0 +1,10 @@
+--- old.decrementOperatorWithUnsupportedBooleanType.js
++++ new.decrementOperatorWithUnsupportedBooleanType.js
+@@= skipped -60, +60 lines =@@
+ var BOOLEAN;
+ function foo() { return true; }
+ class A {
++    a;
+     static foo() { return true; }
+ }
+ var M;

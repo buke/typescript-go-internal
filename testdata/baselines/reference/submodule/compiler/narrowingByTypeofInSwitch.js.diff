@@ -1,0 +1,10 @@
+--- old.narrowingByTypeofInSwitch.js
++++ new.narrowingByTypeofInSwitch.js
+@@= skipped -317, +317 lines =@@
+
+
+ //// [narrowingByTypeofInSwitch.js]
+-"use strict";
+ function assertNever(x) {
+     return x;
+ }

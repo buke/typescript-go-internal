@@ -1,0 +1,10 @@
+--- old.anyAssignableToEveryType.js
++++ new.anyAssignableToEveryType.js
+@@= skipped -49, +49 lines =@@
+ //// [anyAssignableToEveryType.js]
+ var a;
+ class C {
++    foo;
+ }
+ var ac;
+ var ai;

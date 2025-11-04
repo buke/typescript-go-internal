@@ -1,0 +1,10 @@
+--- old.mergedInheritedMembersSatisfyAbstractBase.js
++++ new.mergedInheritedMembersSatisfyAbstractBase.js
+@@= skipped -23, +23 lines =@@
+
+ //// [mergedInheritedMembersSatisfyAbstractBase.js]
+ class BaseClass {
++    bar;
+ }
+ class Broken extends BaseClass {
+ }

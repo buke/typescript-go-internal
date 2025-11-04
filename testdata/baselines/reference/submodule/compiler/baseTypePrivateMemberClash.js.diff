@@ -1,0 +1,11 @@
+--- old.baseTypePrivateMemberClash.js
++++ new.baseTypePrivateMemberClash.js
+@@= skipped -11, +11 lines =@@
+
+ //// [baseTypePrivateMemberClash.js]
+ class X {
++    m;
+ }
+ class Y {
++    m;
+ }

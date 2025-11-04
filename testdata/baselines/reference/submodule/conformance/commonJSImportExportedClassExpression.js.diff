@@ -1,0 +1,28 @@
+--- old.commonJSImportExportedClassExpression.js
++++ new.commonJSImportExportedClassExpression.js
+@@= skipped -15, +15 lines =@@
+
+ //// [mod1.js]
+ "use strict";
++Object.defineProperty(exports, "__esModule", { value: true });
++export var K = class K {
++    values() {
++    }
++};
+ exports.K = class K {
+     values() {
+     }
+@@= skipped -14, +19 lines =@@
+
+
+ //// [mod1.d.ts]
+-export class K {
+-    values(): void;
+-}
++export declare var K: {
++    new (): {
++        values(): void;
++    };
++};
+ //// [main.d.ts]
+ export {};

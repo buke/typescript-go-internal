@@ -1,0 +1,54 @@
+--- old.jsDeclarationsTypedefAndImportTypes.js
++++ new.jsDeclarationsTypedefAndImportTypes.js
+@@= skipped -38, +38 lines =@@
+  * @typedef {string | number} Whatever
+  */
+ class Conn {
+-    constructor() {
+-        this.item = 3;
+-    }
++    constructor() { }
++    item = 3;
+     method() { }
+ }
+ module.exports = Conn;
+@@= skipped -26, +25 lines =@@
+
+
+ //// [conn.d.ts]
+-export = Conn;
+ /**
+  * @typedef {string | number} Whatever
+  */
+-declare class Conn {
+-    item: number;
+-    method(): void;
+-}
+-declare namespace Conn {
+-    export { Whatever };
+-}
+-type Whatever = string | number;
++export type Whatever = string | number;
++export = Conn;
+ //// [usage.d.ts]
++/**
++ * @typedef {import("./conn")} Conn
++ */
+ export type Conn = import("./conn");
+-/**
+- * @typedef {import("./conn")} Conn
+- */
+-export class Wrap {
++declare class Wrap {
+     /**
+      * @param {Conn} c
+      */
+     constructor(c: Conn);
+-    connItem: number;
+-    /** @type {import("./conn").Whatever} */
+-    another: import("./conn").Whatever;
+ }
++declare const _default: {
++    Wrap: typeof Wrap;
++};
++export = _default;

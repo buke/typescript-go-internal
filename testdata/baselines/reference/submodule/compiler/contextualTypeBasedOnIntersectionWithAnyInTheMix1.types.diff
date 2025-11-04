@@ -1,0 +1,11 @@
+--- old.contextualTypeBasedOnIntersectionWithAnyInTheMix1.types
++++ new.contextualTypeBasedOnIntersectionWithAnyInTheMix1.types
+@@= skipped -16, +16 lines =@@
+   A extends keyof any = never,
+ > {
+   attrs<
+->attrs : <U, NewA extends Partial<ComponentProps<C> & U> & { [others: string]: any; } = {}>(attrs: Attrs<ComponentProps<C> & U, NewA>) => StyledFunction<C, O & NewA, A | keyof NewA>
++>attrs : <U, NewA extends Partial<ComponentProps<C> & U> & { [others: string]: any; } = {}>(attrs: NewA) => StyledFunction<C, O & NewA, A | keyof NewA>
+
+     U,
+     NewA extends Partial<ComponentProps<C> & U> & {

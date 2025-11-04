@@ -1,0 +1,10 @@
+--- old.illegalSuperCallsInConstructor.js
++++ new.illegalSuperCallsInConstructor.js
+@@= skipped -23, +23 lines =@@
+
+ //// [illegalSuperCallsInConstructor.js]
+ class Base {
++    x;
+ }
+ class Derived extends Base {
+     constructor() {

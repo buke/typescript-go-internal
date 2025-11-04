@@ -1,0 +1,11 @@
+--- old.constInClassExpression.js
++++ new.constInClassExpression.js
+@@= skipped -7, +7 lines =@@
+
+ //// [constInClassExpression.js]
+ let C = class {
+-    constructor() {
+-        this.a = 4;
+-    }
++    a = 4;
+ };

@@ -1,0 +1,8 @@
+--- old.parserIsClassMemberStart.js
++++ new.parserIsClassMemberStart.js
+@@= skipped -7, +7 lines =@@
+
+ //// [parserIsClassMemberStart.js]
+ class C {
++    type;
+ }

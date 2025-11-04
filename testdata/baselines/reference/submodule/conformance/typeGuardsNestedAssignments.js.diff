@@ -1,0 +1,10 @@
+--- old.typeGuardsNestedAssignments.js
++++ new.typeGuardsNestedAssignments.js
+@@= skipped -48, +48 lines =@@
+
+ //// [typeGuardsNestedAssignments.js]
+ class Foo {
++    x;
+ }
+ function f1() {
+     let foo;

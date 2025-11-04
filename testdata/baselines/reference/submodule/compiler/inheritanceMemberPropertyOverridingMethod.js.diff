@@ -1,0 +1,8 @@
+--- old.inheritanceMemberPropertyOverridingMethod.js
++++ new.inheritanceMemberPropertyOverridingMethod.js
+@@= skipped -17, +17 lines =@@
+     }
+ }
+ class b extends a {
++    x;
+ }

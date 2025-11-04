@@ -1,0 +1,11 @@
+--- old.implementPublicPropertyAsPrivate.js
++++ new.implementPublicPropertyAsPrivate.js
+@@= skipped -9, +9 lines =@@
+
+ //// [implementPublicPropertyAsPrivate.js]
+ class C {
+-    constructor() {
+-        this.x = 0; // should raise error at class decl
+-    }
++    x = 0; // should raise error at class decl
+ }

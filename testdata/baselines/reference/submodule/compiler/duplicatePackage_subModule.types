@@ -1,0 +1,38 @@
+//// [tests/cases/compiler/duplicatePackage_subModule.ts] ////
+
+=== /index.ts ===
+import Foo from "foo/Foo";
+>Foo : typeof Foo
+
+import * as a from "a";
+>a : typeof a
+
+const o: Foo = a.o;
+>o : Foo
+>a.o : import("/node_modules/a/node_modules/foo/Foo").default
+>a : typeof a
+>o : import("/node_modules/a/node_modules/foo/Foo").default
+
+=== /node_modules/a/index.d.ts ===
+import Foo from "foo/Foo";
+>Foo : typeof Foo
+
+export const o: Foo;
+>o : Foo
+
+=== /node_modules/a/node_modules/foo/Foo.d.ts ===
+export default class Foo {
+>Foo : Foo
+
+    protected source: boolean;
+>source : boolean
+}
+
+=== /node_modules/foo/Foo.d.ts ===
+export default class Foo {
+>Foo : Foo
+
+    protected source: boolean;
+>source : boolean
+}
+

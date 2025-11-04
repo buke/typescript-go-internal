@@ -1,0 +1,10 @@
+--- old.genericGetter3.js
++++ new.genericGetter3.js
+@@= skipped -16, +16 lines =@@
+ class A {
+ }
+ class C {
++    data;
+     get x() {
+         return this.data;
+     }

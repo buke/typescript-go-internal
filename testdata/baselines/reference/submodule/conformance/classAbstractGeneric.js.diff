@@ -1,0 +1,10 @@
+--- old.classAbstractGeneric.js
++++ new.classAbstractGeneric.js
+@@= skipped -28, +28 lines =@@
+
+ //// [classAbstractGeneric.js]
+ class A {
++    t;
+ }
+ class B extends A {
+ }

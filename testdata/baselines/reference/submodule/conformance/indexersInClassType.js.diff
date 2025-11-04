@@ -1,0 +1,11 @@
+--- old.indexersInClassType.js
++++ new.indexersInClassType.js
+@@= skipped -20, +20 lines =@@
+
+ //// [indexersInClassType.js]
+ class C {
++    1;
++    'a';
+     fn() {
+         return this;
+     }

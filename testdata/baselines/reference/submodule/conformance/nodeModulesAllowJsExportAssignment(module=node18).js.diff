@@ -1,0 +1,28 @@
+--- old.nodeModulesAllowJsExportAssignment(module=node18).js
++++ new.nodeModulesAllowJsExportAssignment(module=node18).js
+@@= skipped -33, +33 lines =@@
+ const a = {};
+ module.exports = a;
+ //// [file.js]
+-"use strict";
+ // cjs format file
+ const a = {};
+ module.exports = a;
+@@= skipped -16, +15 lines =@@
+
+
+ //// [index.d.ts]
+-export = a;
+ declare const a: {};
++export = a;
+ //// [file.d.ts]
+ export = a;
+-declare const a: {};
+ //// [index.d.ts]
+-export = a;
+ declare const a: {};
++export = a;
+ //// [file.d.ts]
+-export {};
++import "fs";
++export = a;
