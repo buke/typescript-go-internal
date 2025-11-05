@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "**" ]
   workflow_dispatch:
 
 permissions:
@@ -38,4 +38,4 @@ jobs:
           slug: buke/typescript-go-internal
           flags: unittests
           name: go-tests
-          fail_ci_if_error: true
+          fail_ci_if_error: false
