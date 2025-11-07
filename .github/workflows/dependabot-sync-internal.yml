@@ -1,16 +1,18 @@
-name: Sync Internal
+name: Sync
 
 on:
   workflow_dispatch:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     env:
       TARGET_BRANCH: ${{ github.ref_name }}
+
     steps:
       - name: Checkout selected branch
         uses: actions/checkout@v4
@@ -41,20 +43,26 @@ jobs:
           chmod +x scripts/sync-internal.sh
           ./scripts/sync-internal.sh
 
-      - name: Commit changes (if any)
-        id: commit
-        run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add -A
-            git commit -m "chore(sync): mirror internal packages into pkg/ (auto)"
-            echo "has_changes=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_changes=false" >> "$GITHUB_OUTPUT"
-          fi
+      - name: Create PR with changes
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "chore(sync): mirror internal packages into pkg/ (auto)"
+          title: "chore(sync): mirror internal packages into pkg/"
+          body: |
+            Automated synchronization from microsoft/typescript-go:
 
-      - name: Push changes
-        if: steps.commit.outputs.has_changes == 'true'
-        run: |
-          git push origin "${TARGET_BRANCH}"
+            - Copy internal -> pkg
+            - Rewrite imports and normalize //go:generate
+            - Copy testdata -> testdata
+            - go mod tidy
+
+            This PR was created by the Sync Internal workflow.
+          base: ${{ env.TARGET_BRANCH }}
+          branch: chore/sync-internal
+          branch-suffix: timestamp
+          delete-branch: true
+          signoff: false
+          labels: |
+            chore
+            automated
+          draft: false
