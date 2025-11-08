@@ -1,0 +1,20 @@
+package fourslash_test
+
+import (
+	"testing"
+
+	"github.com/buke/typescript-go-internal/pkg/fourslash"
+	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
+	"github.com/buke/typescript-go-internal/pkg/testutil"
+)
+
+func TestInlayHintsQuotePreference1(t *testing.T) {
+	t.Parallel()
+
+	defer testutil.RecoverAndFail(t, "Panic on fourslash test")
+	const content = `const a1: '"' = '"';
+const b1: '\\' = '\\';
+export function fn(a = a1, b = b1) {}`
+	f := fourslash.NewFourslash(t, nil /*capabilities*/, content)
+	f.VerifyBaselineInlayHints(t, nil /*span*/, &lsutil.UserPreferences{IncludeInlayFunctionParameterTypeHints: true, QuotePreference: lsutil.QuotePreference("double")})
+}
