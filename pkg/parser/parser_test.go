@@ -1,4 +1,4 @@
-package parser
+package parser_test
 
 import (
 	"io/fs"
@@ -10,7 +10,9 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/ast"
 	"github.com/buke/typescript-go-internal/pkg/collections"
 	"github.com/buke/typescript-go-internal/pkg/core"
+	"github.com/buke/typescript-go-internal/pkg/parser"
 	"github.com/buke/typescript-go-internal/pkg/repo"
+	"github.com/buke/typescript-go-internal/pkg/testrunner"
 	"github.com/buke/typescript-go-internal/pkg/testutil/fixtures"
 	"github.com/buke/typescript-go-internal/pkg/tspath"
 	"github.com/buke/typescript-go-internal/pkg/vfs/osvfs"
@@ -46,7 +48,7 @@ func BenchmarkParse(b *testing.B) {
 					}
 
 					for b.Loop() {
-						ParseSourceFile(opts, sourceText, scriptKind)
+						parser.ParseSourceFile(opts, sourceText, scriptKind)
 					}
 				})
 			}
@@ -94,7 +96,6 @@ func FuzzParser(f *testing.F) {
 		"src",
 		"scripts",
 		"Herebyfile.mjs",
-		// "tests/cases",
 	}
 
 	var extensions collections.Set[string]
@@ -111,19 +112,53 @@ func FuzzParser(f *testing.F) {
 			sourceText, err := os.ReadFile(file.path)
 			assert.NilError(f, err)
 			extension := tspath.TryGetExtensionFromPath(file.path)
-			f.Add(extension, string(sourceText), int32(core.ScriptTargetESNext), uint8(ast.JSDocParsingModeParseAll))
+			f.Add(extension, string(sourceText), uint8(ast.JSDocParsingModeParseAll), false, false)
 		}
 	}
 
-	f.Fuzz(func(t *testing.T, extension string, sourceText string, scriptTarget_ int32, jsdocParsingMode_ uint8) {
-		scriptTarget := core.ScriptTarget(scriptTarget_)
+	testDirs := []string{
+		filepath.Join(repo.TypeScriptSubmodulePath, "tests/cases/compiler"),
+		filepath.Join(repo.TypeScriptSubmodulePath, "tests/cases/conformance"),
+		filepath.Join(repo.TestDataPath, "tests/cases/compiler"),
+	}
+
+	for _, testDir := range testDirs {
+		if _, err := os.Stat(testDir); os.IsNotExist(err) {
+			continue
+		}
+
+		for file := range allParsableFiles(f, testDir) {
+			sourceText, err := os.ReadFile(file.path)
+			assert.NilError(f, err)
+
+			type testFile struct {
+				content string
+				name    string
+			}
+
+			testUnits, _, _, _, err := testrunner.ParseTestFilesAndSymlinks(
+				string(sourceText),
+				file.path,
+				func(filename string, content string, fileOptions map[string]string) (testFile, error) {
+					return testFile{content: content, name: filename}, nil
+				},
+			)
+			assert.NilError(f, err)
+
+			for _, unit := range testUnits {
+				extension := tspath.TryGetExtensionFromPath(unit.name)
+				if extension == "" {
+					continue
+				}
+				f.Add(extension, unit.content, uint8(ast.JSDocParsingModeParseAll), false, false)
+			}
+		}
+	}
+
+	f.Fuzz(func(t *testing.T, extension string, sourceText string, jsdocParsingMode_ uint8, externalModuleIndicatorOptionsJSX bool, externalModuleIndicatorOptionsForce bool) {
 		jsdocParsingMode := ast.JSDocParsingMode(jsdocParsingMode_)
 
 		if !extensions.Has(extension) {
-			t.Skip()
-		}
-
-		if scriptTarget < core.ScriptTargetNone || scriptTarget > core.ScriptTargetLatest {
 			t.Skip()
 		}
 
@@ -138,8 +173,12 @@ func FuzzParser(f *testing.F) {
 			FileName:         fileName,
 			Path:             path,
 			JSDocParsingMode: jsdocParsingMode,
+			ExternalModuleIndicatorOptions: ast.ExternalModuleIndicatorOptions{
+				JSX:   externalModuleIndicatorOptionsJSX,
+				Force: externalModuleIndicatorOptionsForce,
+			},
 		}
 
-		ParseSourceFile(opts, sourceText, core.GetScriptKindFromFileName(fileName))
+		parser.ParseSourceFile(opts, sourceText, core.GetScriptKindFromFileName(fileName))
 	})
 }

@@ -10,6 +10,8 @@ require (
 	github.com/zeebo/xxh3 v1.0.2
 	golang.org/x/sync v0.17.0
 	golang.org/x/sys v0.38.0
+	golang.org/x/sync v0.18.0
+	golang.org/x/sys v0.37.0
 	golang.org/x/text v0.30.0
 	gotest.tools/v3 v3.5.2
 )
