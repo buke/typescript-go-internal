@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/buke/typescript-go-internal/pkg/ast"
+	"github.com/buke/typescript-go-internal/pkg/collections"
 	"github.com/buke/typescript-go-internal/pkg/compiler"
 	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/diagnostics"
@@ -113,7 +114,8 @@ func tscCompilation(sys tsc.System, commandLine *tsoptions.ParsedCommandLine, te
 	}
 
 	if commandLine.CompilerOptions().Init.IsTrue() {
-		return tsc.CommandLineResult{Status: tsc.ExitStatusNotImplemented}
+		tsc.WriteConfigFile(sys, reportDiagnostic, commandLine.Raw.(*collections.OrderedMap[string, any]))
+		return tsc.CommandLineResult{Status: tsc.ExitStatusSuccess}
 	}
 
 	if commandLine.CompilerOptions().Version.IsTrue() {

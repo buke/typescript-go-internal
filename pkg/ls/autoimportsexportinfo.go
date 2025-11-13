@@ -11,7 +11,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/stringutil"
 )
 
-func (l *LanguageService) getExportInfos(
+func (l *LanguageService) getExportInfoMap(
 	ctx context.Context,
 	ch *checker.Checker,
 	importingFile *ast.SourceFile,
