@@ -8,6 +8,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/ast"
 	"github.com/buke/typescript-go-internal/pkg/collections"
 	"github.com/buke/typescript-go-internal/pkg/core"
+	"github.com/buke/typescript-go-internal/pkg/diagnosticwriter"
 	"github.com/buke/typescript-go-internal/pkg/parser"
 	"github.com/buke/typescript-go-internal/pkg/testutil/baseline"
 	"github.com/buke/typescript-go-internal/pkg/testutil/harnessutil"
@@ -59,7 +60,7 @@ func DoJSEmitBaseline(
 				CompilerOptions: options.SourceFileAffecting(),
 			}, file.Content, core.ScriptKindJSON)
 			if len(fileParseResult.Diagnostics()) > 0 {
-				jsCode.WriteString(getErrorBaseline(t, []*harnessutil.TestFile{file}, fileParseResult.Diagnostics(), false /*pretty*/))
+				jsCode.WriteString(GetErrorBaseline(t, []*harnessutil.TestFile{file}, diagnosticwriter.WrapASTDiagnostics(fileParseResult.Diagnostics()), diagnosticwriter.CompareASTDiagnostics, false /*pretty*/))
 				continue
 			}
 		}
@@ -86,10 +87,11 @@ func DoJSEmitBaseline(
 	if declFileCompilationResult != nil && len(declFileCompilationResult.declResult.Diagnostics) > 0 {
 		jsCode.WriteString("\r\n\r\n//// [DtsFileErrors]\r\n")
 		jsCode.WriteString("\r\n\r\n")
-		jsCode.WriteString(getErrorBaseline(
+		jsCode.WriteString(GetErrorBaseline(
 			t,
 			slices.Concat(tsConfigFiles, declFileCompilationResult.declInputFiles, declFileCompilationResult.declOtherFiles),
-			declFileCompilationResult.declResult.Diagnostics,
+			diagnosticwriter.WrapASTDiagnostics(declFileCompilationResult.declResult.Diagnostics),
+			diagnosticwriter.CompareASTDiagnostics,
 			false, /*pretty*/
 		))
 	}
