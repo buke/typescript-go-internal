@@ -7,6 +7,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/checker"
 	"github.com/buke/typescript-go-internal/pkg/collections"
 	"github.com/buke/typescript-go-internal/pkg/core"
+	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
 	"github.com/buke/typescript-go-internal/pkg/scanner"
 	"github.com/buke/typescript-go-internal/pkg/stringutil"
 )
@@ -15,7 +16,7 @@ func (l *LanguageService) getExportInfoMap(
 	ctx context.Context,
 	ch *checker.Checker,
 	importingFile *ast.SourceFile,
-	exportMapKey ExportInfoMapKey,
+	exportMapKey lsproto.ExportInfoMapKey,
 ) []*SymbolExportInfo {
 	expInfoMap := NewExportInfoMap(l.GetProgram().GetGlobalTypingsCacheLocation())
 	moduleCount := 0
@@ -83,7 +84,7 @@ func (l *LanguageService) searchExportInfosForCompletions(
 	isRightOfOpenTag bool,
 	isTypeOnlyLocation bool,
 	lowerCaseTokenText string,
-	action func([]*SymbolExportInfo, string, bool, ExportInfoMapKey) []*SymbolExportInfo,
+	action func([]*SymbolExportInfo, string, bool, lsproto.ExportInfoMapKey) []*SymbolExportInfo,
 ) {
 	symbolNameMatches := map[string]bool{}
 	symbolNameMatch := func(symbolName string) bool {
