@@ -5,7 +5,6 @@ import (
 
 	"github.com/buke/typescript-go-internal/pkg/fourslash"
 	. "github.com/buke/typescript-go-internal/pkg/fourslash/tests/util"
-	"github.com/buke/typescript-go-internal/pkg/ls"
 	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
 	"github.com/buke/typescript-go-internal/pkg/testutil"
 )
@@ -45,38 +44,38 @@ import /**/`
 				&lsproto.CompletionItem{
 					Label:      "TestClassBaseline",
 					InsertText: PtrTo("import { TestClassBaseline } from \"./baseline\";"),
-					Data: PtrTo(any(&ls.CompletionItemData{
-						AutoImport: &ls.AutoImportData{
+					Data: &lsproto.CompletionItemData{
+						AutoImport: &lsproto.AutoImportData{
 							ModuleSpecifier: "./baseline",
 						},
-					})),
+					},
 				},
 				&lsproto.CompletionItem{
 					Label:      "TestClassExportList",
 					InsertText: PtrTo("import { TestClassExportList } from \"./exportList\";"),
-					Data: PtrTo(any(&ls.CompletionItemData{
-						AutoImport: &ls.AutoImportData{
+					Data: &lsproto.CompletionItemData{
+						AutoImport: &lsproto.AutoImportData{
 							ModuleSpecifier: "./exportList",
 						},
-					})),
+					},
 				},
 				&lsproto.CompletionItem{
 					Label:      "TestClassReExport",
 					InsertText: PtrTo("import { TestClassReExport } from \"./reExport\";"),
-					Data: PtrTo(any(&ls.CompletionItemData{
-						AutoImport: &ls.AutoImportData{
+					Data: &lsproto.CompletionItemData{
+						AutoImport: &lsproto.AutoImportData{
 							ModuleSpecifier: "./reExport",
 						},
-					})),
+					},
 				},
 				&lsproto.CompletionItem{
 					Label:      "TestDefaultClass",
 					InsertText: PtrTo("import TestDefaultClass from \"./default\";"),
-					Data: PtrTo(any(&ls.CompletionItemData{
-						AutoImport: &ls.AutoImportData{
+					Data: &lsproto.CompletionItemData{
+						AutoImport: &lsproto.AutoImportData{
 							ModuleSpecifier: "./default",
 						},
-					})),
+					},
 				},
 			},
 		},

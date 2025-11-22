@@ -5,7 +5,7 @@ import (
 
 	"github.com/buke/typescript-go-internal/pkg/fourslash"
 	. "github.com/buke/typescript-go-internal/pkg/fourslash/tests/util"
-	"github.com/buke/typescript-go-internal/pkg/ls"
+	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
 	"github.com/buke/typescript-go-internal/pkg/testutil"
 )
 
@@ -33,7 +33,7 @@ acb;`),
 	f.VerifyApplyCodeActionFromCompletion(t, PtrTo("2"), &fourslash.ApplyCodeActionFromCompletionOptions{
 		Name:   "abc",
 		Source: "./a",
-		AutoImportData: &ls.AutoImportData{
+		AutoImportData: &lsproto.AutoImportData{
 			ExportName:      "abc",
 			FileName:        "/a.ts",
 			ModuleSpecifier: "./a",

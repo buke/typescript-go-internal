@@ -5,7 +5,7 @@ import (
 
 	"github.com/buke/typescript-go-internal/pkg/fourslash"
 	. "github.com/buke/typescript-go-internal/pkg/fourslash/tests/util"
-	"github.com/buke/typescript-go-internal/pkg/ls"
+	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
 	"github.com/buke/typescript-go-internal/pkg/testutil"
 )
 
@@ -26,7 +26,7 @@ const x: /**/`
 		Name:        "I",
 		Source:      "./mod",
 		Description: "Add import from \"./mod.js\"",
-		AutoImportData: &ls.AutoImportData{
+		AutoImportData: &lsproto.AutoImportData{
 			ExportName:      "I",
 			FileName:        "/mod.ts",
 			ModuleSpecifier: "./mod.js",
@@ -40,7 +40,7 @@ const x: `),
 		Name:        "C",
 		Source:      "./mod",
 		Description: "Update import from \"./mod.js\"",
-		AutoImportData: &ls.AutoImportData{
+		AutoImportData: &lsproto.AutoImportData{
 			ExportName:      "C",
 			FileName:        "/mod.ts",
 			ModuleSpecifier: "./mod.js",
