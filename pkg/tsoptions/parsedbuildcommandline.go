@@ -5,6 +5,7 @@ import (
 
 	"github.com/buke/typescript-go-internal/pkg/ast"
 	"github.com/buke/typescript-go-internal/pkg/core"
+	"github.com/buke/typescript-go-internal/pkg/locale"
 	"github.com/buke/typescript-go-internal/pkg/tspath"
 )
 
@@ -19,6 +20,9 @@ type ParsedBuildCommandLine struct {
 
 	resolvedProjectPaths     []string
 	resolvedProjectPathsOnce sync.Once
+
+	locale     locale.Locale
+	localeOnce sync.Once
 }
 
 func (p *ParsedBuildCommandLine) ResolvedProjectPaths() []string {
@@ -30,4 +34,11 @@ func (p *ParsedBuildCommandLine) ResolvedProjectPaths() []string {
 		})
 	})
 	return p.resolvedProjectPaths
+}
+
+func (p *ParsedBuildCommandLine) Locale() locale.Locale {
+	p.localeOnce.Do(func() {
+		p.locale, _ = locale.Parse(p.CompilerOptions.Locale)
+	})
+	return p.locale
 }

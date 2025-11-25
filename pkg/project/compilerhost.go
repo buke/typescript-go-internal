@@ -6,6 +6,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/ast"
 	"github.com/buke/typescript-go-internal/pkg/collections"
 	"github.com/buke/typescript-go-internal/pkg/compiler"
+	"github.com/buke/typescript-go-internal/pkg/diagnostics"
 	"github.com/buke/typescript-go-internal/pkg/project/logging"
 	"github.com/buke/typescript-go-internal/pkg/tsoptions"
 	"github.com/buke/typescript-go-internal/pkg/tspath"
@@ -131,7 +132,7 @@ func (c *compilerHost) GetSourceFile(opts ast.SourceFileParseOptions) *ast.Sourc
 }
 
 // Trace implements compiler.CompilerHost.
-func (c *compilerHost) Trace(msg string) {
+func (c *compilerHost) Trace(msg *diagnostics.Message, args ...any) {
 	panic("unimplemented")
 }
 

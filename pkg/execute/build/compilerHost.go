@@ -3,6 +3,7 @@ package build
 import (
 	"github.com/buke/typescript-go-internal/pkg/ast"
 	"github.com/buke/typescript-go-internal/pkg/compiler"
+	"github.com/buke/typescript-go-internal/pkg/diagnostics"
 	"github.com/buke/typescript-go-internal/pkg/tsoptions"
 	"github.com/buke/typescript-go-internal/pkg/tspath"
 	"github.com/buke/typescript-go-internal/pkg/vfs"
@@ -10,7 +11,7 @@ import (
 
 type compilerHost struct {
 	host  *host
-	trace func(msg string)
+	trace func(msg *diagnostics.Message, args ...any)
 }
 
 var _ compiler.CompilerHost = (*compilerHost)(nil)
@@ -27,8 +28,8 @@ func (h *compilerHost) GetCurrentDirectory() string {
 	return h.host.GetCurrentDirectory()
 }
 
-func (h *compilerHost) Trace(msg string) {
-	h.trace(msg)
+func (h *compilerHost) Trace(msg *diagnostics.Message, args ...any) {
+	h.trace(msg, args...)
 }
 
 func (h *compilerHost) GetSourceFile(opts ast.SourceFileParseOptions) *ast.SourceFile {

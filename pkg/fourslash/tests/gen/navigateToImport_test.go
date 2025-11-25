@@ -1,0 +1,55 @@
+package fourslash_test
+
+import (
+	"testing"
+
+	"github.com/buke/typescript-go-internal/pkg/fourslash"
+	. "github.com/buke/typescript-go-internal/pkg/fourslash/tests/util"
+	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/pkg/testutil"
+)
+
+func TestNavigateToImport(t *testing.T) {
+	t.Parallel()
+
+	defer testutil.RecoverAndFail(t, "Panic on fourslash test")
+	const content = `// @Filename: library.ts
+[|export function foo() {}|]
+[|export function bar() {}|]
+// @Filename: user.ts
+import {foo, [|bar as baz|]} from './library';`
+	f := fourslash.NewFourslash(t, nil /*capabilities*/, content)
+	f.VerifyWorkspaceSymbol(t, []*fourslash.VerifyWorkspaceSymbolCase{
+		{
+			Pattern:     "foo",
+			Preferences: nil,
+			Exact: PtrTo([]*lsproto.SymbolInformation{
+				{
+					Name:     "foo",
+					Kind:     lsproto.SymbolKindFunction,
+					Location: f.Ranges()[0].LSLocation(),
+				},
+			}),
+		}, {
+			Pattern:     "bar",
+			Preferences: nil,
+			Exact: PtrTo([]*lsproto.SymbolInformation{
+				{
+					Name:     "bar",
+					Kind:     lsproto.SymbolKindFunction,
+					Location: f.Ranges()[1].LSLocation(),
+				},
+			}),
+		}, {
+			Pattern:     "baz",
+			Preferences: nil,
+			Exact: PtrTo([]*lsproto.SymbolInformation{
+				{
+					Name:     "baz",
+					Kind:     lsproto.SymbolKindVariable,
+					Location: f.Ranges()[2].LSLocation(),
+				},
+			}),
+		},
+	})
+}
