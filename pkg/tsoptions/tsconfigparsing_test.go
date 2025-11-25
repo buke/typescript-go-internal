@@ -14,6 +14,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/diagnosticwriter"
 	"github.com/buke/typescript-go-internal/pkg/jsonutil"
+	"github.com/buke/typescript-go-internal/pkg/locale"
 	"github.com/buke/typescript-go-internal/pkg/parser"
 	"github.com/buke/typescript-go-internal/pkg/repo"
 	"github.com/buke/typescript-go-internal/pkg/testutil/baseline"
@@ -1025,7 +1026,7 @@ func TestParseSrcCompiler(t *testing.T) {
 
 	if len(parsed.Diagnostics()) > 0 {
 		for _, error := range parsed.Diagnostics() {
-			t.Log(error.Message())
+			t.Log(error.Localize(locale.Default))
 		}
 		t.FailNow()
 	}
@@ -1047,7 +1048,7 @@ func TestParseSrcCompiler(t *testing.T) {
 
 	if len(parseConfigFileContent.Errors) > 0 {
 		for _, error := range parseConfigFileContent.Errors {
-			t.Log(error.Message())
+			t.Log(error.Localize(locale.Default))
 		}
 		t.FailNow()
 	}

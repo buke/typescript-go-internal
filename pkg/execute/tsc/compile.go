@@ -7,7 +7,9 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/ast"
 	"github.com/buke/typescript-go-internal/pkg/collections"
 	"github.com/buke/typescript-go-internal/pkg/compiler"
+	"github.com/buke/typescript-go-internal/pkg/diagnostics"
 	"github.com/buke/typescript-go-internal/pkg/execute/incremental"
+	"github.com/buke/typescript-go-internal/pkg/locale"
 	"github.com/buke/typescript-go-internal/pkg/tspath"
 	"github.com/buke/typescript-go-internal/pkg/vfs"
 )
@@ -56,7 +58,7 @@ type CommandLineTesting interface {
 	OnBuildStatusReportEnd(w io.Writer)
 	OnWatchStatusReportStart()
 	OnWatchStatusReportEnd()
-	GetTrace(w io.Writer) func(msg string)
+	GetTrace(w io.Writer, locale locale.Locale) func(msg *diagnostics.Message, args ...any)
 	OnProgram(program *incremental.Program)
 }
 
