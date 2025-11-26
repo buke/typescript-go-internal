@@ -21,7 +21,9 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/collections"
 	"github.com/buke/typescript-go-internal/pkg/compiler"
 	"github.com/buke/typescript-go-internal/pkg/core"
+	"github.com/buke/typescript-go-internal/pkg/diagnostics"
 	"github.com/buke/typescript-go-internal/pkg/execute/incremental"
+	"github.com/buke/typescript-go-internal/pkg/locale"
 	"github.com/buke/typescript-go-internal/pkg/outputpaths"
 	"github.com/buke/typescript-go-internal/pkg/parser"
 	"github.com/buke/typescript-go-internal/pkg/repo"
@@ -531,8 +533,8 @@ func NewTracerForBaselining(opts tspath.ComparePathsOptions, builder *strings.Bu
 	}
 }
 
-func (t *TracerForBaselining) Trace(msg string) {
-	t.TraceWithWriter(t.builder, msg, true)
+func (t *TracerForBaselining) Trace(msg *diagnostics.Message, args ...any) {
+	t.TraceWithWriter(t.builder, msg.Localize(locale.Default, args...), true)
 }
 
 func (t *TracerForBaselining) TraceWithWriter(w io.Writer, msg string, usePackageJsonCache bool) {

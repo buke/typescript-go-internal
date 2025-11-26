@@ -12,6 +12,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/ast"
 	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/diagnosticwriter"
+	"github.com/buke/typescript-go-internal/pkg/locale"
 	"github.com/buke/typescript-go-internal/pkg/testutil/baseline"
 	"github.com/buke/typescript-go-internal/pkg/testutil/harnessutil"
 	"github.com/buke/typescript-go-internal/pkg/tspath"
@@ -91,7 +92,7 @@ func iterateErrorBaseline[T diagnosticwriter.Diagnostic](t *testing.T, inputFile
 	var result []string
 
 	outputErrorText := func(diag diagnosticwriter.Diagnostic) {
-		message := diagnosticwriter.FlattenDiagnosticMessage(diag, harnessNewLine)
+		message := diagnosticwriter.FlattenDiagnosticMessage(diag, harnessNewLine, locale.Default)
 
 		var errLines []string
 		for line := range strings.SplitSeq(removeTestPathPrefixes(message, false), "\n") {
@@ -112,7 +113,7 @@ func iterateErrorBaseline[T diagnosticwriter.Diagnostic](t *testing.T, inputFile
 			if len(location) > 0 && isDefaultLibraryFile(info.File().FileName()) {
 				location = diagnosticsLocationPattern.ReplaceAllString(location, "$1:--:--")
 			}
-			errLines = append(errLines, fmt.Sprintf("!!! related TS%d%s: %s", info.Code(), location, diagnosticwriter.FlattenDiagnosticMessage(info, harnessNewLine)))
+			errLines = append(errLines, fmt.Sprintf("!!! related TS%d%s: %s", info.Code(), location, diagnosticwriter.FlattenDiagnosticMessage(info, harnessNewLine, locale.Default)))
 		}
 
 		for _, e := range errLines {

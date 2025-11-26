@@ -1,0 +1,46 @@
+package fourslash_test
+
+import (
+	"testing"
+
+	"github.com/buke/typescript-go-internal/pkg/fourslash"
+	. "github.com/buke/typescript-go-internal/pkg/fourslash/tests/util"
+	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/pkg/testutil"
+)
+
+func TestNavigateItemsLet(t *testing.T) {
+	t.Parallel()
+
+	defer testutil.RecoverAndFail(t, "Panic on fourslash test")
+	const content = `// @noLib: true
+let [|c = 10|];
+function foo() {
+    let [|d = 10|];
+}`
+	f := fourslash.NewFourslash(t, nil /*capabilities*/, content)
+	f.VerifyWorkspaceSymbol(t, []*fourslash.VerifyWorkspaceSymbolCase{
+		{
+			Pattern:     "c",
+			Preferences: nil,
+			Exact: PtrTo([]*lsproto.SymbolInformation{
+				{
+					Name:     "c",
+					Kind:     lsproto.SymbolKindVariable,
+					Location: f.Ranges()[0].LSLocation(),
+				},
+			}),
+		}, {
+			Pattern:     "d",
+			Preferences: nil,
+			Exact: PtrTo([]*lsproto.SymbolInformation{
+				{
+					Name:          "d",
+					Kind:          lsproto.SymbolKindVariable,
+					Location:      f.Ranges()[1].LSLocation(),
+					ContainerName: PtrTo("foo"),
+				},
+			}),
+		},
+	})
+}
