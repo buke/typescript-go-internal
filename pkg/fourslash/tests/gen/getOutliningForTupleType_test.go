@@ -1,0 +1,31 @@
+package fourslash_test
+
+import (
+	"testing"
+
+	"github.com/buke/typescript-go-internal/pkg/fourslash"
+	"github.com/buke/typescript-go-internal/pkg/testutil"
+)
+
+func TestGetOutliningForTupleType(t *testing.T) {
+	t.Parallel()
+
+	defer testutil.RecoverAndFail(t, "Panic on fourslash test")
+	const content = `type A =[| [
+    number,
+    number,
+    number
+]|]
+
+type B =[| [
+    [|[
+        [|[
+            number,
+            number,
+            number
+        ]|]
+    ]|]
+]|]`
+	f := fourslash.NewFourslash(t, nil /*capabilities*/, content)
+	f.VerifyOutliningSpans(t)
+}
