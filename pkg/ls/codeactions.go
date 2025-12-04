@@ -5,7 +5,6 @@ import (
 	"slices"
 
 	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/checker"
 	"github.com/buke/typescript-go-internal/pkg/compiler"
 	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
@@ -25,7 +24,6 @@ type CodeFixContext struct {
 	Span       core.TextRange
 	ErrorCode  int32
 	Program    *compiler.Program
-	Checker    *checker.Checker
 	LS         *LanguageService
 	Diagnostic *lsproto.Diagnostic
 	Params     *lsproto.CodeActionParams
@@ -53,12 +51,6 @@ var codeFixProviders = []*CodeFixProvider{
 func (l *LanguageService) ProvideCodeActions(ctx context.Context, params *lsproto.CodeActionParams) (lsproto.CodeActionResponse, error) {
 	program, file := l.getProgramAndFile(params.TextDocument.Uri)
 
-	// Get the type checker
-	ch, done := program.GetTypeCheckerForFile(ctx, file)
-	if done != nil {
-		defer done()
-	}
-
 	var actions []lsproto.CommandOrCodeAction
 
 	// Process diagnostics in the context to generate quick fixes
@@ -84,7 +76,6 @@ func (l *LanguageService) ProvideCodeActions(ctx context.Context, params *lsprot
 					Span:       core.NewTextRange(int(position), int(endPosition)),
 					ErrorCode:  errorCode,
 					Program:    program,
-					Checker:    ch,
 					LS:         l,
 					Diagnostic: diag,
 					Params:     params,
