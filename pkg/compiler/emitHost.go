@@ -6,9 +6,10 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/ast"
 	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/module"
-	"github.com/buke/typescript-go-internal/pkg/modulespecifiers"
 	"github.com/buke/typescript-go-internal/pkg/outputpaths"
+	"github.com/buke/typescript-go-internal/pkg/packagejson"
 	"github.com/buke/typescript-go-internal/pkg/printer"
+	"github.com/buke/typescript-go-internal/pkg/symlinks"
 	"github.com/buke/typescript-go-internal/pkg/transformers/declarations"
 	"github.com/buke/typescript-go-internal/pkg/tsoptions"
 	"github.com/buke/typescript-go-internal/pkg/tspath"
@@ -70,7 +71,7 @@ func (host *emitHost) GetNearestAncestorDirectoryWithPackageJson(dirname string)
 	return host.program.GetNearestAncestorDirectoryWithPackageJson(dirname)
 }
 
-func (host *emitHost) GetPackageJsonInfo(pkgJsonPath string) modulespecifiers.PackageJsonInfo {
+func (host *emitHost) GetPackageJsonInfo(pkgJsonPath string) *packagejson.InfoCacheEntry {
 	return host.program.GetPackageJsonInfo(pkgJsonPath)
 }
 
@@ -125,4 +126,13 @@ func (host *emitHost) GetEmitResolver() printer.EmitResolver {
 
 func (host *emitHost) IsSourceFileFromExternalLibrary(file *ast.SourceFile) bool {
 	return host.program.IsSourceFileFromExternalLibrary(file)
+}
+
+func (host *emitHost) GetSymlinkCache() *symlinks.KnownSymlinks {
+	return host.program.GetSymlinkCache()
+}
+
+func (host *emitHost) ResolveModuleName(moduleName string, containingFile string, resolutionMode core.ResolutionMode) *module.ResolvedModule {
+	resolved, _ := host.program.resolver.ResolveModuleName(moduleName, containingFile, resolutionMode, nil)
+	return resolved
 }

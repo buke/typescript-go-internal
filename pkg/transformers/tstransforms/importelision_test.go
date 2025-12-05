@@ -8,8 +8,9 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/checker"
 	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/module"
-	"github.com/buke/typescript-go-internal/pkg/modulespecifiers"
+	"github.com/buke/typescript-go-internal/pkg/packagejson"
 	"github.com/buke/typescript-go-internal/pkg/printer"
+	"github.com/buke/typescript-go-internal/pkg/symlinks"
 	"github.com/buke/typescript-go-internal/pkg/testutil/emittestutil"
 	"github.com/buke/typescript-go-internal/pkg/testutil/parsetestutil"
 	"github.com/buke/typescript-go-internal/pkg/transformers"
@@ -69,7 +70,15 @@ func (p *fakeProgram) GetNearestAncestorDirectoryWithPackageJson(dirname string)
 	return ""
 }
 
-func (p *fakeProgram) GetPackageJsonInfo(pkgJsonPath string) modulespecifiers.PackageJsonInfo {
+func (p *fakeProgram) GetSymlinkCache() *symlinks.KnownSymlinks {
+	return nil
+}
+
+func (p *fakeProgram) ResolveModuleName(moduleName string, containingFile string, resolutionMode core.ResolutionMode) *module.ResolvedModule {
+	return nil
+}
+
+func (p *fakeProgram) GetPackageJsonInfo(pkgJsonPath string) *packagejson.InfoCacheEntry {
 	return nil
 }
 
