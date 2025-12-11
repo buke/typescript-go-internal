@@ -8,9 +8,9 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/peter-evans/patience v0.3.0
 	github.com/zeebo/xxh3 v1.0.2
-	golang.org/x/sync v0.18.0
+	golang.org/x/sync v0.19.0
 	golang.org/x/sys v0.39.0
-	golang.org/x/text v0.31.0
+	golang.org/x/text v0.32.0
 	gotest.tools/v3 v3.5.2
 )
 
