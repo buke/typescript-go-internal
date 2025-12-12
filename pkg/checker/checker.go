@@ -9638,6 +9638,17 @@ func (c *Checker) getArgumentArityError(node *ast.Node, signatures []*Signature,
 		}
 		return diagnostic
 	default:
+		// Guard against out-of-bounds access when maxCount >= len(args).
+		// This can happen when we reach this fallback error path but the argument
+		// count actually matches the parameter count (e.g., due to trailing commas
+		// causing signature resolution to fail for other reasons).
+		if maxCount >= len(args) {
+			diagnostic := NewDiagnosticForNode(errorNode, message, parameterRange, len(args))
+			if headMessage != nil {
+				diagnostic = ast.NewDiagnosticChain(diagnostic, headMessage)
+			}
+			return diagnostic
+		}
 		sourceFile := ast.GetSourceFileOfNode(node)
 		pos := scanner.SkipTrivia(sourceFile.Text(), args[maxCount].Pos())
 		end := args[len(args)-1].End()
@@ -17352,7 +17363,7 @@ func (c *Checker) getSyntheticElementAccess(node *ast.Node) *ast.Node {
 	parentAccess := c.getParentElementAccess(node)
 	if parentAccess != nil && getFlowNodeOfNode(parentAccess) != nil {
 		if propName, ok := c.getDestructuringPropertyName(node); ok {
-			literal := c.factory.NewStringLiteral(propName)
+			literal := c.factory.NewStringLiteral(propName, ast.TokenFlagsNone)
 			literal.Loc = node.Loc
 			lhsExpr := parentAccess
 			if !ast.IsLeftHandSideExpression(parentAccess) {

@@ -1,0 +1,28 @@
+package fourslash_test
+
+import (
+	"testing"
+
+	"github.com/buke/typescript-go-internal/pkg/fourslash"
+	"github.com/buke/typescript-go-internal/pkg/testutil"
+)
+
+func TestRemoveVarFromModuleWithReopenedEnums(t *testing.T) {
+	t.Parallel()
+
+	defer testutil.RecoverAndFail(t, "Panic on fourslash test")
+	const content = `module A {
+    /**/var o;
+}
+enum A {
+}
+enum A {
+}
+module A {
+    var p;
+}`
+	f, done := fourslash.NewFourslash(t, nil /*capabilities*/, content)
+	defer done()
+	f.GoToMarker(t, "")
+	f.DeleteAtCaret(t, 6)
+}
