@@ -8,12 +8,16 @@ import (
 
 	"github.com/go-json-experiment/json"
 	"github.com/go-json-experiment/json/jsontext"
+	"github.com/buke/typescript-go-internal/pkg/bundled"
 	"github.com/buke/typescript-go-internal/pkg/tspath"
 )
 
 type DocumentUri string // !!!
 
 func (uri DocumentUri) FileName() string {
+	if bundled.IsBundled(string(uri)) {
+		return string(uri)
+	}
 	if strings.HasPrefix(string(uri), "file://") {
 		parsed, err := url.Parse(string(uri))
 		if err != nil {

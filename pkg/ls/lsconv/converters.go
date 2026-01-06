@@ -10,6 +10,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/buke/typescript-go-internal/pkg/ast"
+	"github.com/buke/typescript-go-internal/pkg/bundled"
 	"github.com/buke/typescript-go-internal/pkg/collections"
 	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/diagnostics"
@@ -107,6 +108,9 @@ var extraEscapeReplacer = strings.NewReplacer(
 )
 
 func FileNameToDocumentURI(fileName string) lsproto.DocumentUri {
+	if bundled.IsBundled(fileName) {
+		return lsproto.DocumentUri(fileName)
+	}
 	if strings.HasPrefix(fileName, "^/") {
 		scheme, rest, ok := strings.Cut(fileName[2:], "/")
 		if !ok {
