@@ -9,7 +9,7 @@ require (
 	github.com/peter-evans/patience v0.3.0
 	github.com/zeebo/xxh3 v1.0.2
 	golang.org/x/sync v0.19.0
-	golang.org/x/sys v0.38.0
+	golang.org/x/sys v0.40.0
 	golang.org/x/text v0.33.0
 	gotest.tools/v3 v3.5.2
 )
