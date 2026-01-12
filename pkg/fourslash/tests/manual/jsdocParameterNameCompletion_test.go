@@ -8,24 +8,31 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/testutil"
 )
 
-func TestStringLiteralCompletionsInPositionTypedUsingRest(t *testing.T) {
+func TestJsdocParameterNameCompletion(t *testing.T) {
 	fourslash.SkipIfFailing(t)
 	t.Parallel()
 	defer testutil.RecoverAndFail(t, "Panic on fourslash test")
-	const content = `declare function pick<T extends object, K extends keyof T>(obj: T, ...keys: K[]): Pick<T, K>;
-declare function pick2<T extends object, K extends (keyof T)[]>(obj: T, ...keys: K): Pick<T, K[number]>;
-
-const obj = { aaa: 1, bbb: '2', ccc: true };
-
-pick(obj, 'aaa', '/*ts1*/');
-pick2(obj, 'aaa', '/*ts2*/');
-class Q<T> {
-  public select<Keys extends keyof T>(...args: Keys[]) {}
-}
-new Q<{ id: string; name: string }>().select("name", "/*ts3*/");`
+	const content = `/**
+ * @param /*0*/
+ */
+function f(foo, bar) {}
+/**
+ * @param foo
+ * @param /*1*/
+ */
+function g(foo, bar) {}
+/**
+ * @param can/*2*/
+ * @param cantaloupe
+ */
+function h(cat, canary, canoodle, cantaloupe, zebra) {}
+/**
+ * @param /*3*/ {string} /*4*/
+ */
+function i(foo, bar) {}`
 	f, done := fourslash.NewFourslash(t, nil /*capabilities*/, content)
 	defer done()
-	f.VerifyCompletions(t, []string{"ts1", "ts2"}, &fourslash.CompletionsExpectedList{
+	f.VerifyCompletions(t, []string{"0", "3", "4"}, &fourslash.CompletionsExpectedList{
 		IsIncomplete: false,
 		ItemDefaults: &fourslash.CompletionsExpectedItemDefaults{
 			CommitCharacters: &DefaultCommitCharacters,
@@ -33,13 +40,12 @@ new Q<{ id: string; name: string }>().select("name", "/*ts3*/");`
 		},
 		Items: &fourslash.CompletionsExpectedItems{
 			Exact: []fourslash.CompletionsExpectedItem{
-				"aaa",
-				"bbb",
-				"ccc",
+				"bar",
+				"foo",
 			},
 		},
 	})
-	f.VerifyCompletions(t, []string{"ts3"}, &fourslash.CompletionsExpectedList{
+	f.VerifyCompletions(t, "1", &fourslash.CompletionsExpectedList{
 		IsIncomplete: false,
 		ItemDefaults: &fourslash.CompletionsExpectedItemDefaults{
 			CommitCharacters: &DefaultCommitCharacters,
@@ -47,8 +53,20 @@ new Q<{ id: string; name: string }>().select("name", "/*ts3*/");`
 		},
 		Items: &fourslash.CompletionsExpectedItems{
 			Exact: []fourslash.CompletionsExpectedItem{
-				"name",
-				"id",
+				"bar",
+			},
+		},
+	})
+	f.VerifyCompletions(t, "2", &fourslash.CompletionsExpectedList{
+		IsIncomplete: false,
+		ItemDefaults: &fourslash.CompletionsExpectedItemDefaults{
+			CommitCharacters: &DefaultCommitCharacters,
+			EditRange:        Ignored,
+		},
+		Items: &fourslash.CompletionsExpectedItems{
+			Exact: []fourslash.CompletionsExpectedItem{
+				"canary",
+				"canoodle",
 			},
 		},
 	})
