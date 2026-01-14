@@ -10,6 +10,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/astnav"
 	"github.com/buke/typescript-go-internal/pkg/checker"
 	"github.com/buke/typescript-go-internal/pkg/collections"
+	"github.com/buke/typescript-go-internal/pkg/compiler"
 	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/debug"
 	"github.com/buke/typescript-go-internal/pkg/jsnum"
@@ -18,6 +19,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
 	"github.com/buke/typescript-go-internal/pkg/scanner"
 	"github.com/buke/typescript-go-internal/pkg/stringutil"
+	"github.com/buke/typescript-go-internal/pkg/tspath"
 )
 
 var quoteReplacer = strings.NewReplacer("'", `\'`, `\"`, `"`)
@@ -1481,6 +1483,56 @@ func toContextRange(textRange *core.TextRange, contextFile *ast.SourceFile, cont
 	if contextRange.Pos() != textRange.Pos() || contextRange.End() != textRange.End() {
 		return &contextRange
 	}
+	return nil
+}
+
+func getReferenceAtPosition(sourceFile *ast.SourceFile, position int, program *compiler.Program) *refInfo {
+	if referencePath := findReferenceInPosition(sourceFile.ReferencedFiles, position); referencePath != nil {
+		if file := program.GetSourceFileFromReference(sourceFile, referencePath); file != nil {
+			return &refInfo{reference: referencePath, fileName: file.FileName(), file: file, unverified: false}
+		}
+		return nil
+	}
+
+	if typeReferenceDirective := findReferenceInPosition(sourceFile.TypeReferenceDirectives, position); typeReferenceDirective != nil {
+		if reference := program.GetResolvedTypeReferenceDirectiveFromTypeReferenceDirective(typeReferenceDirective, sourceFile); reference != nil {
+			if file := program.GetSourceFile(reference.ResolvedFileName); file != nil {
+				return &refInfo{reference: typeReferenceDirective, fileName: file.FileName(), file: file, unverified: false}
+			}
+		}
+		return nil
+	}
+
+	if libReferenceDirective := findReferenceInPosition(sourceFile.LibReferenceDirectives, position); libReferenceDirective != nil {
+		if file := program.GetLibFileFromReference(libReferenceDirective); file != nil {
+			return &refInfo{reference: libReferenceDirective, fileName: file.FileName(), file: file, unverified: false}
+		}
+		return nil
+	}
+
+	if len(sourceFile.Imports()) == 0 && len(sourceFile.ModuleAugmentations) == 0 {
+		return nil
+	}
+
+	node := astnav.GetTouchingToken(sourceFile, position)
+	if !isModuleSpecifierLike(node) || !tspath.IsExternalModuleNameRelative(node.Text()) {
+		return nil
+	}
+
+	if resolution := program.GetResolvedModuleFromModuleSpecifier(sourceFile, node); resolution != nil {
+		verifiedFileName := resolution.ResolvedFileName
+		fileName := resolution.ResolvedFileName
+		if fileName == "" {
+			fileName = tspath.ResolvePath(tspath.GetDirectoryPath(sourceFile.FileName()), node.Text())
+		}
+		return &refInfo{
+			file:       program.GetSourceFile(fileName),
+			fileName:   fileName,
+			reference:  nil,
+			unverified: verifiedFileName != "",
+		}
+	}
+
 	return nil
 }
 
