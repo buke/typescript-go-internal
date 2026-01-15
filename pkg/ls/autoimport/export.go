@@ -1,8 +1,6 @@
 package autoimport
 
 import (
-	"strings"
-
 	"github.com/buke/typescript-go-internal/pkg/ast"
 	"github.com/buke/typescript-go-internal/pkg/checker"
 	"github.com/buke/typescript-go-internal/pkg/collections"
@@ -78,9 +76,6 @@ func (e *Export) Name() string {
 	}
 	if e.ExportName == ast.InternalSymbolNameExportEquals {
 		return e.Target.ExportName
-	}
-	if strings.HasPrefix(e.ExportName, ast.InternalSymbolNamePrefix) {
-		panic("unexpected internal symbol name in export")
 	}
 	return e.ExportName
 }
