@@ -13,6 +13,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/ls/autoimport"
 	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
 	"github.com/buke/typescript-go-internal/pkg/scanner"
+	"github.com/buke/typescript-go-internal/pkg/tspath"
 )
 
 var importFixErrorCodes = []int32{
@@ -86,6 +87,11 @@ func getImportCodeActions(ctx context.Context, fixContext *CodeFixContext) ([]Co
 }
 
 func getFixInfos(ctx context.Context, fixContext *CodeFixContext, errorCode int32, pos int) ([]*fixInfo, error) {
+	// Can't compute import fixes for dynamic/untitled files since they don't have real file paths
+	if tspath.IsDynamicFileName(fixContext.SourceFile.FileName()) {
+		return nil, nil
+	}
+
 	symbolToken := astnav.GetTokenAtPosition(fixContext.SourceFile, pos)
 
 	var view *autoimport.View
