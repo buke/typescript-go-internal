@@ -9,6 +9,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/ast"
 	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/format"
+	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
 	"github.com/buke/typescript-go-internal/pkg/parser"
 	"github.com/buke/typescript-go-internal/pkg/printer"
 	"github.com/buke/typescript-go-internal/pkg/repo"
@@ -38,14 +39,14 @@ func TestFormat(t *testing.T) {
 
 	t.Run("format checker.ts", func(t *testing.T) {
 		t.Parallel()
-		ctx := format.WithFormatCodeSettings(t.Context(), &format.FormatCodeSettings{
-			EditorSettings: format.EditorSettings{
+		ctx := format.WithFormatCodeSettings(t.Context(), &lsutil.FormatCodeSettings{
+			EditorSettings: lsutil.EditorSettings{
 				TabSize:                4,
 				IndentSize:             4,
 				BaseIndentSize:         4,
 				NewLineCharacter:       "\n",
 				ConvertTabsToSpaces:    true,
-				IndentStyle:            format.IndentStyleSmart,
+				IndentStyle:            lsutil.IndentStyleSmart,
 				TrimTrailingWhitespace: true,
 			},
 			InsertSpaceBeforeTypeAnnotation: core.TSTrue,
@@ -67,14 +68,14 @@ func TestFormat(t *testing.T) {
 }
 
 func BenchmarkFormat(b *testing.B) {
-	ctx := format.WithFormatCodeSettings(b.Context(), &format.FormatCodeSettings{
-		EditorSettings: format.EditorSettings{
+	ctx := format.WithFormatCodeSettings(b.Context(), &lsutil.FormatCodeSettings{
+		EditorSettings: lsutil.EditorSettings{
 			TabSize:                4,
 			IndentSize:             4,
 			BaseIndentSize:         4,
 			NewLineCharacter:       "\n",
 			ConvertTabsToSpaces:    true,
-			IndentStyle:            format.IndentStyleSmart,
+			IndentStyle:            lsutil.IndentStyleSmart,
 			TrimTrailingWhitespace: true,
 		},
 		InsertSpaceBeforeTypeAnnotation: core.TSTrue,

@@ -16,6 +16,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/format"
 	"github.com/buke/typescript-go-internal/pkg/jsonutil"
 	"github.com/buke/typescript-go-internal/pkg/locale"
+	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
 	"github.com/buke/typescript-go-internal/pkg/parser"
 	"github.com/buke/typescript-go-internal/pkg/pprof"
 	"github.com/buke/typescript-go-internal/pkg/tsoptions"
@@ -36,7 +37,7 @@ func CommandLine(sys tsc.System, commandLineArgs []string, testing tsc.CommandLi
 }
 
 func fmtMain(sys tsc.System, input, output string) tsc.ExitStatus {
-	ctx := format.WithFormatCodeSettings(context.Background(), format.GetDefaultFormatCodeSettings("\n"), "\n")
+	ctx := format.WithFormatCodeSettings(context.Background(), lsutil.GetDefaultFormatCodeSettings(), "\n")
 	input = string(tspath.ToPath(input, sys.GetCurrentDirectory(), sys.FS().UseCaseSensitiveFileNames()))
 	output = string(tspath.ToPath(output, sys.GetCurrentDirectory(), sys.FS().UseCaseSensitiveFileNames()))
 	fileContent, ok := sys.FS().ReadFile(input)
