@@ -6,7 +6,7 @@ import (
 
 	"github.com/buke/typescript-go-internal/pkg/ast"
 	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/format"
+	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
 	"github.com/buke/typescript-go-internal/pkg/parser"
 )
 
@@ -26,7 +26,7 @@ func TestGetFormattingEditsAfterKeystroke_EmptyFile(t *testing.T) {
 
 	// Test formatting after keystroke with newline character at position 0
 	ctx := context.Background()
-	options := format.GetDefaultFormatCodeSettings("\n")
+	options := lsutil.GetDefaultFormatCodeSettings()
 
 	// This should not panic
 	edits := langService.getFormattingEditsAfterKeystroke(
@@ -56,7 +56,7 @@ func TestGetFormattingEditsAfterKeystroke_SimpleStatement(t *testing.T) {
 
 	// Test formatting after keystroke with newline character at end of statement
 	ctx := context.Background()
-	options := format.GetDefaultFormatCodeSettings("\n")
+	options := lsutil.GetDefaultFormatCodeSettings()
 
 	// This should not panic
 	edits := langService.getFormattingEditsAfterKeystroke(
@@ -118,7 +118,7 @@ func TestGetFormattingEditsForRange_FunctionBody(t *testing.T) {
 
 			langService := &LanguageService{}
 			ctx := context.Background()
-			options := format.GetDefaultFormatCodeSettings("\n")
+			options := lsutil.GetDefaultFormatCodeSettings()
 
 			// This should not panic
 			edits := langService.getFormattingEditsForRange(

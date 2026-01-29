@@ -10,6 +10,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/format"
 	"github.com/buke/typescript-go-internal/pkg/ls/lsconv"
+	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
 	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
 	"github.com/buke/typescript-go-internal/pkg/printer"
 	"github.com/buke/typescript-go-internal/pkg/scanner"
@@ -75,7 +76,7 @@ type trackerEdit struct {
 
 type Tracker struct {
 	// initialized with
-	formatSettings *format.FormatCodeSettings
+	formatSettings *lsutil.FormatCodeSettings
 	newLine        string
 	converters     *lsconv.Converters
 	ctx            context.Context
@@ -95,7 +96,7 @@ type deletedNode struct {
 	node       *ast.Node
 }
 
-func NewTracker(ctx context.Context, compilerOptions *core.CompilerOptions, formatOptions *format.FormatCodeSettings, converters *lsconv.Converters) *Tracker {
+func NewTracker(ctx context.Context, compilerOptions *core.CompilerOptions, formatOptions *lsutil.FormatCodeSettings, converters *lsconv.Converters) *Tracker {
 	emitContext := printer.NewEmitContext()
 	newLine := compilerOptions.NewLine.GetNewLineCharacter()
 	ctx = format.WithFormatCodeSettings(ctx, formatOptions, newLine) // !!! formatSettings in context?
