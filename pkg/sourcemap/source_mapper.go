@@ -5,9 +5,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/go-json-experiment/json"
 	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/debug"
+	"github.com/buke/typescript-go-internal/pkg/json"
 	"github.com/buke/typescript-go-internal/pkg/scanner"
 	"github.com/buke/typescript-go-internal/pkg/stringutil"
 	"github.com/buke/typescript-go-internal/pkg/tspath"

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/go-json-experiment/json"
+	"github.com/buke/typescript-go-internal/pkg/json"
 	"golang.org/x/text/language"
 )
 

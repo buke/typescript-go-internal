@@ -13,7 +13,8 @@ func TestTypeErrorAfterStringCompletionsInNestedCall(t *testing.T) {
 	fourslash.SkipIfFailing(t)
 	t.Parallel()
 	defer testutil.RecoverAndFail(t, "Panic on fourslash test")
-	const content = `// @strict: true
+	const content = `// @stableTypeOrdering: true
+// @strict: true
 
 type GreetingEvent =
   | { type: "MORNING" }
@@ -48,6 +49,7 @@ createMachine<GreetingEvent>({
 		},
 		Items: &fourslash.CompletionsExpectedItems{
 			Exact: []fourslash.CompletionsExpectedItem{
+				"ALOHAx",
 				"ALOHA",
 				"LUNCH_TIME",
 				"MORNING",

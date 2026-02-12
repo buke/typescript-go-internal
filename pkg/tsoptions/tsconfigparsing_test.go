@@ -13,7 +13,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/ast"
 	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/diagnosticwriter"
-	"github.com/buke/typescript-go-internal/pkg/jsonutil"
+	"github.com/buke/typescript-go-internal/pkg/json"
 	"github.com/buke/typescript-go-internal/pkg/locale"
 	"github.com/buke/typescript-go-internal/pkg/parser"
 	"github.com/buke/typescript-go-internal/pkg/repo"
@@ -851,13 +851,13 @@ func baselineParseConfigWith(t *testing.T, baselineFileName string, noSubmoduleB
 		baselineContent.WriteString("configFileName:: " + config.configFileName + "\n")
 		if noSubmoduleBaseline {
 			baselineContent.WriteString("CompilerOptions::\n")
-			assert.NilError(t, jsonutil.MarshalIndentWrite(&baselineContent, parsedConfigFileContent.ParsedConfig.CompilerOptions, "", "  "))
+			assert.NilError(t, json.MarshalIndentWrite(&baselineContent, parsedConfigFileContent.ParsedConfig.CompilerOptions, "", "  "))
 			baselineContent.WriteString("\n")
 			baselineContent.WriteString("\n")
 
 			if parsedConfigFileContent.ParsedConfig.TypeAcquisition != nil {
 				baselineContent.WriteString("TypeAcquisition::\n")
-				assert.NilError(t, jsonutil.MarshalIndentWrite(&baselineContent, parsedConfigFileContent.ParsedConfig.TypeAcquisition, "", "  "))
+				assert.NilError(t, json.MarshalIndentWrite(&baselineContent, parsedConfigFileContent.ParsedConfig.TypeAcquisition, "", "  "))
 				baselineContent.WriteString("\n")
 				baselineContent.WriteString("\n")
 			}
@@ -885,7 +885,7 @@ func baselineParseConfigWith(t *testing.T, baselineFileName string, noSubmoduleB
 }
 
 func writeJsonReadableText(output io.Writer, input any) error {
-	return jsonutil.MarshalIndentWrite(output, input, "", "  ")
+	return json.MarshalIndentWrite(output, input, "", "  ")
 }
 
 func TestParseTypeAcquisition(t *testing.T) {
@@ -1151,6 +1151,7 @@ func TestParseSrcCompiler(t *testing.T) {
 		"transformers/classThis.ts",
 		"transformers/declarations.ts",
 		"transformers/destructuring.ts",
+		"transformers/es2015.ts",
 		"transformers/es2016.ts",
 		"transformers/es2017.ts",
 		"transformers/es2018.ts",
@@ -1159,6 +1160,7 @@ func TestParseSrcCompiler(t *testing.T) {
 		"transformers/es2021.ts",
 		"transformers/esDecorators.ts",
 		"transformers/esnext.ts",
+		"transformers/generators.ts",
 		"transformers/jsx.ts",
 		"transformers/legacyDecorators.ts",
 		"transformers/namedEvaluation.ts",
