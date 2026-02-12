@@ -5,7 +5,6 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/checker"
 	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/modulespecifiers"
 	"github.com/buke/typescript-go-internal/pkg/printer"
 	"github.com/buke/typescript-go-internal/pkg/scanner"
 )
@@ -15,11 +14,6 @@ type SymbolTrackerImpl struct {
 	state         *SymbolTrackerSharedState
 	host          DeclarationEmitHost
 	fallbackStack []*ast.Node
-}
-
-// GetModuleSpecifierGenerationHost implements checker.SymbolTracker.
-func (s *SymbolTrackerImpl) GetModuleSpecifierGenerationHost() modulespecifiers.ModuleSpecifierGenerationHost {
-	return s.host
 }
 
 // PopErrorFallbackNode implements checker.SymbolTracker.

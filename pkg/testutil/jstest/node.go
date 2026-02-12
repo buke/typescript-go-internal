@@ -8,7 +8,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/go-json-experiment/json"
+	"github.com/buke/typescript-go-internal/pkg/json"
 	"github.com/buke/typescript-go-internal/pkg/repo"
 	"github.com/buke/typescript-go-internal/pkg/tspath"
 )

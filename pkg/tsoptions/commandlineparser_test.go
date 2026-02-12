@@ -6,12 +6,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-json-experiment/json"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/buke/typescript-go-internal/pkg/collections"
 	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/diagnostics"
 	"github.com/buke/typescript-go-internal/pkg/diagnosticwriter"
+	"github.com/buke/typescript-go-internal/pkg/json"
 	"github.com/buke/typescript-go-internal/pkg/repo"
 	"github.com/buke/typescript-go-internal/pkg/testutil/baseline"
 	"github.com/buke/typescript-go-internal/pkg/testutil/filefixture"

@@ -12,7 +12,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/buke/typescript-go-internal/pkg/debug"
-	"github.com/buke/typescript-go-internal/pkg/jsonutil"
+	"github.com/buke/typescript-go-internal/pkg/json"
 	"github.com/buke/typescript-go-internal/pkg/stringutil"
 	"github.com/buke/typescript-go-internal/pkg/tspath"
 )
@@ -468,7 +468,7 @@ func FirstResult[T1 any](t1 T1, _ ...any) T1 {
 }
 
 func StringifyJson(input any, prefix string, indent string) (string, error) {
-	output, err := jsonutil.MarshalIndent(input, prefix, indent)
+	output, err := json.MarshalIndent(input, prefix, indent)
 	return string(output), err
 }
 

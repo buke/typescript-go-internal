@@ -3,7 +3,7 @@ package packagejson_test
 import (
 	"testing"
 
-	"github.com/go-json-experiment/json"
+	"github.com/buke/typescript-go-internal/pkg/json"
 	"github.com/buke/typescript-go-internal/pkg/packagejson"
 	"gotest.tools/v3/assert"
 )
