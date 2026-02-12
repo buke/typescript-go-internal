@@ -1,0 +1,38 @@
+package fourslash_test
+
+import (
+	"testing"
+
+	"github.com/buke/typescript-go-internal/pkg/fourslash"
+	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/pkg/testutil"
+)
+
+func TestOrganizeImports19(t *testing.T) {
+	fourslash.SkipIfFailing(t)
+	t.Parallel()
+	defer testutil.RecoverAndFail(t, "Panic on fourslash test")
+	const content = `const a = 1;
+export { a };
+
+const b = 1;
+export { b };
+
+const c = 1;
+export { c };`
+	f, done := fourslash.NewFourslash(t, nil /*capabilities*/, content)
+	defer done()
+	f.VerifyOrganizeImports(t,
+		`const a = 1;
+export { a };
+
+const b = 1;
+export { b };
+
+const c = 1;
+export { c };
+`,
+		lsproto.CodeActionKindSourceOrganizeImports,
+		nil,
+	)
+}

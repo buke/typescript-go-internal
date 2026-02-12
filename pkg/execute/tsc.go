@@ -14,7 +14,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/execute/incremental"
 	"github.com/buke/typescript-go-internal/pkg/execute/tsc"
 	"github.com/buke/typescript-go-internal/pkg/format"
-	"github.com/buke/typescript-go-internal/pkg/jsonutil"
+	"github.com/buke/typescript-go-internal/pkg/json"
 	"github.com/buke/typescript-go-internal/pkg/locale"
 	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
 	"github.com/buke/typescript-go-internal/pkg/parser"
@@ -334,5 +334,5 @@ func performCompilation(
 
 func showConfig(sys tsc.System, config *core.CompilerOptions) {
 	// !!!
-	_ = jsonutil.MarshalIndentWrite(sys.Writer(), config, "", "    ")
+	_ = json.MarshalIndentWrite(sys.Writer(), config, "", "    ")
 }

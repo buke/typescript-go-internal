@@ -8,9 +8,9 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/go-json-experiment/json"
 	"github.com/buke/typescript-go-internal/pkg/collections"
 	"github.com/buke/typescript-go-internal/pkg/core"
+	"github.com/buke/typescript-go-internal/pkg/json"
 	"github.com/buke/typescript-go-internal/pkg/module"
 	"github.com/buke/typescript-go-internal/pkg/project/logging"
 	"github.com/buke/typescript-go-internal/pkg/semver"

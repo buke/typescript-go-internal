@@ -6,9 +6,9 @@ import (
 	"slices"
 	"unicode/utf8"
 
-	"github.com/go-json-experiment/json"
 	"github.com/buke/typescript-go-internal/pkg/collections"
 	"github.com/buke/typescript-go-internal/pkg/core"
+	"github.com/buke/typescript-go-internal/pkg/json"
 	"github.com/buke/typescript-go-internal/pkg/packagejson"
 	"github.com/buke/typescript-go-internal/pkg/project/logging"
 	"github.com/buke/typescript-go-internal/pkg/semver"

@@ -1,0 +1,48 @@
+package fourslash_test
+
+import (
+	"testing"
+
+	"github.com/buke/typescript-go-internal/pkg/core"
+	"github.com/buke/typescript-go-internal/pkg/fourslash"
+	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
+	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/pkg/testutil"
+)
+
+func TestOrganizeImportsType4(t *testing.T) {
+	fourslash.SkipIfFailing(t)
+	t.Parallel()
+	defer testutil.RecoverAndFail(t, "Panic on fourslash test")
+	const content = `import {
+    d, 
+    type d as D,
+    type c,
+    c as C,
+    b,
+    b as B,
+    type A,
+    a
+} from './foo';
+console.log(A, a, B, b, c, C, d, D);`
+	f, done := fourslash.NewFourslash(t, nil /*capabilities*/, content)
+	defer done()
+	f.VerifyOrganizeImports(t,
+		`import {
+    type A,
+    a,
+    b,
+    b as B,
+    type c,
+    c as C,
+    d,
+    type d as D
+} from './foo';
+console.log(A, a, B, b, c, C, d, D);`,
+		lsproto.CodeActionKindSourceOrganizeImports,
+		&lsutil.UserPreferences{
+			OrganizeImportsIgnoreCase: core.TSTrue,
+			OrganizeImportsTypeOrder:  lsutil.OrganizeImportsTypeOrderInline,
+		},
+	)
+}

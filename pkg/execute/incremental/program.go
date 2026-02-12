@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/go-json-experiment/json"
 	"github.com/buke/typescript-go-internal/pkg/ast"
 	"github.com/buke/typescript-go-internal/pkg/collections"
 	"github.com/buke/typescript-go-internal/pkg/compiler"
 	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/pkg/json"
 	"github.com/buke/typescript-go-internal/pkg/outputpaths"
 	"github.com/buke/typescript-go-internal/pkg/tspath"
 )

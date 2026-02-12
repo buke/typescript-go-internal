@@ -10,7 +10,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/collections"
 	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/jsonutil"
+	"github.com/buke/typescript-go-internal/pkg/json"
 	"github.com/buke/typescript-go-internal/pkg/locale"
 	"github.com/buke/typescript-go-internal/pkg/tsoptions"
 	"github.com/buke/typescript-go-internal/pkg/tspath"
@@ -66,7 +66,7 @@ func generateTSConfig(options *collections.OrderedMap[string, any], locale local
 			}
 		}
 
-		b, err := jsonutil.MarshalIndent(value, "", "")
+		b, err := json.MarshalIndent(value, "", "")
 		if err != nil {
 			panic(fmt.Sprintf("should not happen: %v", err))
 		}

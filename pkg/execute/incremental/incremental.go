@@ -1,8 +1,8 @@
 package incremental
 
 import (
-	"github.com/go-json-experiment/json"
 	"github.com/buke/typescript-go-internal/pkg/compiler"
+	"github.com/buke/typescript-go-internal/pkg/json"
 	"github.com/buke/typescript-go-internal/pkg/tsoptions"
 )
 
