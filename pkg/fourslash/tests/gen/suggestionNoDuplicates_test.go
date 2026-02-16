@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/buke/typescript-go-internal/pkg/fourslash"
-	. "github.com/buke/typescript-go-internal/pkg/fourslash/tests/util"
 	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
 	"github.com/buke/typescript-go-internal/pkg/testutil"
 )
@@ -24,7 +23,7 @@ module.exports.f = function (x) { return x }`
 	f.VerifyNonSuggestionDiagnostics(t, nil)
 	f.VerifySuggestionDiagnostics(t, []*lsproto.Diagnostic{
 		{
-			Code:    &lsproto.IntegerOrString{Integer: PtrTo[int32](7016)},
+			Code:    &lsproto.IntegerOrString{Integer: new(int32(7016))},
 			Message: "Could not find a declaration file for module 'm'. '/node_modules/m/index.js' implicitly has an 'any' type.",
 		},
 	})
