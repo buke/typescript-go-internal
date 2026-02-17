@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/buke/typescript-go-internal/pkg/fourslash"
-	. "github.com/buke/typescript-go-internal/pkg/fourslash/tests/util"
 	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
 	"github.com/buke/typescript-go-internal/pkg/testutil"
 )
@@ -29,7 +28,7 @@ foo/** More comments*/((/*2*/
 		Expected:    nil,
 		Context: &lsproto.SignatureHelpContext{
 			IsRetrigger:      false,
-			TriggerCharacter: PtrTo("("),
+			TriggerCharacter: new("("),
 			TriggerKind:      lsproto.SignatureHelpTriggerKindTriggerCharacter,
 		},
 	})
@@ -38,7 +37,7 @@ foo/** More comments*/((/*2*/
 		Expected:    nil,
 		Context: &lsproto.SignatureHelpContext{
 			IsRetrigger:      false,
-			TriggerCharacter: PtrTo("("),
+			TriggerCharacter: new("("),
 			TriggerKind:      lsproto.SignatureHelpTriggerKindTriggerCharacter,
 		},
 	})
