@@ -1,6 +1,6 @@
 module github.com/buke/typescript-go-internal
 
-go 1.25.3
+go 1.26.0
 
 require (
 	github.com/Microsoft/go-winio v0.6.2
