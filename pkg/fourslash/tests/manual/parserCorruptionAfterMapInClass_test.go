@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/buke/typescript-go-internal/pkg/fourslash"
-	. "github.com/buke/typescript-go-internal/pkg/fourslash/tests/util"
 	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
 	"github.com/buke/typescript-go-internal/pkg/testutil"
 )
@@ -29,7 +28,7 @@ class C {
 	f.Insert(t, "()")
 	f.VerifyNonSuggestionDiagnostics(t, []*lsproto.Diagnostic{
 		{
-			Code:    &lsproto.IntegerOrString{Integer: PtrTo[int32](2558)},
+			Code:    &lsproto.IntegerOrString{Integer: new(int32(2558))},
 			Message: "Expected 1 type arguments, but got 2.",
 		},
 	})

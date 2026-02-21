@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/buke/typescript-go-internal/pkg/fourslash"
-	. "github.com/buke/typescript-go-internal/pkg/fourslash/tests/util"
 	"github.com/buke/typescript-go-internal/pkg/testutil"
 )
 
@@ -59,15 +58,15 @@ const x = <p>
 	f, done := fourslash.NewFourslash(t, nil /*capabilities*/, content)
 	defer done()
 	f.VerifyJsxClosingTag(t, map[string]*string{
-		"0": PtrTo("</>"),
+		"0": new("</>"),
 		"1": nil,
 		"2": nil,
 		"3": nil,
-		"4": PtrTo("</>"),
-		"5": PtrTo("</>"),
-		"6": PtrTo("</>"),
-		"7": PtrTo("</>"),
+		"4": new("</>"),
+		"5": new("</>"),
+		"6": new("</>"),
+		"7": new("</>"),
 		"8": nil,
-		"9": PtrTo("</>"),
+		"9": new("</>"),
 	})
 }
