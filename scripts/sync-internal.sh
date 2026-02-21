@@ -95,6 +95,12 @@ while IFS= read -r -d '' file; do
   fix_generate_file "$file"
 done < <(find "${DEST_DIR}" -type f -name "*.go" -print0)
 
+# moq can fail when type-checking transitive deps under newer Go syntax.
+# Add -skip-ensure so generation only depends on interface parsing.
+echo "Adjusting moq directives (-skip-ensure)..."
+find "${DEST_DIR}" -type f -name "*.go" -print0 | xargs -0 "${SED_INPLACE[@]}" \
+  -e "s#go run github.com/matryer/moq@latest #go run github.com/matryer/moq@latest -skip-ensure #g"
+
 # Create symlink for generators that need TypeScript data files:
 #   _submodules -> microsoft/typescript-go/_submodules
 ensure_ts_symlink() {
