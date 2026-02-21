@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/buke/typescript-go-internal/pkg/fourslash"
-	. "github.com/buke/typescript-go-internal/pkg/fourslash/tests/util"
 	"github.com/buke/typescript-go-internal/pkg/testutil"
 )
 
@@ -23,11 +22,11 @@ const b: B/**/`
 	f, done := fourslash.NewFourslash(t, nil /*capabilities*/, content)
 	defer done()
 	f.GoToFile(t, "/b.ts")
-	f.VerifyApplyCodeActionFromCompletion(t, PtrTo(""), &fourslash.ApplyCodeActionFromCompletionOptions{
+	f.VerifyApplyCodeActionFromCompletion(t, new(""), &fourslash.ApplyCodeActionFromCompletionOptions{
 		Name:        "B",
 		Source:      "./a",
 		Description: "Update import from \"./a\"",
-		NewFileContent: PtrTo(`import type { A, B } from './a';
+		NewFileContent: new(`import type { A, B } from './a';
 const b: B`),
 	})
 }

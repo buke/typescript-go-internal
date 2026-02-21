@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/buke/typescript-go-internal/pkg/fourslash"
-	. "github.com/buke/typescript-go-internal/pkg/fourslash/tests/util"
 	"github.com/buke/typescript-go-internal/pkg/testutil"
 )
 
@@ -29,11 +28,11 @@ export function App() {
 }`
 	f, done := fourslash.NewFourslash(t, nil /*capabilities*/, content)
 	defer done()
-	f.VerifyApplyCodeActionFromCompletion(t, PtrTo(""), &fourslash.ApplyCodeActionFromCompletionOptions{
+	f.VerifyApplyCodeActionFromCompletion(t, new(""), &fourslash.ApplyCodeActionFromCompletionOptions{
 		Name:        "Box",
 		Source:      "./Box",
 		Description: "Add import from \"./Box\"",
-		NewFileContent: PtrTo(`import { Box } from "./Box";
+		NewFileContent: new(`import { Box } from "./Box";
 
 export function App() {
   return (
