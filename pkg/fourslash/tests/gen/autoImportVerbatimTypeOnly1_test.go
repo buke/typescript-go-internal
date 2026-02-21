@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/buke/typescript-go-internal/pkg/fourslash"
-	. "github.com/buke/typescript-go-internal/pkg/fourslash/tests/util"
 	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
 	"github.com/buke/typescript-go-internal/pkg/testutil"
 )
@@ -23,14 +22,14 @@ export interface I {}
 const x: /**/`
 	f, done := fourslash.NewFourslash(t, nil /*capabilities*/, content)
 	defer done()
-	f.VerifyApplyCodeActionFromCompletion(t, PtrTo(""), &fourslash.ApplyCodeActionFromCompletionOptions{
+	f.VerifyApplyCodeActionFromCompletion(t, new(""), &fourslash.ApplyCodeActionFromCompletionOptions{
 		Name:        "I",
 		Source:      "./mod",
 		Description: "Add import from \"./mod.js\"",
 		AutoImportFix: &lsproto.AutoImportFix{
 			ModuleSpecifier: "./mod.js",
 		},
-		NewFileContent: PtrTo(`import type { I } from "./mod.js";
+		NewFileContent: new(`import type { I } from "./mod.js";
 
 const x: `),
 	})
@@ -42,7 +41,7 @@ const x: `),
 		AutoImportFix: &lsproto.AutoImportFix{
 			ModuleSpecifier: "./mod.js",
 		},
-		NewFileContent: PtrTo(`import { C, type I } from "./mod.js";
+		NewFileContent: new(`import { C, type I } from "./mod.js";
 
 const x: I = new C`),
 	})
