@@ -11,10 +11,6 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/project"
 )
 
-// Ensure, that ClientMock does implement project.Client.
-// If this is not the case, regenerate this file with moq.
-var _ project.Client = &ClientMock{}
-
 // ClientMock is a mock implementation of project.Client.
 //
 //	func TestSomethingThatUsesClient(t *testing.T) {
