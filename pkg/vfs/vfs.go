@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-//go:generate go run github.com/matryer/moq@latest -fmt goimports -out vfsmock/mock_generated.go -pkg vfsmock . FS
+//go:generate go run github.com/matryer/moq@latest -skip-ensure -fmt goimports -out vfsmock/mock_generated.go -pkg vfsmock . FS
 //go:generate go run mvdan.cc/gofumpt@latest -w vfsmock/mock_generated.go
 
 // FS is a file system abstraction.

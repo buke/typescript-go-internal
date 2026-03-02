@@ -10,10 +10,6 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/vfs"
 )
 
-// Ensure, that FSMock does implement vfs.FS.
-// If this is not the case, regenerate this file with moq.
-var _ vfs.FS = &FSMock{}
-
 // FSMock is a mock implementation of vfs.FS.
 //
 //	func TestSomethingThatUsesFS(t *testing.T) {
