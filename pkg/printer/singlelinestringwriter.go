@@ -6,6 +6,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/buke/typescript-go-internal/pkg/ast"
+	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/stringutil"
 )
 
@@ -39,7 +40,7 @@ func (w singleLineStringWriter) DecreaseIndent() {
 	// Do Nothing
 }
 
-func (w singleLineStringWriter) GetColumn() int {
+func (w singleLineStringWriter) GetColumn() core.UTF16Offset {
 	return 0
 }
 
