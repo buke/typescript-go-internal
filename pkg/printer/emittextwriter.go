@@ -1,6 +1,9 @@
 package printer
 
-import "github.com/buke/typescript-go-internal/pkg/ast"
+import (
+	"github.com/buke/typescript-go-internal/pkg/ast"
+	"github.com/buke/typescript-go-internal/pkg/core"
+)
 
 // Externally opaque interface for printing text
 type EmitTextWriter interface {
@@ -25,7 +28,7 @@ type EmitTextWriter interface {
 	WriteLiteral(s string)
 	GetTextPos() int
 	GetLine() int
-	GetColumn() int
+	GetColumn() core.UTF16Offset
 	GetIndent() int
 	IsAtStartOfLine() bool
 	HasTrailingComment() bool
