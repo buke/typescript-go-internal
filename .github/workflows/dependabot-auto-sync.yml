@@ -1,0 +1,63 @@
+name: Dependabot Auto Sync
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: dependabot-auto-sync-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    # Only run for Dependabot submodule PRs that come from this repository.
+    if: >
+      github.actor == 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      startsWith(github.event.pull_request.head.ref, 'dependabot/submodules/')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Dependabot branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run sync script
+        env:
+          SYNC_GENERATE: full
+          SYNC_VERBOSE: '0'
+          SYNC_TS_SYMLINK: '1'
+          SYNC_TS_SYMLINK_CLEAN: '1'
+        run: |
+          chmod +x scripts/sync-internal.sh
+          ./scripts/sync-internal.sh
+
+      - name: Commit sync changes back to Dependabot branch
+        run: |
+          if git diff --quiet; then
+            echo "No sync changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore(sync): mirror internal packages into pkg/ (auto)"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
