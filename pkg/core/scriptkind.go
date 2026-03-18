@@ -1,7 +1,7 @@
 package core
 
 //go:generate go run golang.org/x/tools/cmd/stringer@latest -type=ScriptKind -output=scriptkind_stringer_generated.go
-//go:generate go run mvdan.cc/gofumpt@latest -w scriptkind_stringer_generated.go
+//go:generate npx dprint fmt scriptkind_stringer_generated.go
 
 type ScriptKind int32
 

@@ -6,7 +6,9 @@ package fourslash_test
 import (
 	"testing"
 
+	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/fourslash"
+	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
 	"github.com/buke/typescript-go-internal/pkg/testutil"
 )
 
@@ -27,8 +29,8 @@ export interface Foo {
 	f, done := fourslash.NewFourslash(t, nil /*capabilities*/, content)
 	defer done()
 	f.GoToMarker(t, "ok")
-	f.VerifyRenameSucceeded(t, nil /*preferences*/)
-	f.VerifyRenameSucceeded(t, nil /*preferences*/)
+	f.VerifyRenameSucceeded(t, &lsutil.UserPreferences{UseAliasesForRename: core.TSTrue})
+	f.VerifyRenameSucceeded(t, &lsutil.UserPreferences{UseAliasesForRename: core.TSFalse})
 	f.GoToMarker(t, "ok2")
 	f.VerifyRenameSucceeded(t, nil /*preferences*/)
 	f.GoToMarker(t, "ok3")

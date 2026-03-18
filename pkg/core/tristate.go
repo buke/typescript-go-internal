@@ -1,7 +1,7 @@
 package core
 
 //go:generate go run golang.org/x/tools/cmd/stringer@latest -type=Tristate -output=tristate_stringer_generated.go
-//go:generate go run mvdan.cc/gofumpt@latest -w tristate_stringer_generated.go
+//go:generate npx dprint fmt tristate_stringer_generated.go
 
 // Tristate
 

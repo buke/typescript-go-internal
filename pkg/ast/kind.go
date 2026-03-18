@@ -1,7 +1,7 @@
 package ast
 
 //go:generate go run golang.org/x/tools/cmd/stringer@latest -type=Kind -output=kind_stringer_generated.go
-//go:generate go run mvdan.cc/gofumpt@latest -w kind_stringer_generated.go
+//go:generate npx dprint fmt kind_stringer_generated.go
 
 type Kind int16
 
