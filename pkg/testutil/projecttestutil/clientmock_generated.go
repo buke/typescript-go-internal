@@ -122,7 +122,9 @@ func (mock *ClientMock) PublishDiagnostics(ctx context.Context, params *lsproto.
 	mock.calls.PublishDiagnostics = append(mock.calls.PublishDiagnostics, callInfo)
 	mock.lockPublishDiagnostics.Unlock()
 	if mock.PublishDiagnosticsFunc == nil {
-		var errOut error
+		var (
+			errOut error
+		)
 		return errOut
 	}
 	return mock.PublishDiagnosticsFunc(ctx, params)
@@ -157,7 +159,9 @@ func (mock *ClientMock) RefreshCodeLens(ctx context.Context) error {
 	mock.calls.RefreshCodeLens = append(mock.calls.RefreshCodeLens, callInfo)
 	mock.lockRefreshCodeLens.Unlock()
 	if mock.RefreshCodeLensFunc == nil {
-		var errOut error
+		var (
+			errOut error
+		)
 		return errOut
 	}
 	return mock.RefreshCodeLensFunc(ctx)
@@ -190,7 +194,9 @@ func (mock *ClientMock) RefreshDiagnostics(ctx context.Context) error {
 	mock.calls.RefreshDiagnostics = append(mock.calls.RefreshDiagnostics, callInfo)
 	mock.lockRefreshDiagnostics.Unlock()
 	if mock.RefreshDiagnosticsFunc == nil {
-		var errOut error
+		var (
+			errOut error
+		)
 		return errOut
 	}
 	return mock.RefreshDiagnosticsFunc(ctx)
@@ -223,7 +229,9 @@ func (mock *ClientMock) RefreshInlayHints(ctx context.Context) error {
 	mock.calls.RefreshInlayHints = append(mock.calls.RefreshInlayHints, callInfo)
 	mock.lockRefreshInlayHints.Unlock()
 	if mock.RefreshInlayHintsFunc == nil {
-		var errOut error
+		var (
+			errOut error
+		)
 		return errOut
 	}
 	return mock.RefreshInlayHintsFunc(ctx)
@@ -258,7 +266,9 @@ func (mock *ClientMock) UnwatchFiles(ctx context.Context, id project.WatcherID) 
 	mock.calls.UnwatchFiles = append(mock.calls.UnwatchFiles, callInfo)
 	mock.lockUnwatchFiles.Unlock()
 	if mock.UnwatchFilesFunc == nil {
-		var errOut error
+		var (
+			errOut error
+		)
 		return errOut
 	}
 	return mock.UnwatchFilesFunc(ctx, id)
@@ -297,7 +307,9 @@ func (mock *ClientMock) WatchFiles(ctx context.Context, id project.WatcherID, wa
 	mock.calls.WatchFiles = append(mock.calls.WatchFiles, callInfo)
 	mock.lockWatchFiles.Unlock()
 	if mock.WatchFilesFunc == nil {
-		var errOut error
+		var (
+			errOut error
+		)
 		return errOut
 	}
 	return mock.WatchFilesFunc(ctx, id, watchers)

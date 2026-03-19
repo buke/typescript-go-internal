@@ -10,7 +10,7 @@ import (
 )
 
 //go:generate go run golang.org/x/tools/cmd/stringer@latest -type=SignatureKind -output=stringer_generated.go
-//go:generate go run mvdan.cc/gofumpt@latest -w stringer_generated.go
+//go:generate npx dprint fmt stringer_generated.go
 
 // ParseFlags
 
