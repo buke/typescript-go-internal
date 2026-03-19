@@ -32,6 +32,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
           submodules: recursive
+          token: ${{ secrets.PAT }}
 
       - name: Set up Go
         uses: actions/setup-go@v5
