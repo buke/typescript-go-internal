@@ -11,7 +11,7 @@ import (
 
 //go:generate go run golang.org/x/tools/cmd/stringer@latest -type=ModuleKind -trimprefix=ModuleKind -output=modulekind_stringer_generated.go
 //go:generate go run golang.org/x/tools/cmd/stringer@latest -type=ScriptTarget -trimprefix=ScriptTarget -output=scripttarget_stringer_generated.go
-//go:generate go run mvdan.cc/gofumpt@latest -w modulekind_stringer_generated.go scripttarget_stringer_generated.go
+//go:generate npx dprint fmt modulekind_stringer_generated.go scripttarget_stringer_generated.go
 
 type CompilerOptions struct {
 	_ noCopy
