@@ -12,6 +12,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/parser"
 	"github.com/buke/typescript-go-internal/pkg/testutil/baseline"
 	"github.com/buke/typescript-go-internal/pkg/testutil/harnessutil"
+	"github.com/buke/typescript-go-internal/pkg/tsoptions"
 	"github.com/buke/typescript-go-internal/pkg/tspath"
 )
 
@@ -160,6 +161,7 @@ type declarationCompilationContext struct {
 	harnessSettings  *harnessutil.HarnessOptions
 	options          *core.CompilerOptions
 	currentDirectory string
+	configFile       *tsoptions.TsConfigSourceFile
 }
 
 func prepareDeclarationCompilationContext(
@@ -237,11 +239,12 @@ func prepareDeclarationCompilationContext(
 			declOtherFiles = addDtsFile(file, declOtherFiles)
 		}
 		return &declarationCompilationContext{
-			declInputFiles,
-			declOtherFiles,
-			harnessSettings,
-			options,
-			core.IfElse(len(currentDirectory) > 0, currentDirectory, harnessSettings.CurrentDirectory),
+			declInputFiles:   declInputFiles,
+			declOtherFiles:   declOtherFiles,
+			harnessSettings:  harnessSettings,
+			options:          options,
+			currentDirectory: core.IfElse(len(currentDirectory) > 0, currentDirectory, harnessSettings.CurrentDirectory),
+			configFile:       result.Program.Program().CommandLine().ConfigFile,
 		}
 	}
 	return nil
@@ -257,6 +260,12 @@ func compileDeclarationFiles(t *testing.T, context *declarationCompilationContex
 	if context == nil {
 		return nil
 	}
+	var tsconfig *tsoptions.ParsedCommandLine
+	if context.configFile != nil {
+		tsconfig = &tsoptions.ParsedCommandLine{
+			ConfigFile: context.configFile,
+		}
+	}
 	declFileCompilationResult := harnessutil.CompileFilesEx(t,
 		context.declInputFiles,
 		context.declOtherFiles,
@@ -264,7 +273,7 @@ func compileDeclarationFiles(t *testing.T, context *declarationCompilationContex
 		context.options,
 		context.currentDirectory,
 		symlinks,
-		nil)
+		tsconfig)
 	return &declarationCompilationResult{
 		context.declInputFiles,
 		context.declOtherFiles,
