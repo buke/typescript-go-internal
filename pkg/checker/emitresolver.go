@@ -8,7 +8,6 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/ast"
 	"github.com/buke/typescript-go-internal/pkg/binder"
 	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/debug"
 	"github.com/buke/typescript-go-internal/pkg/evaluator"
 	"github.com/buke/typescript-go-internal/pkg/jsnum"
 	"github.com/buke/typescript-go-internal/pkg/nodebuilder"
@@ -610,34 +609,7 @@ func (r *EmitResolver) isRequiredInitializedParameter(parameter *ast.Node, enclo
 }
 
 func (r *EmitResolver) isOptionalParameter(node *ast.Node) bool {
-	// !!! TODO: JSDoc support
-	// if (hasEffectiveQuestionToken(node)) {
-	// 	return true;
-	// }
-	if ast.IsParameter(node) && node.QuestionToken() != nil {
-		return true
-	}
-	if !ast.IsParameter(node) {
-		return false
-	}
-	if node.Initializer() != nil {
-		signature := r.checker.getSignatureFromDeclaration(node.Parent)
-		parameterIndex := core.FindIndex(node.Parent.Parameters(), func(p *ast.ParameterDeclarationNode) bool { return p == node })
-		debug.Assert(parameterIndex >= 0)
-		// Only consider syntactic or instantiated parameters as optional, not `void` parameters as this function is used
-		// in grammar checks and checking for `void` too early results in parameter types widening too early
-		// and causes some noImplicitAny errors to be lost.
-		return parameterIndex >= r.checker.getMinArgumentCountEx(signature, MinArgumentCountFlagsStrongArityForUntypedJS|MinArgumentCountFlagsVoidIsNonOptional)
-	}
-	iife := ast.GetImmediatelyInvokedFunctionExpression(node.Parent)
-	if iife != nil {
-		parameterIndex := core.FindIndex(node.Parent.Parameters(), func(p *ast.ParameterDeclarationNode) bool { return p == node })
-		return node.Type() == nil &&
-			node.AsParameterDeclaration().DotDotDotToken == nil &&
-			parameterIndex >= len(r.checker.getEffectiveCallArguments(iife))
-	}
-
-	return false
+	return r.checker.isOptionalParameter(node)
 }
 
 func (r *EmitResolver) IsLiteralConstDeclaration(node *ast.Node) bool {
