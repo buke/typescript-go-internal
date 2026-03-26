@@ -14,6 +14,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/semver"
 	"github.com/buke/typescript-go-internal/pkg/tspath"
 	"github.com/buke/typescript-go-internal/pkg/vfs"
+	"github.com/buke/typescript-go-internal/pkg/vfs/vfsmatch"
 )
 
 func isTypingUpToDate(cachedTyping *CachedTyping, availableTypingVersions map[string]string) bool {
@@ -222,7 +223,7 @@ func addTypingNamesAndGetFilesToWatch(
 	} else {
 		// And #2. Depth = 3 because scoped packages look like `node_modules/@foo/bar/package.json`
 		depth := 3
-		for _, manifestPath := range vfs.ReadDirectory(fs, projectRootPath, packagesFolderPath, []string{tspath.ExtensionJson}, nil, nil, &depth) {
+		for _, manifestPath := range vfsmatch.ReadDirectory(fs, projectRootPath, packagesFolderPath, []string{tspath.ExtensionJson}, nil, nil, depth) {
 			if tspath.GetBaseFileName(manifestPath) != manifestName {
 				continue
 			}

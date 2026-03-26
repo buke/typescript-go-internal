@@ -13,7 +13,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/packagejson"
 	"github.com/buke/typescript-go-internal/pkg/stringutil"
 	"github.com/buke/typescript-go-internal/pkg/tspath"
-	"github.com/buke/typescript-go-internal/pkg/vfs"
+	"github.com/buke/typescript-go-internal/pkg/vfs/vfsmatch"
 )
 
 type resolved struct {
@@ -2118,14 +2118,14 @@ func (r *Resolver) GetEntrypointsFromPackageJsonInfo(packageJson *packagejson.In
 		packageJson,
 	)
 
-	otherFiles := vfs.ReadDirectory(
+	otherFiles := vfsmatch.ReadDirectory(
 		r.host.FS(),
 		r.host.GetCurrentDirectory(),
 		packageJson.PackageDirectory,
 		extensions.Array(),
 		[]string{"node_modules"},
 		[]string{"**/*"},
-		nil,
+		vfsmatch.UnlimitedDepth,
 	)
 
 	if mainResolution.isResolved() {
@@ -2193,7 +2193,7 @@ func (r *resolutionState) loadEntrypointsFromExportMap(
 				patternPath := tspath.ResolvePath(packageJson.PackageDirectory, exports.AsString())
 				leadingSlice, trailingSlice, _ := strings.Cut(patternPath, "*")
 				caseSensitive := r.resolver.host.FS().UseCaseSensitiveFileNames()
-				files := vfs.ReadDirectory(
+				files := vfsmatch.ReadDirectory(
 					r.resolver.host.FS(),
 					r.resolver.host.GetCurrentDirectory(),
 					packageJson.PackageDirectory,
@@ -2202,7 +2202,7 @@ func (r *resolutionState) loadEntrypointsFromExportMap(
 					[]string{
 						tspath.ChangeFullExtension(strings.Replace(exports.AsString(), "*", "**/*", 1), ".*"),
 					},
-					nil,
+					vfsmatch.UnlimitedDepth,
 				)
 				for _, file := range files {
 					matchedStar, ok := r.getMatchedStarForPatternEntrypoint(file, leadingSlice, trailingSlice, caseSensitive)

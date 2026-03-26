@@ -9,6 +9,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
 	"github.com/buke/typescript-go-internal/pkg/sourcemap"
 	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/pkg/vfs/vfsmatch"
 )
 
 type LanguageService struct {
@@ -126,7 +127,7 @@ func (l *LanguageService) DirectoryExists(path string) bool {
 
 // Used for module specifier completions.
 func (l *LanguageService) ReadDirectory(path string, extensions []string, includes []string) []string {
-	return l.host.ReadDirectory(l.program.GetCurrentDirectory(), path, extensions, nil /*excludes*/, includes, nil /*depth*/)
+	return l.host.ReadDirectory(l.program.GetCurrentDirectory(), path, extensions, nil /*excludes*/, includes, vfsmatch.UnlimitedDepth)
 }
 
 func (l *LanguageService) GetDirectories(path string) []string {
