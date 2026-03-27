@@ -3,13 +3,12 @@ package tsoptions
 import (
 	"reflect"
 
-	"github.com/dlclark/regexp2"
 	"github.com/buke/typescript-go-internal/pkg/collections"
 	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/debug"
 	"github.com/buke/typescript-go-internal/pkg/diagnostics"
 	"github.com/buke/typescript-go-internal/pkg/tspath"
-	"github.com/buke/typescript-go-internal/pkg/vfs"
+	"github.com/buke/typescript-go-internal/pkg/vfs/vfsmatch"
 )
 
 // TSConfig represents the output structure for --showConfig
@@ -275,31 +274,22 @@ func matchesSpecs(configFileName string, includeSpecs []string, excludeSpecs []s
 	// for wildcard pattern matching.
 	configDir := tspath.GetDirectoryPath(tspath.GetNormalizedAbsolutePath(configFileName, currentDirectory))
 
-	includeFilePattern := vfs.GetRegularExpressionForWildcard(includeSpecs, configDir, vfs.UsageFiles)
-	excludePattern := vfs.GetRegularExpressionForWildcard(excludeSpecs, configDir, vfs.UsageExclude)
+	includeMatcher := vfsmatch.NewSpecMatcher(includeSpecs, configDir, vfsmatch.UsageFiles, useCaseSensitiveFileNames)
+	excludeMatcher := vfsmatch.NewSpecMatcher(excludeSpecs, configDir, vfsmatch.UsageExclude, useCaseSensitiveFileNames)
 
-	var includeRe *regexp2.Regexp
-	if includeFilePattern != "" {
-		includeRe = vfs.GetRegexFromPattern(includeFilePattern, useCaseSensitiveFileNames)
-	}
-	var excludeRe *regexp2.Regexp
-	if excludePattern != "" {
-		excludeRe = vfs.GetRegexFromPattern(excludePattern, useCaseSensitiveFileNames)
-	}
-
-	if includeRe != nil {
-		if excludeRe != nil {
+	if includeMatcher != nil {
+		if excludeMatcher != nil {
 			return func(path string) bool {
-				return !(core.Must(includeRe.MatchString(path)) && !core.Must(excludeRe.MatchString(path)))
+				return !(includeMatcher.MatchString(path) && !excludeMatcher.MatchString(path))
 			}
 		}
 		return func(path string) bool {
-			return !core.Must(includeRe.MatchString(path))
+			return !includeMatcher.MatchString(path)
 		}
 	}
-	if excludeRe != nil {
+	if excludeMatcher != nil {
 		return func(path string) bool {
-			return core.Must(excludeRe.MatchString(path))
+			return excludeMatcher.MatchString(path)
 		}
 	}
 	return nil
