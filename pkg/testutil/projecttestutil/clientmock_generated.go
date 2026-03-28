@@ -7,6 +7,7 @@ import (
 	"context"
 	"sync"
 
+	"github.com/buke/typescript-go-internal/pkg/diagnostics"
 	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
 	"github.com/buke/typescript-go-internal/pkg/project"
 )
@@ -17,6 +18,12 @@ import (
 //
 //		// make and configure a mocked project.Client
 //		mockedClient := &ClientMock{
+//			ProgressFinishFunc: func(message *diagnostics.Message, args ...any)  {
+//				panic("mock out the ProgressFinish method")
+//			},
+//			ProgressStartFunc: func(message *diagnostics.Message, args ...any)  {
+//				panic("mock out the ProgressStart method")
+//			},
 //			PublishDiagnosticsFunc: func(ctx context.Context, params *lsproto.PublishDiagnosticsParams) error {
 //				panic("mock out the PublishDiagnostics method")
 //			},
@@ -42,6 +49,12 @@ import (
 //
 //	}
 type ClientMock struct {
+	// ProgressFinishFunc mocks the ProgressFinish method.
+	ProgressFinishFunc func(message *diagnostics.Message, args ...any)
+
+	// ProgressStartFunc mocks the ProgressStart method.
+	ProgressStartFunc func(message *diagnostics.Message, args ...any)
+
 	// PublishDiagnosticsFunc mocks the PublishDiagnostics method.
 	PublishDiagnosticsFunc func(ctx context.Context, params *lsproto.PublishDiagnosticsParams) error
 
@@ -62,6 +75,20 @@ type ClientMock struct {
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// ProgressFinish holds details about calls to the ProgressFinish method.
+		ProgressFinish []struct {
+			// Message is the message argument value.
+			Message *diagnostics.Message
+			// Args is the args argument value.
+			Args []any
+		}
+		// ProgressStart holds details about calls to the ProgressStart method.
+		ProgressStart []struct {
+			// Message is the message argument value.
+			Message *diagnostics.Message
+			// Args is the args argument value.
+			Args []any
+		}
 		// PublishDiagnostics holds details about calls to the PublishDiagnostics method.
 		PublishDiagnostics []struct {
 			// Ctx is the ctx argument value.
@@ -101,12 +128,86 @@ type ClientMock struct {
 			Watchers []*lsproto.FileSystemWatcher
 		}
 	}
+	lockProgressFinish     sync.RWMutex
+	lockProgressStart      sync.RWMutex
 	lockPublishDiagnostics sync.RWMutex
 	lockRefreshCodeLens    sync.RWMutex
 	lockRefreshDiagnostics sync.RWMutex
 	lockRefreshInlayHints  sync.RWMutex
 	lockUnwatchFiles       sync.RWMutex
 	lockWatchFiles         sync.RWMutex
+}
+
+// ProgressFinish calls ProgressFinishFunc.
+func (mock *ClientMock) ProgressFinish(message *diagnostics.Message, args ...any) {
+	callInfo := struct {
+		Message *diagnostics.Message
+		Args    []any
+	}{
+		Message: message,
+		Args:    args,
+	}
+	mock.lockProgressFinish.Lock()
+	mock.calls.ProgressFinish = append(mock.calls.ProgressFinish, callInfo)
+	mock.lockProgressFinish.Unlock()
+	if mock.ProgressFinishFunc == nil {
+		return
+	}
+	mock.ProgressFinishFunc(message, args...)
+}
+
+// ProgressFinishCalls gets all the calls that were made to ProgressFinish.
+// Check the length with:
+//
+//	len(mockedClient.ProgressFinishCalls())
+func (mock *ClientMock) ProgressFinishCalls() []struct {
+	Message *diagnostics.Message
+	Args    []any
+} {
+	var calls []struct {
+		Message *diagnostics.Message
+		Args    []any
+	}
+	mock.lockProgressFinish.RLock()
+	calls = mock.calls.ProgressFinish
+	mock.lockProgressFinish.RUnlock()
+	return calls
+}
+
+// ProgressStart calls ProgressStartFunc.
+func (mock *ClientMock) ProgressStart(message *diagnostics.Message, args ...any) {
+	callInfo := struct {
+		Message *diagnostics.Message
+		Args    []any
+	}{
+		Message: message,
+		Args:    args,
+	}
+	mock.lockProgressStart.Lock()
+	mock.calls.ProgressStart = append(mock.calls.ProgressStart, callInfo)
+	mock.lockProgressStart.Unlock()
+	if mock.ProgressStartFunc == nil {
+		return
+	}
+	mock.ProgressStartFunc(message, args...)
+}
+
+// ProgressStartCalls gets all the calls that were made to ProgressStart.
+// Check the length with:
+//
+//	len(mockedClient.ProgressStartCalls())
+func (mock *ClientMock) ProgressStartCalls() []struct {
+	Message *diagnostics.Message
+	Args    []any
+} {
+	var calls []struct {
+		Message *diagnostics.Message
+		Args    []any
+	}
+	mock.lockProgressStart.RLock()
+	calls = mock.calls.ProgressStart
+	mock.lockProgressStart.RUnlock()
+	return calls
 }
 
 // PublishDiagnostics calls PublishDiagnosticsFunc.
