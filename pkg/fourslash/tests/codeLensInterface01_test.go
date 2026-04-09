@@ -3,6 +3,7 @@ package fourslash_test
 import (
 	"testing"
 
+	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/fourslash"
 	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
 	"github.com/buke/typescript-go-internal/pkg/testutil"
@@ -51,12 +52,12 @@ const p: Pointable = {
 	defer done()
 	f.VerifyBaselineCodeLens(t, &lsutil.UserPreferences{
 		CodeLens: lsutil.CodeLensUserPreferences{
-			ReferencesCodeLensEnabled:            true,
-			ReferencesCodeLensShowOnAllFunctions: true,
+			ReferencesCodeLensEnabled:            core.TSTrue,
+			ReferencesCodeLensShowOnAllFunctions: core.TSTrue,
 
-			ImplementationsCodeLensEnabled:                true,
-			ImplementationsCodeLensShowOnInterfaceMethods: true,
-			ImplementationsCodeLensShowOnAllClassMethods:  true,
+			ImplementationsCodeLensEnabled:                core.TSTrue,
+			ImplementationsCodeLensShowOnInterfaceMethods: core.TSTrue,
+			ImplementationsCodeLensShowOnAllClassMethods:  core.TSTrue,
 		},
 	})
 }
