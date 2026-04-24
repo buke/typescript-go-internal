@@ -6094,7 +6094,20 @@ func (c *Checker) getIterationTypesOfIterable(t *Type, use IterationUse, errorNo
 
 func (c *Checker) getIterationTypesOfIterableWorker(t *Type, use IterationUse, errorNode *ast.Node, noCache bool) IterationTypes {
 	if t.flags&TypeFlagsUnion != 0 {
-		return c.combineIterationTypes(core.Map(t.Types(), func(t *Type) IterationTypes { return c.getIterationTypesOfIterableWorker(t, use, errorNode, noCache) }))
+		allIterationTypes := make([]IterationTypes, 0, len(t.Types()))
+		for _, constituent := range t.Types() {
+			iterationTypes := c.getIterationTypesOfIterableWorker(constituent, use, nil, noCache)
+			if !iterationTypes.hasTypes() {
+				if errorNode != nil {
+					c.addDeferredDiagnostic(func() {
+						c.reportTypeNotIterableError(errorNode, t, use&IterationUseAllowsAsyncIterablesFlag != 0)
+					})
+				}
+				return IterationTypes{}
+			}
+			allIterationTypes = append(allIterationTypes, iterationTypes)
+		}
+		return c.combineIterationTypes(allIterationTypes)
 	}
 	var diags []*ast.Diagnostic
 	if use&IterationUseAllowsAsyncIterablesFlag != 0 {
@@ -12147,7 +12160,9 @@ func (c *Checker) checkBinaryLikeExpression(left *ast.Node, operatorToken *ast.N
 		// control flow analysis it is possible for operands to temporarily have narrower types, and those narrower
 		// types may cause the operands to not be comparable. We don't want such errors reported (see #46475).
 		if checkMode&CheckModeTypeOnly == 0 {
-			if isLiteralExpressionOfObject(left) || isLiteralExpressionOfObject(right) {
+			if (isLiteralExpressionOfObject(left) || isLiteralExpressionOfObject(right)) &&
+				// only report for === and !== in JS, not == or !=
+				(!ast.IsInJSFile(left) || (operator == ast.KindEqualsEqualsEqualsToken || operator == ast.KindExclamationEqualsEqualsToken)) {
 				eqType := operator == ast.KindEqualsEqualsToken || operator == ast.KindEqualsEqualsEqualsToken
 				c.error(errorNode, diagnostics.This_condition_will_always_return_0_since_JavaScript_compares_objects_by_reference_not_value, core.IfElse(eqType, "false", "true"))
 			}
