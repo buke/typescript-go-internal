@@ -5,6 +5,7 @@ import (
 
 	"github.com/buke/typescript-go-internal/pkg/collections"
 	"github.com/buke/typescript-go-internal/pkg/core"
+	"github.com/buke/typescript-go-internal/pkg/tracing"
 	"github.com/buke/typescript-go-internal/pkg/tsoptions"
 	"github.com/buke/typescript-go-internal/pkg/tspath"
 )
@@ -16,7 +17,11 @@ type projectReferenceParseTask struct {
 }
 
 func (t *projectReferenceParseTask) parse(projectReferenceParser *projectReferenceParser) {
-	t.resolved = projectReferenceParser.loader.opts.Host.GetResolvedProjectReference(t.configName, projectReferenceParser.loader.toPath(t.configName))
+	loader := projectReferenceParser.loader
+	if tr := loader.opts.Tracing; tr != nil {
+		defer tr.Push(tracing.PhaseParse, "parseJsonSourceFileConfigFileContent", map[string]any{"path": t.configName}, false)()
+	}
+	t.resolved = loader.opts.Host.GetResolvedProjectReference(t.configName, loader.toPath(t.configName))
 	if t.resolved == nil {
 		return
 	}

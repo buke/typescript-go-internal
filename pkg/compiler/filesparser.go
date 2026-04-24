@@ -11,6 +11,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/diagnostics"
 	"github.com/buke/typescript-go-internal/pkg/module"
+	"github.com/buke/typescript-go-internal/pkg/tracing"
 	"github.com/buke/typescript-go-internal/pkg/tsoptions"
 	"github.com/buke/typescript-go-internal/pkg/tspath"
 )
@@ -58,6 +59,9 @@ func (t *parseTask) load(loader *fileLoader) {
 	if t.isForAutomaticTypeDirective {
 		t.loadAutomaticTypeDirectives(loader)
 		return
+	}
+	if loader.opts.Tracing != nil {
+		defer loader.opts.Tracing.Push(tracing.PhaseProgram, "findSourceFile", map[string]any{"fileName": t.normalizedFilePath}, false)()
 	}
 	redirect := loader.projectReferenceFileMapper.getParseFileRedirect(t)
 	if redirect != "" {
@@ -165,6 +169,9 @@ func (t *parseTask) redirect(loader *fileLoader, fileName string) {
 }
 
 func (t *parseTask) loadAutomaticTypeDirectives(loader *fileLoader) {
+	if loader.opts.Tracing != nil {
+		defer loader.opts.Tracing.Push(tracing.PhaseProgram, "processTypeReferences", nil, false)()
+	}
 	toParseTypeRefs, typeResolutionsInFile, typeResolutionsTrace, pDiagnostics := loader.resolveAutomaticTypeDirectives(t.normalizedFilePath)
 	t.typeResolutionsInFile = typeResolutionsInFile
 	t.typeResolutionsTrace = typeResolutionsTrace
