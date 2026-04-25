@@ -12,6 +12,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/compiler"
 	"github.com/buke/typescript-go-internal/pkg/diagnostics"
 	"github.com/buke/typescript-go-internal/pkg/locale"
+	"github.com/buke/typescript-go-internal/pkg/tracing"
 	"github.com/buke/typescript-go-internal/pkg/tsoptions"
 	"github.com/buke/typescript-go-internal/pkg/tspath"
 )
@@ -38,6 +39,7 @@ type EmitInput struct {
 	CompileTimes       *CompileTimes
 	Testing            CommandLineTesting
 	TestingMTimesCache *collections.SyncMap[tspath.Path, time.Time]
+	Tracing            *tracing.Tracing
 }
 
 func EmitAndReportStatistics(input EmitInput) (CompileAndEmitResult, *Statistics) {
@@ -81,12 +83,18 @@ func EmitFilesAndReportErrors(input EmitInput) (result CompileAndEmitResult) {
 			// Options diagnostics include global diagnostics (even though we collect them separately),
 			// and global diagnostics create checkers, which then bind all of the files. Do this binding
 			// early so we can track the time.
+			if tr := input.Tracing; tr != nil {
+				defer tr.Push(tracing.PhaseBind, "bindSourceFiles", nil, true)()
+			}
 			bindStart := input.Sys.Now()
 			diags := input.ProgramLike.GetBindDiagnostics(ctx, file)
 			result.times.bindTime = input.Sys.Now().Sub(bindStart)
 			return diags
 		},
 		func(ctx context.Context, file *ast.SourceFile) []*ast.Diagnostic {
+			if tr := input.Tracing; tr != nil {
+				defer tr.Push(tracing.PhaseCheck, "checkSourceFiles", nil, true)()
+			}
 			checkStart := input.Sys.Now()
 			diags := input.ProgramLike.GetSemanticDiagnostics(ctx, file)
 			result.times.checkTime = input.Sys.Now().Sub(checkStart)

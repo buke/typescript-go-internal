@@ -12,6 +12,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/diagnostics"
 	"github.com/buke/typescript-go-internal/pkg/json"
 	"github.com/buke/typescript-go-internal/pkg/outputpaths"
+	"github.com/buke/typescript-go-internal/pkg/tracing"
 	"github.com/buke/typescript-go-internal/pkg/tspath"
 )
 
@@ -273,6 +274,9 @@ func (p *Program) collectSemanticDiagnosticsOfAffectedFiles(ctx context.Context,
 }
 
 func (p *Program) emitBuildInfo(ctx context.Context, options compiler.EmitOptions) *compiler.EmitResult {
+	if tr := p.program.Tracing(); tr != nil {
+		defer tr.Push(tracing.PhaseEmit, "emitBuildInfo", nil, true)()
+	}
 	buildInfoFileName := outputpaths.GetBuildInfoFileName(p.snapshot.options, tspath.ComparePathsOptions{
 		CurrentDirectory:          p.program.GetCurrentDirectory(),
 		UseCaseSensitiveFileNames: p.program.UseCaseSensitiveFileNames(),
