@@ -4,8 +4,11 @@ import (
 	"iter"
 	"maps"
 	"math"
+	"os"
+	rtdebug "runtime/debug"
 	"slices"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"unicode"
@@ -17,6 +20,18 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/stringutil"
 	"github.com/buke/typescript-go-internal/pkg/tspath"
 )
+
+func ApplyDebugStackLimit() {
+	v := os.Getenv("TS_GO_DEBUG_STACK_LIMIT") //nolint:forbidigo
+	if v == "" {
+		return
+	}
+	n, err := strconv.Atoi(v)
+	if err != nil || n <= 0 {
+		return
+	}
+	rtdebug.SetMaxStack(n)
+}
 
 func Filter[T any](slice []T, f func(T) bool) []T {
 	for i, value := range slice {
