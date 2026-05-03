@@ -36,6 +36,8 @@ jobs:
       - name: Run sync script (defaults to full mode)
         env:
           SYNC_GENERATE: full
+          SYNC_MOD_ALIGN: shared
+          SYNC_MOD_DRIFT_CHECK: '1'
           SYNC_VERBOSE: '0'
           SYNC_TS_SYMLINK: '1'
           SYNC_TS_SYMLINK_CLEAN: '1'

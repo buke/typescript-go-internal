@@ -4,6 +4,12 @@
 #   SYNC_GENERATE=full  (default) run `go generate ./pkg/...` and create a temporary _submodules symlink
 #   SYNC_GENERATE=light skip packages pkg/bundled and pkg/diagnostics
 #   SYNC_GENERATE=skip  skip generation
+# Module alignment modes:
+#   SYNC_MOD_ALIGN=shared (default) align versions of direct dependencies shared by root and upstream go.mod
+#   SYNC_MOD_ALIGN=strict mirror upstream direct dependencies into root go.mod (add/update/drop)
+#   SYNC_MOD_ALIGN=off    skip go.mod dependency alignment
+# Drift check:
+#   SYNC_MOD_DRIFT_CHECK=1 fail if shared direct dependencies still drift after sync
 
 set -euo pipefail
 [[ "${SYNC_VERBOSE:-0}" == "1" ]] && set -x
@@ -12,9 +18,12 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 UPSTREAM_SUBMODULE="microsoft/typescript-go"
+UPSTREAM_MOD_FILE="${UPSTREAM_SUBMODULE}/go.mod"
 SRC_DIR="${UPSTREAM_SUBMODULE}/internal"
 DEST_DIR="pkg"
 GENERATE_MODE="${SYNC_GENERATE:-full}"
+MOD_ALIGN_MODE="${SYNC_MOD_ALIGN:-shared}"
+MOD_DRIFT_CHECK="${SYNC_MOD_DRIFT_CHECK:-0}"
 TS_SYMLINK="${SYNC_TS_SYMLINK:-1}"
 TS_SYMLINK_CREATED=0
 TS_SYMLINK_EXISTED=0
@@ -33,10 +42,16 @@ need_cmd find
 need_cmd ln
 need_cmd dirname
 need_cmd basename
+need_cmd sort
+need_cmd mktemp
 
 # Read module path
 if [[ ! -f "go.mod" ]]; then
   echo "go.mod not found. Please run: go mod init <module>"
+  exit 1
+fi
+if [[ ! -f "${UPSTREAM_MOD_FILE}" ]]; then
+  echo "Upstream go.mod not found: ${UPSTREAM_MOD_FILE}"
   exit 1
 fi
 MODULE_PATH="$(awk '/^module /{print $2}' go.mod)"
@@ -44,6 +59,22 @@ if [[ -z "$MODULE_PATH" ]]; then
   echo "Failed to read module path from go.mod"
   exit 1
 fi
+
+case "${MOD_ALIGN_MODE}" in
+  off|shared|strict) ;;
+  *)
+    echo "Invalid SYNC_MOD_ALIGN value: ${MOD_ALIGN_MODE}. Expected: off|shared|strict"
+    exit 1
+    ;;
+esac
+
+case "${MOD_DRIFT_CHECK}" in
+  0|1) ;;
+  *)
+    echo "Invalid SYNC_MOD_DRIFT_CHECK value: ${MOD_DRIFT_CHECK}. Expected: 0|1"
+    exit 1
+    ;;
+esac
 
 echo "Module: ${MODULE_PATH}"
 echo "Sync:   ${SRC_DIR}  ->  ${DEST_DIR}"
@@ -173,6 +204,157 @@ copy_testdata() {
   echo "Copied testdata: ${src} -> ${dst}"
 }
 
+collect_direct_requires() {
+  local mod_file="$1"
+  awk '
+    BEGIN { in_block=0 }
+    /^[[:space:]]*require[[:space:]]*\(/ { in_block=1; next }
+    in_block && /^[[:space:]]*\)/ { in_block=0; next }
+
+    {
+      raw=$0
+      line=raw
+      sub(/[[:space:]]*\/\/.*$/, "", line)
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", line)
+      if (line == "") next
+
+      if (!in_block && line ~ /^require[[:space:]]+/ && line !~ /^require[[:space:]]*\(/) {
+        if (raw ~ /\/\/[[:space:]]*indirect([[:space:]]|$)/) next
+        sub(/^require[[:space:]]+/, "", line)
+        n=split(line, a, /[[:space:]]+/)
+        if (n >= 2) print a[1], a[2]
+        next
+      }
+
+      if (in_block) {
+        if (raw ~ /\/\/[[:space:]]*indirect([[:space:]]|$)/) next
+        n=split(line, a, /[[:space:]]+/)
+        if (n >= 2) print a[1], a[2]
+      }
+    }
+  ' "$mod_file" | sort -k1,1
+}
+
+has_module() {
+  local req_file="$1"
+  local mod="$2"
+  awk -v m="$mod" '$1==m { found=1 } END { exit found ? 0 : 1 }' "$req_file"
+}
+
+get_module_version() {
+  local req_file="$1"
+  local mod="$2"
+  awk -v m="$mod" '$1==m { print $2; exit }' "$req_file"
+}
+
+align_go_mod_requires() {
+  local mode="$1"
+  local root_reqs
+  local upstream_reqs
+  local changed=0
+  local mod
+  local upstream_ver
+  local root_ver
+
+  root_reqs="$(mktemp)"
+  upstream_reqs="$(mktemp)"
+
+  collect_direct_requires "go.mod" > "$root_reqs"
+  collect_direct_requires "${UPSTREAM_MOD_FILE}" > "$upstream_reqs"
+
+  case "$mode" in
+    off)
+      echo "Skip go.mod dependency alignment (SYNC_MOD_ALIGN=off)"
+      rm -f "$root_reqs" "$upstream_reqs"
+      return 0
+      ;;
+    shared)
+      echo "Aligning shared direct dependencies to upstream (SYNC_MOD_ALIGN=shared)..."
+      while read -r mod upstream_ver; do
+        [[ -z "${mod:-}" ]] && continue
+        root_ver="$(get_module_version "$root_reqs" "$mod")"
+        if [[ -n "$root_ver" && "$root_ver" != "$upstream_ver" ]]; then
+          echo "  ${mod}: ${root_ver} -> ${upstream_ver}"
+          GOWORK=off go mod edit -require="${mod}@${upstream_ver}"
+          changed=1
+        fi
+      done < "$upstream_reqs"
+      ;;
+    strict)
+      echo "Mirroring upstream direct dependencies (SYNC_MOD_ALIGN=strict)..."
+      while read -r mod upstream_ver; do
+        [[ -z "${mod:-}" ]] && continue
+        root_ver="$(get_module_version "$root_reqs" "$mod")"
+        if [[ "$root_ver" != "$upstream_ver" ]]; then
+          if [[ -n "$root_ver" ]]; then
+            echo "  ${mod}: ${root_ver} -> ${upstream_ver}"
+          else
+            echo "  add ${mod}@${upstream_ver}"
+          fi
+          GOWORK=off go mod edit -require="${mod}@${upstream_ver}"
+          changed=1
+        fi
+      done < "$upstream_reqs"
+
+      collect_direct_requires "go.mod" > "$root_reqs"
+      while read -r mod root_ver; do
+        [[ -z "${mod:-}" ]] && continue
+        if ! has_module "$upstream_reqs" "$mod"; then
+          echo "  drop ${mod} (not in upstream direct requires)"
+          GOWORK=off go mod edit -droprequire="$mod" || true
+          changed=1
+        fi
+      done < "$root_reqs"
+      ;;
+  esac
+
+  if [[ "$changed" == "0" ]]; then
+    echo "No go.mod direct dependency version updates were needed."
+  fi
+
+  rm -f "$root_reqs" "$upstream_reqs"
+}
+
+check_shared_mod_drift() {
+  local root_reqs
+  local upstream_reqs
+  local drift_file
+  local mod
+  local root_ver
+  local upstream_ver
+
+  root_reqs="$(mktemp)"
+  upstream_reqs="$(mktemp)"
+  drift_file="$(mktemp)"
+
+  collect_direct_requires "go.mod" > "$root_reqs"
+  collect_direct_requires "${UPSTREAM_MOD_FILE}" > "$upstream_reqs"
+
+  while read -r mod upstream_ver; do
+    [[ -z "${mod:-}" ]] && continue
+    root_ver="$(get_module_version "$root_reqs" "$mod")"
+    if [[ -n "$root_ver" && "$root_ver" != "$upstream_ver" ]]; then
+      printf "%s %s %s\n" "$mod" "$root_ver" "$upstream_ver" >> "$drift_file"
+    fi
+  done < "$upstream_reqs"
+
+  if [[ -s "$drift_file" ]]; then
+    echo "Shared direct dependency drift detected (root vs upstream):"
+    while read -r mod root_ver upstream_ver; do
+      echo "  - ${mod}: root=${root_ver}, upstream=${upstream_ver}"
+    done < "$drift_file"
+    rm -f "$root_reqs" "$upstream_reqs" "$drift_file"
+    return 1
+  fi
+
+  echo "Shared direct dependency drift check passed."
+  rm -f "$root_reqs" "$upstream_reqs" "$drift_file"
+  return 0
+}
+
+# Align root go.mod against upstream go.mod before tidy/generate.
+align_go_mod_requires "$MOD_ALIGN_MODE"
+
 # Tidy before generation
 echo "Running: go mod tidy (pre-generate)"
 GOWORK="${GOWORK:-off}" go mod tidy
@@ -208,6 +390,11 @@ run_generate
 # Tidy after generation
 echo "Running: go mod tidy (post-generate)"
 GOWORK=off go mod tidy || true
+
+# Optional guardrail for CI: fail when shared direct dependencies still drift.
+if [[ "$MOD_DRIFT_CHECK" == "1" ]]; then
+  check_shared_mod_drift
+fi
 
 # Ensure testdata is present in repo (copy from submodule)
 copy_testdata
