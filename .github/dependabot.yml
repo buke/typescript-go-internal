@@ -5,12 +5,20 @@
 
 version: 2
 updates:
+
+  - package-ecosystem: "github-actions" # See documentation for possible values
+    directory: "/" # Location of package manifests
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: deps
+      include: scope
+
   # Go modules in this repo
   - package-ecosystem: gomod
     directory: /
     schedule:
       interval: daily
-    open-pull-requests-limit: 10
     commit-message:
       prefix: deps
       include: scope
@@ -20,7 +28,6 @@ updates:
     directory: /
     schedule:
       interval: daily
-    open-pull-requests-limit: 10
     commit-message:
       prefix: deps
       include: scope
