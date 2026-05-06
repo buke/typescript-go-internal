@@ -1,6 +1,8 @@
 package printer
 
 import (
+	"unicode/utf8"
+
 	"github.com/buke/typescript-go-internal/pkg/ast"
 	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/scanner"
@@ -88,12 +90,17 @@ func (ct *ChangeTrackerWriter) getEnd(node triviaPositionKey) int {
 func (ct *ChangeTrackerWriter) setLastNonTriviaPosition(s string, force bool) {
 	if force || scanner.SkipTrivia(s, 0) != len(s) {
 		ct.lastNonTriviaPosition = ct.textWriter.GetTextPos()
-		i := 0
-		for stringutil.IsWhiteSpaceLike(rune(s[len(s)-i-1])) {
-			i++
-		}
 		// trim trailing whitespaces
-		ct.lastNonTriviaPosition -= i
+		pos := len(s)
+		for pos > 0 {
+			r, size := utf8.DecodeLastRuneInString(s[:pos])
+			if stringutil.IsWhiteSpaceLike(r) {
+				pos -= size
+			} else {
+				break
+			}
+		}
+		ct.lastNonTriviaPosition -= len(s) - pos
 	}
 }
 
