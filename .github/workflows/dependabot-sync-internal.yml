@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout selected branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           # Uses the branch selected in "Use workflow from"
           ref: ${{ github.ref }}
