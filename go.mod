@@ -10,8 +10,8 @@ require (
 	github.com/peter-evans/patience v0.3.0
 	github.com/zeebo/xxh3 v1.1.0
 	golang.org/x/sync v0.20.0
-	golang.org/x/sys v0.44.0
-	golang.org/x/text v0.37.0
+	golang.org/x/sys v0.43.0
+	golang.org/x/text v0.36.0
 	gotest.tools/v3 v3.5.2
 )
 
