@@ -3,7 +3,9 @@ package fourslash_test
 import (
 	"testing"
 
+	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/fourslash"
+	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
 	"github.com/buke/typescript-go-internal/pkg/testutil"
 )
 
@@ -39,6 +41,9 @@ uniqueFunction/**/`
 	f, done := fourslash.NewFourslash(t, nil /*capabilities*/, content)
 	defer done()
 
+	prefs := lsutil.NewDefaultUserPreferences()
+	prefs.AutoImportEntrypointDirectorySearch = core.TSTrue
+	f.Configure(t, prefs)
 	f.GoToMarker(t, "")
 	f.BaselineAutoImportsCompletions(t, []string{""})
 }

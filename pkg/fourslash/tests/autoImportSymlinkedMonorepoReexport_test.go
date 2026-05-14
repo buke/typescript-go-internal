@@ -3,7 +3,9 @@ package fourslash_test
 import (
 	"testing"
 
+	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/fourslash"
+	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
 	"github.com/buke/typescript-go-internal/pkg/testutil"
 )
 
@@ -71,6 +73,9 @@ projectBFunction/**/
 	f, done := fourslash.NewFourslash(t, nil /*capabilities*/, content)
 	defer done()
 
+	prefs := lsutil.NewDefaultUserPreferences()
+	prefs.AutoImportEntrypointDirectorySearch = core.TSTrue
+	f.Configure(t, prefs)
 	f.GoToMarker(t, "")
 	// This should show projectBFunction once via re-export and once via direct import, not duplicates
 	f.VerifyImportFixAtPosition(t, []string{
