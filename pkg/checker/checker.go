@@ -3405,7 +3405,11 @@ func (c *Checker) checkFunctionOrMethodDeclaration(node *ast.Node) {
 		// - if node.localSymbol === undefined - this node is non-exported so we can just pick the result of getSymbolOfNode
 		symbol := c.getSymbolOfDeclaration(node)
 		localSymbol := core.OrElse(node.LocalSymbol(), symbol)
-		c.checkFunctionOrConstructorSymbol(localSymbol)
+		// Since the javascript won't do semantic analysis like typescript, ignore javascript function
+		// declarations so that redeclaring a function in a JS file is not reported as a duplicate.
+		if node.Flags&ast.NodeFlagsJavaScriptFile == 0 {
+			c.checkFunctionOrConstructorSymbol(localSymbol)
+		}
 		if symbol.Parent != nil {
 			// run check on export symbol to check that modifiers agree across all exported declarations
 			c.checkFunctionOrConstructorSymbol(symbol)
@@ -8731,6 +8735,10 @@ func (c *Checker) resolveDecorator(node *ast.Node, candidatesOutArray *[]*Signat
 		diag := ast.NewDiagnosticChain(c.invocationErrorDetails(node.Expression(), apparentType, SignatureKindCall), headMessage)
 		c.diagnostics.Add(diag)
 		c.invocationErrorRecovery(apparentType, SignatureKindCall, diag)
+		return c.resolveErrorCall(node)
+	}
+	decoratorSignature := c.getDecoratorCallSignature(node)
+	if decoratorSignature == nil {
 		return c.resolveErrorCall(node)
 	}
 	return c.resolveCall(node, callSignatures, candidatesOutArray, checkMode, SignatureFlagsNone, headMessage)
