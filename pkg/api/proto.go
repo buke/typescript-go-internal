@@ -127,6 +127,9 @@ const (
 	MethodGetReferencedSymbolsForNode Method = "getReferencedSymbolsForNode"
 	MethodGetSignatureUsages          Method = "getSignatureUsages"
 
+	// Language service methods
+	MethodGetCompletionsAtPosition Method = "getCompletionsAtPosition"
+
 	// Diagnostic methods
 	MethodGetSyntacticDiagnostics         Method = "getSyntacticDiagnostics"
 	MethodGetSemanticDiagnostics          Method = "getSemanticDiagnostics"
@@ -361,6 +364,7 @@ var unmarshalers = map[Method]func([]byte) (any, error){
 	MethodGetReferencesToSymbolInFile:       unmarshallerFor[GetReferencesToSymbolInFileParams],
 	MethodGetReferencedSymbolsForNode:       unmarshallerFor[GetReferencedSymbolsForNodeParams],
 	MethodGetSignatureUsages:                unmarshallerFor[GetSignatureUsagesParams],
+	MethodGetCompletionsAtPosition:          unmarshallerFor[GetCompletionsAtPositionParams],
 	MethodPrintNode:                         unmarshallerFor[PrintNodeParams],
 	MethodGetAnyType:                        unmarshallerFor[GetIntrinsicTypeParams],
 	MethodGetStringType:                     unmarshallerFor[GetIntrinsicTypeParams],
@@ -495,7 +499,7 @@ type TypeResponse struct {
 	ObjectFlags uint32 `json:"objectFlags,omitempty"`
 
 	// LiteralType data
-	Value any `json:"value,omitempty"`
+	Value any `json:"value"`
 
 	// ObjectType / TypeReference / StringMappingType / IndexType target
 	Target TypeID `json:"target,omitempty"`
@@ -764,6 +768,40 @@ type SignatureUsageResponse struct {
 	Call NodeHandle `json:"call,omitempty"`
 }
 
+// GetCompletionsAtPositionParams are the parameters for the getCompletionsAtPosition method.
+type GetCompletionsAtPositionParams struct {
+	Snapshot         SnapshotID         `json:"snapshot"`
+	Project          ProjectID          `json:"project"`
+	File             DocumentIdentifier `json:"file"`
+	Position         uint32             `json:"position"`
+	TriggerCharacter *string            `json:"triggerCharacter,omitempty"`
+	IncludeSymbol    bool               `json:"includeSymbol,omitempty"`
+}
+
+// CompletionEntryLabelDetailsResponse holds additional label display text for a completion entry.
+type CompletionEntryLabelDetailsResponse struct {
+	Detail      *string `json:"detail,omitempty"`
+	Description *string `json:"description,omitempty"`
+}
+
+// CompletionEntryResponse represents a single completion item.
+type CompletionEntryResponse struct {
+	Name         string                               `json:"name"`
+	Kind         uint32                               `json:"kind,omitempty"`
+	SortText     *string                              `json:"sortText,omitempty"`
+	InsertText   *string                              `json:"insertText,omitempty"`
+	FilterText   *string                              `json:"filterText,omitempty"`
+	Detail       *string                              `json:"detail,omitempty"`
+	LabelDetails *CompletionEntryLabelDetailsResponse `json:"labelDetails,omitempty"`
+	Symbol       *SymbolResponse                      `json:"symbol,omitempty"`
+}
+
+// CompletionInfoResponse wraps a list of completion entries.
+type CompletionInfoResponse struct {
+	IsIncomplete bool                       `json:"isIncomplete"`
+	Entries      []*CompletionEntryResponse `json:"entries"`
+}
+
 // GetIntrinsicTypeParams is used for intrinsic type getters (anyType, stringType, etc.).
 type GetIntrinsicTypeParams struct {
 	Snapshot SnapshotID `json:"snapshot"`
@@ -911,9 +949,10 @@ type TypePredicateResponse struct {
 
 // IndexInfoResponse represents a single index signature.
 type IndexInfoResponse struct {
-	KeyType    TypeResponse `json:"keyType"`
-	ValueType  TypeResponse `json:"valueType"`
-	IsReadonly bool         `json:"isReadonly,omitempty"`
+	KeyType     TypeResponse `json:"keyType"`
+	ValueType   TypeResponse `json:"valueType"`
+	IsReadonly  bool         `json:"isReadonly,omitempty"`
+	Declaration NodeHandle   `json:"declaration,omitempty"`
 }
 
 // SourceFileResponse contains the binary-encoded AST data for a source file.
@@ -961,9 +1000,17 @@ type DiagnosticResponse struct {
 
 // NewDiagnosticResponse converts an ast.Diagnostic to a DiagnosticResponse.
 func NewDiagnosticResponse(d *ast.Diagnostic) *DiagnosticResponse {
+	pos := d.Pos()
+	end := d.End()
+	file := d.File()
+	if file != nil {
+		positionMap := file.GetPositionMap()
+		pos = positionMap.UTF8ToUTF16(pos)
+		end = positionMap.UTF8ToUTF16(end)
+	}
 	resp := &DiagnosticResponse{
-		Pos:                d.Pos(),
-		End:                d.End(),
+		Pos:                pos,
+		End:                end,
 		Code:               d.Code(),
 		Category:           d.Category(),
 		Text:               d.Localize(locale.Default),
@@ -971,8 +1018,8 @@ func NewDiagnosticResponse(d *ast.Diagnostic) *DiagnosticResponse {
 		ReportsDeprecated:  d.ReportsDeprecated(),
 	}
 
-	if d.File() != nil {
-		resp.FileName = d.File().FileName()
+	if file != nil {
+		resp.FileName = file.FileName()
 	}
 
 	if chain := d.MessageChain(); len(chain) > 0 {

@@ -1,10 +1,15 @@
 package api_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/buke/typescript-go-internal/pkg/api"
+	"github.com/buke/typescript-go-internal/pkg/ast"
+	"github.com/buke/typescript-go-internal/pkg/core"
+	"github.com/buke/typescript-go-internal/pkg/diagnostics"
 	"github.com/buke/typescript-go-internal/pkg/json"
+	"github.com/buke/typescript-go-internal/pkg/parser"
 	"gotest.tools/v3/assert"
 )
 
@@ -57,4 +62,22 @@ func TestDocumentIdentifierUnmarshalJSON(t *testing.T) {
 			assert.Equal(t, string(d.URI), tt.uri)
 		})
 	}
+}
+
+func TestNewDiagnosticResponseUsesUTF16Offsets(t *testing.T) {
+	t.Parallel()
+
+	text := "const 💩 = 1;"
+	file := parser.ParseSourceFile(ast.SourceFileParseOptions{FileName: "/unicode.ts"}, text, core.ScriptKindTS)
+	pos := strings.Index(text, "=")
+	assert.Assert(t, pos > 0)
+	end := pos + len("=")
+
+	diag := ast.NewDiagnostic(file, core.NewTextRange(pos, end), diagnostics.Expression_expected)
+	resp := api.NewDiagnosticResponse(diag)
+
+	assert.Equal(t, resp.Pos, 9)
+	assert.Equal(t, resp.End, 10)
+	assert.Equal(t, resp.Pos, file.GetPositionMap().UTF8ToUTF16(pos))
+	assert.Equal(t, resp.End, file.GetPositionMap().UTF8ToUTF16(end))
 }
