@@ -17,6 +17,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/execute"
 	"github.com/buke/typescript-go-internal/pkg/execute/incremental"
 	"github.com/buke/typescript-go-internal/pkg/execute/tsc"
+	"github.com/buke/typescript-go-internal/pkg/execute/watchmanager"
 	"github.com/buke/typescript-go-internal/pkg/locale"
 	"github.com/buke/typescript-go-internal/pkg/testutil/fsbaselineutil"
 	"github.com/buke/typescript-go-internal/pkg/testutil/harnessutil"
@@ -317,7 +318,7 @@ func (s *TestSys) writeHeaderToBaseline(builder *strings.Builder, program *incre
 	}
 }
 
-func (s *TestSys) WatchBackend() execute.WatchBackend {
+func (s *TestSys) WatchBackend() watchmanager.WatchBackend {
 	return s.mockWatchBackend
 }
 
