@@ -45,12 +45,6 @@ type snapshotData struct {
 	signatureRegistry   map[SignatureID]*checker.Signature
 	signatureNextID     uint64
 	signatureRegistryMu sync.RWMutex
-
-	// nodeTablesByPath maps file paths to node index tables used for index-based node handles.
-	// Tables are populated when a file is encoded (getSourceFile) and may also be built lazily
-	// on-demand when generating handles before getSourceFile is called.
-	nodeTablesByPath   map[tspath.Path]*encoder.NodeIndexTable
-	nodeTablesByPathMu sync.RWMutex
 }
 
 // getProgram looks up a program from a project handle within this snapshot.
@@ -74,22 +68,7 @@ func (sd *snapshotData) getProgram(projectHandle ProjectID) (*compiler.Program, 
 func (sd *snapshotData) nodeHandleFrom(node *ast.Node) NodeHandle {
 	sourceFile := ast.GetSourceFileOfNode(node)
 	path := sourceFile.Path()
-
-	sd.nodeTablesByPathMu.RLock()
-	table := sd.nodeTablesByPath[path]
-	sd.nodeTablesByPathMu.RUnlock()
-
-	if table == nil {
-		// Eagerly build node index table for this file.
-		newTable := encoder.BuildNodeIndexTable(sourceFile)
-		sd.nodeTablesByPathMu.Lock()
-		if sd.nodeTablesByPath[path] == nil {
-			sd.nodeTablesByPath[path] = newTable
-		}
-		table = sd.nodeTablesByPath[path]
-		sd.nodeTablesByPathMu.Unlock()
-	}
-
+	table := encoder.GetNodeIndexTable(sourceFile)
 	idx := table.GetIndex(node)
 	return NodeHandle(fmt.Sprintf("%d.%d.%s", idx, node.Kind, path))
 }
@@ -333,7 +312,7 @@ func (s *Session) setupChecker(ctx context.Context, snapshot SnapshotID, project
 		return checkerSetup{}, err
 	}
 
-	c, done := program.GetTypeChecker(ctx)
+	c, done := program.GetTypeChecker(core.WithCheckerLifetime(ctx, core.CheckerLifetimeAPI))
 	return checkerSetup{
 		sd:      sd,
 		program: program,
@@ -544,6 +523,8 @@ func (s *Session) HandleRequest(ctx context.Context, method string, params json.
 		return s.handleGetReferencedSymbolsForNode(ctx, parsed.(*GetReferencedSymbolsForNodeParams))
 	case string(MethodGetSignatureUsages):
 		return s.handleGetSignatureUsages(ctx, parsed.(*GetSignatureUsagesParams))
+	case string(MethodGetCompletionsAtPosition):
+		return s.handleGetCompletionsAtPosition(ctx, parsed.(*GetCompletionsAtPositionParams))
 	default:
 		return nil, fmt.Errorf("unknown method: %s", method)
 	}
@@ -634,7 +615,6 @@ func (s *Session) handleUpdateSnapshot(ctx context.Context, params *UpdateSnapsh
 			symbolRegistry:    make(map[SymbolID]*ast.Symbol),
 			typeRegistry:      make(map[TypeID]*checker.Type),
 			signatureRegistry: make(map[SignatureID]*checker.Signature),
-			nodeTablesByPath:  make(map[tspath.Path]*encoder.NodeIndexTable),
 		}
 		s.snapshots[handle] = sd
 	}
@@ -760,15 +740,10 @@ func (s *Session) handleGetSourceFile(ctx context.Context, params *GetSourceFile
 	}
 
 	// Encode the full source file
-	data, nodeTable, err := encoder.EncodeSourceFile(sourceFile)
+	data, _, err := encoder.EncodeSourceFile(sourceFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to encode source file: %w", err)
 	}
-
-	// Store the node table for O(1) handle resolution
-	sd.nodeTablesByPathMu.Lock()
-	sd.nodeTablesByPath[sourceFile.Path()] = nodeTable
-	sd.nodeTablesByPathMu.Unlock()
 
 	// Return raw binary for msgpack protocol, or base64 for JSON
 	if s.useBinaryResponses {
@@ -1932,6 +1907,9 @@ func (s *Session) handleGetIndexInfosOfType(ctx context.Context, params *Checker
 			ValueType:  *setup.sd.registerType(info.ValueType()),
 			IsReadonly: info.IsReadonly(),
 		}
+		if info.Declaration() != nil {
+			results[i].Declaration = setup.sd.nodeHandleFrom(info.Declaration())
+		}
 	}
 
 	return results, nil
@@ -2003,9 +1981,11 @@ func (sd *snapshotData) resolveNodeHandle(program *compiler.Program, handle Node
 	}
 	path := tspath.Path(s[secondDot+1:])
 
-	sd.nodeTablesByPathMu.RLock()
-	table := sd.nodeTablesByPath[path]
-	sd.nodeTablesByPathMu.RUnlock()
+	sourceFile := program.GetSourceFileByPath(path)
+	if sourceFile == nil {
+		return nil, fmt.Errorf("%w: node handle %q could not be resolved (file may not be loaded or handle may be stale)", ErrClientError, handle)
+	}
+	table := encoder.GetNodeIndexTable(sourceFile)
 
 	if table != nil && idx < uint64(len(table.Nodes)) {
 		node := table.Nodes[idx]
@@ -2013,7 +1993,7 @@ func (sd *snapshotData) resolveNodeHandle(program *compiler.Program, handle Node
 			return node, nil
 		}
 	}
-	return nil, fmt.Errorf("%w: node handle %q could not be resolved (file may not be loaded)", ErrClientError, handle)
+	return nil, fmt.Errorf("%w: node handle %q could not be resolved (file may not be loaded or handle may be stale)", ErrClientError, handle)
 }
 
 // computeSnapshotChanges computes the per-project source file differences between
@@ -2123,6 +2103,7 @@ func (s *Session) toFileChangeSummary(changes *APIFileChanges) project.FileChang
 
 // handleGetSyntacticDiagnostics returns syntactic diagnostics for a file or all files.
 func (s *Session) handleGetSyntacticDiagnostics(ctx context.Context, params *GetDiagnosticsParams) ([]*DiagnosticResponse, error) {
+	ctx = core.WithCheckerLifetime(ctx, core.CheckerLifetimeDiagnostics)
 	sd, err := s.getSnapshotData(params.Snapshot)
 	if err != nil {
 		return nil, err
@@ -2144,6 +2125,7 @@ func (s *Session) handleGetSyntacticDiagnostics(ctx context.Context, params *Get
 
 // handleGetSemanticDiagnostics returns semantic diagnostics for a file or all files.
 func (s *Session) handleGetSemanticDiagnostics(ctx context.Context, params *GetDiagnosticsParams) ([]*DiagnosticResponse, error) {
+	ctx = core.WithCheckerLifetime(ctx, core.CheckerLifetimeDiagnostics)
 	sd, err := s.getSnapshotData(params.Snapshot)
 	if err != nil {
 		return nil, err
@@ -2165,6 +2147,7 @@ func (s *Session) handleGetSemanticDiagnostics(ctx context.Context, params *GetD
 
 // handleGetSuggestionDiagnostics returns suggestion diagnostics for a file or all files.
 func (s *Session) handleGetSuggestionDiagnostics(ctx context.Context, params *GetDiagnosticsParams) ([]*DiagnosticResponse, error) {
+	ctx = core.WithCheckerLifetime(ctx, core.CheckerLifetimeDiagnostics)
 	sd, err := s.getSnapshotData(params.Snapshot)
 	if err != nil {
 		return nil, err
@@ -2186,6 +2169,7 @@ func (s *Session) handleGetSuggestionDiagnostics(ctx context.Context, params *Ge
 
 // handleGetDeclarationDiagnostics returns declaration diagnostics for a file or all files.
 func (s *Session) handleGetDeclarationDiagnostics(ctx context.Context, params *GetDiagnosticsParams) ([]*DiagnosticResponse, error) {
+	ctx = core.WithCheckerLifetime(ctx, core.CheckerLifetimeDiagnostics)
 	sd, err := s.getSnapshotData(params.Snapshot)
 	if err != nil {
 		return nil, err
@@ -2302,6 +2286,59 @@ func (s *Session) handleGetSignatureUsages(ctx context.Context, params *GetSigna
 		result = append(result, entry)
 	}
 	return result, nil
+}
+
+// handleGetCompletionsAtPosition returns completions at a position in a document.
+func (s *Session) handleGetCompletionsAtPosition(ctx context.Context, params *GetCompletionsAtPositionParams) (*CompletionInfoResponse, error) {
+	sd, err := s.getSnapshotData(params.Snapshot)
+	if err != nil {
+		return nil, err
+	}
+	program, err := sd.getProgram(params.Project)
+	if err != nil {
+		return nil, err
+	}
+	sourceFile := program.GetSourceFile(params.File.ToFileName())
+	if sourceFile == nil {
+		return nil, nil
+	}
+	langSvc, err := s.setupLanguageService(sd, program, params.Project, "")
+	if err != nil {
+		return nil, err
+	}
+	positionMap := sourceFile.GetPositionMap()
+	internalPos := positionMap.UTF16ToUTF8(int(params.Position))
+	result, err := langSvc.GetCompletionsAtPosition(ctx, sourceFile, internalPos, params.TriggerCharacter, params.IncludeSymbol)
+	if err != nil || result == nil {
+		return nil, err
+	}
+	entries := make([]*CompletionEntryResponse, 0, len(result.Items))
+	for _, item := range result.Items {
+		entry := &CompletionEntryResponse{
+			Name:       item.Label,
+			SortText:   item.SortText,
+			InsertText: item.InsertText,
+			FilterText: item.FilterText,
+			Detail:     item.Detail,
+		}
+		if item.Kind != nil {
+			entry.Kind = uint32(*item.Kind)
+		}
+		if item.LabelDetails != nil {
+			entry.LabelDetails = &CompletionEntryLabelDetailsResponse{
+				Detail:      item.LabelDetails.Detail,
+				Description: item.LabelDetails.Description,
+			}
+		}
+		if item.Symbol != nil {
+			entry.Symbol = sd.registerSymbol(item.Symbol)
+		}
+		entries = append(entries, entry)
+	}
+	return &CompletionInfoResponse{
+		IsIncomplete: result.IsIncomplete,
+		Entries:      entries,
+	}, nil
 }
 
 // handleGetReferencedSymbolsForNode returns node handles for all references found at a node.
