@@ -586,6 +586,7 @@ type Checker struct {
 	compareSymbolChains                         func([]*ast.Symbol, []*ast.Symbol) int
 	TypeCount                                   uint32
 	SymbolCount                                 uint32
+	SignatureCount                              uint32
 	TotalInstantiationCount                     uint32
 	instantiationCount                          uint32
 	instantiationDepth                          uint32
@@ -14253,6 +14254,9 @@ func getExcludedSymbolFlags(flags ast.SymbolFlags) ast.SymbolFlags {
 	if flags&ast.SymbolFlagsAlias != 0 {
 		result |= ast.SymbolFlagsAliasExcludes
 	}
+	if flags&ast.SymbolFlagsReplaceableByMethod != 0 {
+		result &^= ast.SymbolFlagsMethod
+	}
 	return result
 }
 
@@ -15989,15 +15993,30 @@ func (c *Checker) lateBindIndexSignature(parent *ast.Symbol, earlySymbols ast.Sy
 	}
 }
 
+func isNotReplacableByMethod(decl *ast.Node) bool {
+	return decl.Symbol().Flags&ast.SymbolFlagsReplaceableByMethod == 0
+}
+
 // Adds a declaration to a late-bound dynamic member. This performs the same function for
 // late-bound members that `addDeclarationToSymbol` in binder.ts performs for early-bound
 // members.
 func (c *Checker) addDeclarationToLateBoundSymbol(symbol *ast.Symbol, member *ast.Node, symbolFlags ast.SymbolFlags) {
 	debug.Assert(symbol.CheckFlags&ast.CheckFlagsLate != 0, "Expected a late-bound symbol.")
-	symbol.Flags |= symbolFlags
 	c.lateBoundLinks.Get(member.Symbol()).lateSymbol = symbol
 	if len(symbol.Declarations) == 0 || member.Symbol().Flags&ast.SymbolFlagsReplaceableByMethod == 0 {
+		symbol.Flags |= symbolFlags
 		symbol.Declarations = append(symbol.Declarations, member)
+	} else if symbol.Flags&ast.SymbolFlagsReplaceableByMethod != 0 && member.Symbol().Flags&ast.SymbolFlagsMethod != 0 {
+		// Remove all replacable-by-method members, along with their flags.
+		symbol.Declarations = append(core.Filter(symbol.Declarations, isNotReplacableByMethod), member)
+		oldFlags := symbol.Flags
+		symbol.Flags = ast.SymbolFlagsNone
+		for _, d := range symbol.Declarations {
+			symbol.Flags |= d.Symbol().Flags
+		}
+		if oldFlags&ast.SymbolFlagsAccessor != 0 {
+			symbol.Flags |= ast.SymbolFlagsAccessor
+		}
 	}
 	if symbolFlags&ast.SymbolFlagsValue != 0 {
 		binder.SetValueDeclaration(symbol, member)
@@ -25128,7 +25147,9 @@ func (c *Checker) newSubstitutionType(baseType *Type, constraint *Type) *Type {
 }
 
 func (c *Checker) newSignature(flags SignatureFlags, declaration *ast.Node, typeParameters []*Type, thisParameter *ast.Symbol, parameters []*ast.Symbol, resolvedReturnType *Type, resolvedTypePredicate *TypePredicate, minArgumentCount int) *Signature {
+	c.SignatureCount++
 	sig := c.signatureArena.New()
+	sig.id = SignatureId(c.SignatureCount)
 	sig.flags = flags
 	sig.declaration = declaration
 	sig.typeParameters = typeParameters
