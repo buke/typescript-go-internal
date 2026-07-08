@@ -3,7 +3,6 @@ package fourslash_test
 import (
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/fourslash"
 	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
 	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
@@ -24,7 +23,7 @@ x; y;`
 import x from "lib2";
 x; y;`,
 		lsproto.CodeActionKindSourceSortImports,
-		&lsutil.UserPreferences{OrganizeImportsIgnoreCase: core.TSTrue},
+		&lsutil.UserPreferences{OrganizeImportsSort: lsutil.OrganizeImportsSortOrdinalIgnoreCase},
 	)
 }
 
@@ -42,7 +41,7 @@ x; y;`
 import x from "./lib2";
 x; y;`,
 		lsproto.CodeActionKindSourceSortImports,
-		&lsutil.UserPreferences{OrganizeImportsIgnoreCase: core.TSTrue},
+		&lsutil.UserPreferences{OrganizeImportsSort: lsutil.OrganizeImportsSortOrdinalIgnoreCase},
 	)
 }
 
@@ -60,7 +59,7 @@ x; y;`
 import x from "./lib";
 x; y;`,
 		lsproto.CodeActionKindSourceSortImports,
-		&lsutil.UserPreferences{OrganizeImportsIgnoreCase: core.TSTrue},
+		&lsutil.UserPreferences{OrganizeImportsSort: lsutil.OrganizeImportsSortOrdinalIgnoreCase},
 	)
 }
 
@@ -79,7 +78,7 @@ x; y;`
 import x from "Z";
 x; y;`,
 		lsproto.CodeActionKindSourceSortImports,
-		&lsutil.UserPreferences{OrganizeImportsIgnoreCase: core.TSTrue},
+		&lsutil.UserPreferences{OrganizeImportsSort: lsutil.OrganizeImportsSortOrdinalIgnoreCase},
 	)
 }
 
@@ -98,6 +97,6 @@ x; y;`
 import x from "z";
 x; y;`,
 		lsproto.CodeActionKindSourceSortImports,
-		&lsutil.UserPreferences{OrganizeImportsIgnoreCase: core.TSTrue},
+		&lsutil.UserPreferences{OrganizeImportsSort: lsutil.OrganizeImportsSortOrdinalIgnoreCase},
 	)
 }
