@@ -613,7 +613,6 @@ type Checker struct {
 	exactOptionalPropertyTypes                  bool
 	canCollectSymbolAliasAccessibilityData      bool
 	wasCanceled                                 bool
-	saveDeferredDiagnostics                     bool
 	arrayVariances                              []VarianceFlags
 	globals                                     ast.SymbolTable
 	evaluate                                    evaluator.Evaluator
@@ -675,6 +674,7 @@ type Checker struct {
 	arrayLiteralLinks                           core.LinkStore[*ast.Node, ArrayLiteralLinks]
 	switchStatementLinks                        core.LinkStore[*ast.Node, SwitchStatementLinks]
 	jsxElementLinks                             core.LinkStore[*ast.Node, JsxElementLinks]
+	computedNameLinks                           core.LinkStore[*ast.Node, ComputedNameNodeLinks]
 	symbolReferenceLinks                        core.LinkStore[*ast.Symbol, SymbolReferenceLinks]
 	valueSymbolLinks                            core.LinkStore[*ast.Symbol, ValueSymbolLinks]
 	mappedSymbolLinks                           core.LinkStore[*ast.Symbol, MappedSymbolLinks]
@@ -2183,7 +2183,6 @@ func (c *Checker) checkSourceFile(ctx context.Context, sourceFile *ast.SourceFil
 	c.ctx = ctx
 	links := c.sourceFileLinks.Get(sourceFile)
 	if !links.typeChecked {
-		c.saveDeferredDiagnostics = true
 		if tr := c.tracer; tr != nil {
 			defer tr.Push(tracing.PhaseCheck, "checkSourceFile", map[string]any{"path": sourceFile.FileName()}, true)()
 		}
@@ -2199,7 +2198,6 @@ func (c *Checker) checkSourceFile(ctx context.Context, sourceFile *ast.SourceFil
 		if !sourceFile.IsDeclarationFile && !c.isCanceled() {
 			c.checkUnusedRenamedBindingElements()
 		}
-		c.saveDeferredDiagnostics = false
 		c.produceDeferredDiagnostics()
 		c.reportedUnreachableNodes.Clear()
 		links.typeChecked = true
@@ -5555,6 +5553,14 @@ func (c *Checker) checkExportSpecifier(node *ast.ExportSpecifierNode) {
 	}
 }
 
+func isContainedByNamespace(node *ast.Node) bool {
+	container := node.Parent
+	if !ast.IsSourceFile(container) {
+		container = container.Parent
+	}
+	return ast.IsModuleDeclaration(container) && !ast.IsAmbientModule(container)
+}
+
 func (c *Checker) checkExportAssignment(node *ast.Node) {
 	isExportEquals := node.AsExportAssignment().IsExportEquals
 	illegalContextMessage := core.IfElse(isExportEquals,
@@ -5566,11 +5572,7 @@ func (c *Checker) checkExportAssignment(node *ast.Node) {
 	if c.shouldCheckErasableSyntax(node) && node.AsExportAssignment().IsExportEquals && node.Flags&ast.NodeFlagsAmbient == 0 {
 		c.error(node, diagnostics.This_syntax_is_not_allowed_when_erasableSyntaxOnly_is_enabled)
 	}
-	container := node.Parent
-	if !ast.IsSourceFile(container) {
-		container = container.Parent
-	}
-	if ast.IsModuleDeclaration(container) && !ast.IsAmbientModule(container) {
+	if isContainedByNamespace(node) {
 		// TODO(danielr): should these be grammar errors?
 		if isExportEquals {
 			c.error(node, diagnostics.An_export_assignment_cannot_be_used_in_a_namespace)
@@ -5635,6 +5637,10 @@ func (c *Checker) checkExportAssignment(node *ast.Node) {
 	}
 	if isIllegalExportDefaultInCJS {
 		c.error(node, getVerbatimModuleSyntaxErrorMessage(node))
+	}
+	container := node.Parent
+	if !ast.IsSourceFile(container) {
+		container = container.Parent
 	}
 	c.checkExternalModuleExports(container)
 	if typeNode := node.Type(); typeNode != nil && node.Kind == ast.KindExportAssignment {
@@ -11316,7 +11322,10 @@ func (c *Checker) checkPropertyAccessExpressionOrQualifiedName(node *ast.Node, l
 				return c.anyType
 			}
 			if right.Text() != "" && !c.checkAndReportErrorForExtendingInterface(node) {
-				c.reportNonexistentProperty(right, core.IfElse(isThisTypeParameter(leftType), apparentType, leftType), isUncheckedJS)
+				c.addDeferredDiagnostic(func() {
+					// must be deferred because reporting this error can cause us to materialize the containing type completely (to print it), leading to erroneous circularity errors
+					c.reportNonexistentProperty(right, core.IfElse(isThisTypeParameter(leftType), apparentType, leftType), isUncheckedJS)
+				})
 			}
 			return c.errorType
 		}
@@ -12922,7 +12931,7 @@ func (c *Checker) getSyntacticNullishnessSemantics(node *ast.Node) PredicateSema
 		return PredicateSemanticsSometimes
 	case ast.KindBinaryExpression:
 		// List of operators that can produce null/undefined:
-		// || ||= && &&=
+		// || ||= && &&= ?? ??=
 		switch node.AsBinaryExpression().OperatorToken.Kind {
 		case ast.KindBarBarToken,
 			ast.KindBarBarEqualsToken,
@@ -12931,10 +12940,22 @@ func (c *Checker) getSyntacticNullishnessSemantics(node *ast.Node) PredicateSema
 			return PredicateSemanticsSometimes
 		// For these operator kinds, the right operand is effectively controlling
 		case ast.KindCommaToken,
-			ast.KindEqualsToken,
-			ast.KindQuestionQuestionToken,
-			ast.KindQuestionQuestionEqualsToken:
+			ast.KindEqualsToken:
 			return c.getSyntacticNullishnessSemantics(node.AsBinaryExpression().Right)
+		// For nullish coalescing: result is the left operand when left is non-null,
+		// or the right operand when left is null/undefined. The nullishness of the
+		// result combines both paths: the left's non-null path contributes Never,
+		// and when left can be null, the right's semantics are also included.
+		case ast.KindQuestionQuestionToken,
+			ast.KindQuestionQuestionEqualsToken:
+			leftSemantics := c.getSyntacticNullishnessSemantics(node.AsBinaryExpression().Left)
+			// The non-null path (left is non-null): left branch taken, result has Never bit
+			result := leftSemantics & PredicateSemanticsNever
+			// The null path (left is null/undefined): right branch taken, result inherits right's semantics
+			if leftSemantics&PredicateSemanticsAlways != 0 {
+				result |= c.getSyntacticNullishnessSemantics(node.AsBinaryExpression().Right)
+			}
+			return result
 		}
 		return PredicateSemanticsNever
 	case ast.KindConditionalExpression:
@@ -13833,7 +13854,7 @@ func (c *Checker) getReferencedValueOrAliasSymbol(reference *ast.Node) *ast.Symb
 	if resolvedSymbol != nil && resolvedSymbol != c.unknownSymbol {
 		return resolvedSymbol
 	}
-	return c.resolveName(reference, reference.Text(), ast.SymbolFlagsValue|ast.SymbolFlagsExportValue|ast.SymbolFlagsAlias, nil, true /*isUse*/, false /*excludeGlobals*/)
+	return c.resolveName(reference, reference.Text(), ast.SymbolFlagsValue|ast.SymbolFlagsExportValue|ast.SymbolFlagsAlias, nil, false /*isUse*/, false /*excludeGlobals*/)
 }
 
 func (c *Checker) getCannotFindNameDiagnosticForName(node *ast.Node) *diagnostics.Message {
@@ -13896,9 +13917,7 @@ func (c *Checker) GetGlobalDiagnostics() []*ast.Diagnostic {
 }
 
 func (c *Checker) addDeferredDiagnostic(callback func()) {
-	if c.saveDeferredDiagnostics {
-		c.deferredDiagnosticCallbacks = append(c.deferredDiagnosticCallbacks, callback)
-	}
+	c.deferredDiagnosticCallbacks = append(c.deferredDiagnosticCallbacks, callback)
 }
 
 func (c *Checker) produceDeferredDiagnostics() {
@@ -14900,6 +14919,14 @@ func (c *Checker) getTargetOfExportSpecifier(node *ast.Node, meaning ast.SymbolF
 }
 
 func (c *Checker) getTargetOfExportAssignment(node *ast.Node) *ast.Symbol {
+	// An `export =` / `export default` inside a namespace/module block is a grammar error;
+	// checkExportAssignment reports it and returns without resolving the expression. Mirror that
+	// bail-out here (using the same container computation) so that alias resolution triggered by
+	// the emit resolver does not resolve — and report "Cannot find name" diagnostics on — the
+	// expression, which would produce diagnostics inconsistent with checking.
+	if isContainedByNamespace(node) {
+		return nil
+	}
 	resolved := c.getTargetOfAliasLikeExpression(node.Expression())
 	c.markSymbolOfAliasDeclarationIfTypeOnly(node, nil)
 	return resolved
@@ -18619,7 +18646,15 @@ func (c *Checker) getEffectivePropertyNameForPropertyNameNode(node *ast.Property
 	case name != ast.InternalSymbolNameMissing:
 		return name, true
 	case ast.IsComputedPropertyName(node):
-		return c.tryGetNameFromType(c.getTypeOfExpression(node.Expression()))
+		// This is cached so `getTypeOfExpression` isn't constantly reinvoked for every property name lookup
+		links := c.computedNameLinks.Get(node)
+		if links != nil && links.hasName != nil {
+			return links.name, *links.hasName
+		}
+		name, exists := c.tryGetNameFromType(c.getTypeOfExpression(node.Expression()))
+		links.name = name
+		links.hasName = &exists
+		return name, exists
 	}
 	return "", false
 }
@@ -26664,12 +26699,17 @@ func (c *Checker) isKeyTypeIncluded(keyType *Type, include TypeFlags) bool {
 		})
 }
 
+func isInvalidComputedPropertyName(node *ast.Node) bool {
+	return (ast.IsTypeLiteralNode(node.Parent.Parent) || ast.IsClassLike(node.Parent.Parent) || ast.IsInterfaceDeclaration(node.Parent.Parent)) &&
+		ast.IsBinaryExpression(node.Expression()) && node.Expression().AsBinaryExpression().OperatorToken.Kind == ast.KindInKeyword &&
+		!ast.IsAccessor(node.Parent)
+}
+
 func (c *Checker) checkComputedPropertyName(node *ast.Node) *Type {
-	links := c.typeNodeLinks.Get(node.Expression())
+	links := c.typeNodeLinks.Get(node)
 	if links.resolvedType == nil {
-		if (ast.IsTypeLiteralNode(node.Parent.Parent) || ast.IsClassLike(node.Parent.Parent) || ast.IsInterfaceDeclaration(node.Parent.Parent)) &&
-			ast.IsBinaryExpression(node.Expression()) && node.Expression().AsBinaryExpression().OperatorToken.Kind == ast.KindInKeyword &&
-			!ast.IsAccessor(node.Parent) {
+		links.resolvedType = c.circularConstraintType
+		if isInvalidComputedPropertyName(node) {
 			links.resolvedType = c.errorType
 			return links.resolvedType
 		}
@@ -28040,34 +28080,131 @@ func (c *Checker) markLinkedReferences(location *ast.Node, hint ReferenceHint, p
 	case ReferenceHintDecorator:
 		c.markDecoratorAliasReferenced(location)
 	case ReferenceHintUnspecified:
+		if location.Flags&ast.NodeFlagsInWithStatement != 0 {
+			// We cannot answer semantic questions within a with block, do not proceed any further
+			return
+		}
 		if ast.IsJsxTagName(location) && isJsxIntrinsicTagName(location) {
 			return // builtin JSX tag names aren't real type refs by most metrics, but are expressions, so must be filtered
 		}
-		if ast.FindAncestor(location, func(n *ast.Node) bool { return ast.IsMetaProperty(n) }) != nil {
-			return // identifiers in meta properties shouldn't be resolved, but are expressions, so must be filtered
-		}
-		// Identifiers in expression contexts are emitted, so we need to follow their referenced aliases and mark them as used
-		// Some non-expression identifiers are also treated as expression identifiers for this purpose, eg, `a` in `b = {a}` or `q` in `import r = q`
-		// This is the exception, rather than the rule - most non-expression identifiers are declaration names.
-		if ast.IsIdentifier(location) &&
-			(ast.IsExpressionNode(location) ||
-				ast.IsShorthandPropertyAssignment(location.Parent) ||
-				(ast.IsImportEqualsDeclaration(location.Parent) &&
-					location.Parent.AsImportEqualsDeclaration().ModuleReference == location)) &&
-			shouldMarkIdentifierAliasReferenced(location) {
-			if ast.IsPropertyAccessOrQualifiedName(location.Parent) {
-				var left *ast.Node
-				if ast.IsPropertyAccessExpression(location.Parent) {
-					left = location.Parent.Expression()
-				} else {
-					left = location.Parent.AsQualifiedName().Left
-				}
-				if left != location {
-					return // Only mark the LHS (the RHS is a property lookup)
+		if ast.IsIdentifier(location) {
+			// A shorthand property with an object-assignment-initializer (e.g. `{ s = 5 }`) is only valid inside a
+			// destructuring assignment target. When it appears in an ordinary object literal expression, the checker
+			// checks the initializer and never resolves the property name, so resolving it here would report a spurious
+			// "No value exists in scope for the shorthand property" diagnostic. Skip such names to match checking.
+			if parent := location.Parent; ast.IsShorthandPropertyAssignment(parent) &&
+				parent.Name() == location &&
+				parent.AsShorthandPropertyAssignment().ObjectAssignmentInitializer != nil &&
+				!ast.IsAssignmentTarget(parent.Parent) {
+				return
+			}
+			res := ast.FindManyAncestors(location, ast.IsMetaProperty, ast.IsDecorator, ast.IsYieldExpression, ast.IsForInOrOfStatement, ast.IsComputedPropertyName, ast.IsHeritageClause, ast.IsExportAssignment, ast.IsReturnStatement)
+			metaProperty := res[0]
+			decorator := res[1]
+			yieldExpr := res[2]
+			forNode := res[3]
+			computedName := res[4]
+			heritageClause := res[5]
+			exportAssignment := res[6]
+			returnStatement := res[7]
+			if metaProperty != nil {
+				return // identifiers in meta properties shouldn't be resolved, but are expressions, so must be filtered
+			}
+			if decorator != nil {
+				// Decorators on nodes that cannot be decorated (e.g. class expressions, static blocks,
+				// `this` parameters) are never resolved during normal checking, so resolving them here would
+				// report spurious diagnostics. Only bail out for such invalid-position decorators; valid
+				// decorator expressions must still be resolved and marked for emit.
+				decorated := decorator.Parent
+				if decorated != nil && !ast.NodeCanBeDecorated(c.legacyDecorators, decorated, decorated.Parent, decorated.Parent.Parent) {
+					return
 				}
 			}
-			c.markIdentifierAliasReferenced(location)
-			return
+			// The operand of a 'yield' expression is only checked when the containing function is a
+			// generator. Outside a generator (or outside any function), checkYieldExpression returns
+			// early and never checks the operand, so resolving identifiers in it here would report a
+			// spurious "Cannot find name" diagnostic.
+			if yieldExpr != nil {
+				fn := ast.GetContainingFunction(yieldExpr)
+				if fn == nil || ast.GetFunctionFlags(fn)&ast.FunctionFlagsGenerator == 0 {
+					return
+				}
+			}
+			// The right-hand side of a 'for-in'/'for-of' statement whose initializer is an empty variable
+			// declaration list (a grammar error, e.g. `for (var of X)`) is never checked, because the RHS
+			// is only checked while inferring the type of a variable declaration and there is none here.
+			// Resolving identifiers in the RHS here would report spurious diagnostics.
+			if forNode != nil {
+				data := forNode.AsForInOrOfStatement()
+				if ast.IsVariableDeclarationList(data.Initializer) &&
+					len(data.Initializer.AsVariableDeclarationList().Declarations.Nodes) == 0 &&
+					data.Expression != nil &&
+					(location == data.Expression || ast.IsNodeDescendantOf(location, data.Expression)) {
+					return
+				}
+			}
+			// Computed property names on enum members are a grammar error and are never checked
+			// (checkEnumMember only checks the member initializer, not the name), so resolving
+			// identifiers in them here would report a spurious "Cannot find name" diagnostic.
+			if computedName != nil {
+				if ast.IsEnumMember(computedName.Parent) {
+					return
+				}
+				if isInvalidComputedPropertyName(computedName) {
+					return
+				}
+			}
+			if heritageClause != nil {
+				// extends heritage clauses on interfaces are not expressions and are unchecked if they are
+				if ast.IsInterfaceDeclaration(heritageClause.Parent) {
+					return
+				}
+				// On a class, only the first `extends` type is resolved as a value (the base class); any
+				// additional `extends` types are grammar errors (e.g. `class C extends A extends B` or
+				// `class C extends A, B`) and are never resolved during checking.
+				if ast.IsClassLike(heritageClause.Parent) &&
+					heritageClause.AsHeritageClause().Token == ast.KindExtendsKeyword {
+					if firstExtends := ast.GetExtendsHeritageClauseElement(heritageClause.Parent); firstExtends != nil &&
+						location != firstExtends && !ast.IsNodeDescendantOf(location, firstExtends) {
+						return
+					}
+				}
+			}
+			// An `export =` / `export default` inside a namespace/module block is a grammar error;
+			// checkExportAssignment reports it and returns without resolving the expression, so
+			// resolving identifiers in it here would report a spurious "Cannot find name" diagnostic.
+			if exportAssignment != nil && isContainedByNamespace(exportAssignment) {
+				return
+			}
+			// A `return` statement outside of any function body (or inside a class static block) is a
+			// grammar error; checkReturnStatement reports it and returns without checking the return
+			// expression, so resolving identifiers in it here would report a spurious diagnostic.
+			if returnStatement != nil {
+				container := getContainingFunctionOrClassStaticBlock(returnStatement)
+				if container == nil || ast.IsClassStaticBlockDeclaration(container) {
+					return
+				}
+			}
+			// Identifiers in expression contexts are emitted, so we need to follow their referenced aliases and mark them as used
+			// Some non-expression identifiers are also treated as expression identifiers for this purpose, eg, `a` in `b = {a}` or `q` in `import r = q`
+			// This is the exception, rather than the rule - most non-expression identifiers are declaration names.
+			if (ast.IsExpressionNode(location) ||
+				ast.IsShorthandPropertyAssignment(location.Parent)) &&
+				shouldMarkIdentifierAliasReferenced(location) {
+				if ast.IsPropertyAccessOrQualifiedName(location.Parent) {
+					var left *ast.Node
+					if ast.IsPropertyAccessExpression(location.Parent) {
+						left = location.Parent.Expression()
+					} else {
+						left = location.Parent.AsQualifiedName().Left
+					}
+					if left != location {
+						return // Only mark the LHS (the RHS is a property lookup)
+					}
+				}
+				c.markIdentifierAliasReferenced(location)
+				return
+			}
 		}
 		if ast.IsPropertyAccessOrQualifiedName(location) {
 			topProp := location
@@ -28155,8 +28292,11 @@ func isInternalModuleImportEqualsDeclaration(node *ast.Node) bool {
 }
 
 func (c *Checker) markIdentifierAliasReferenced(location *ast.IdentifierNode) {
+	if ast.IsThisInTypeQuery(location) {
+		return
+	}
 	symbol := c.getResolvedSymbol(location)
-	if symbol != nil && symbol != c.argumentsSymbol && symbol != c.unknownSymbol && !ast.IsThisInTypeQuery(location) {
+	if symbol != nil && symbol != c.argumentsSymbol && symbol != c.unknownSymbol {
 		c.markAliasReferenced(symbol, location)
 	}
 }
