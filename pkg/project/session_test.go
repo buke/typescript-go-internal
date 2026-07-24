@@ -10,6 +10,7 @@ import (
 
 	"github.com/buke/typescript-go-internal/pkg/bundled"
 	"github.com/buke/typescript-go-internal/pkg/core"
+	"github.com/buke/typescript-go-internal/pkg/locale"
 	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
 	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
 	"github.com/buke/typescript-go-internal/pkg/project"
@@ -1404,6 +1405,39 @@ export const value = content;`,
 		inlayHintsRefreshCalls := utils.Client().RefreshInlayHintsCalls()
 		assert.Equal(t, len(codeLensRefreshCalls), 1, "expected one RefreshCodeLens call after code lens preference change")
 		assert.Equal(t, len(inlayHintsRefreshCalls), 1, "expected one RefreshInlayHints call after inlay hints preference change")
+	})
+
+	t.Run("sets locale when configured", func(t *testing.T) {
+		t.Parallel()
+		session, utils := projecttestutil.Setup(map[string]any{})
+		prefs := lsutil.NewDefaultUserPreferences()
+		prefs.Locale = "fr"
+
+		session.Configure(prefs)
+
+		setLocaleCalls := utils.Client().SetLocaleCalls()
+		assert.Equal(t, len(setLocaleCalls), 1)
+		assert.Equal(t, setLocaleCalls[0].LocaleMoqParam, "fr")
+	})
+
+	t.Run("adds locale to background contexts", func(t *testing.T) {
+		t.Parallel()
+		session, utils := projecttestutil.Setup(map[string]any{})
+		fr, ok := locale.Parse("fr")
+		assert.Assert(t, ok)
+		utils.Client().GetLocaleFunc = func() locale.Locale {
+			return fr
+		}
+		utils.Client().RefreshCodeLensFunc = func(ctx context.Context) error {
+			assert.Equal(t, locale.FromContext(ctx), fr)
+			return nil
+		}
+		prefs := lsutil.NewDefaultUserPreferences()
+		prefs.CodeLens.ReferencesCodeLensEnabled = core.TSTrue
+
+		session.Configure(prefs)
+
+		assert.Equal(t, len(utils.Client().RefreshCodeLensCalls()), 1)
 	})
 
 	t.Run("schedules diagnostics refresh when reportStyleChecksAsWarnings changes", func(t *testing.T) {
