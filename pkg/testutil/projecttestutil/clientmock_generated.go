@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/buke/typescript-go-internal/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/pkg/locale"
 	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
 	"github.com/buke/typescript-go-internal/pkg/project"
 )
@@ -18,6 +19,9 @@ import (
 //
 //		// make and configure a mocked project.Client
 //		mockedClient := &ClientMock{
+//			GetLocaleFunc: func() locale.Locale {
+//				panic("mock out the GetLocale method")
+//			},
 //			IsActiveFunc: func() bool {
 //				panic("mock out the IsActive method")
 //			},
@@ -42,6 +46,9 @@ import (
 //			SendTelemetryFunc: func(ctx context.Context, telemetry lsproto.TelemetryEvent) error {
 //				panic("mock out the SendTelemetry method")
 //			},
+//			SetLocaleFunc: func(localeMoqParam string)  {
+//				panic("mock out the SetLocale method")
+//			},
 //			UnwatchFilesFunc: func(ctx context.Context, id project.WatcherID) error {
 //				panic("mock out the UnwatchFiles method")
 //			},
@@ -55,6 +62,9 @@ import (
 //
 //	}
 type ClientMock struct {
+	// GetLocaleFunc mocks the GetLocale method.
+	GetLocaleFunc func() locale.Locale
+
 	// IsActiveFunc mocks the IsActive method.
 	IsActiveFunc func() bool
 
@@ -79,6 +89,9 @@ type ClientMock struct {
 	// SendTelemetryFunc mocks the SendTelemetry method.
 	SendTelemetryFunc func(ctx context.Context, telemetry lsproto.TelemetryEvent) error
 
+	// SetLocaleFunc mocks the SetLocale method.
+	SetLocaleFunc func(localeMoqParam string)
+
 	// UnwatchFilesFunc mocks the UnwatchFiles method.
 	UnwatchFilesFunc func(ctx context.Context, id project.WatcherID) error
 
@@ -87,6 +100,9 @@ type ClientMock struct {
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// GetLocale holds details about calls to the GetLocale method.
+		GetLocale []struct {
+		}
 		// IsActive holds details about calls to the IsActive method.
 		IsActive []struct {
 		}
@@ -133,6 +149,11 @@ type ClientMock struct {
 			// Telemetry is the telemetry argument value.
 			Telemetry lsproto.TelemetryEvent
 		}
+		// SetLocale holds details about calls to the SetLocale method.
+		SetLocale []struct {
+			// LocaleMoqParam is the localeMoqParam argument value.
+			LocaleMoqParam string
+		}
 		// UnwatchFiles holds details about calls to the UnwatchFiles method.
 		UnwatchFiles []struct {
 			// Ctx is the ctx argument value.
@@ -150,6 +171,7 @@ type ClientMock struct {
 			Watchers []*lsproto.FileSystemWatcher
 		}
 	}
+	lockGetLocale          sync.RWMutex
 	lockIsActive           sync.RWMutex
 	lockProgressFinish     sync.RWMutex
 	lockProgressStart      sync.RWMutex
@@ -158,8 +180,39 @@ type ClientMock struct {
 	lockRefreshDiagnostics sync.RWMutex
 	lockRefreshInlayHints  sync.RWMutex
 	lockSendTelemetry      sync.RWMutex
+	lockSetLocale          sync.RWMutex
 	lockUnwatchFiles       sync.RWMutex
 	lockWatchFiles         sync.RWMutex
+}
+
+// GetLocale calls GetLocaleFunc.
+func (mock *ClientMock) GetLocale() locale.Locale {
+	callInfo := struct {
+	}{}
+	mock.lockGetLocale.Lock()
+	mock.calls.GetLocale = append(mock.calls.GetLocale, callInfo)
+	mock.lockGetLocale.Unlock()
+	if mock.GetLocaleFunc == nil {
+		var (
+			localeOut locale.Locale
+		)
+		return localeOut
+	}
+	return mock.GetLocaleFunc()
+}
+
+// GetLocaleCalls gets all the calls that were made to GetLocale.
+// Check the length with:
+//
+//	len(mockedClient.GetLocaleCalls())
+func (mock *ClientMock) GetLocaleCalls() []struct {
+} {
+	var calls []struct {
+	}
+	mock.lockGetLocale.RLock()
+	calls = mock.calls.GetLocale
+	mock.lockGetLocale.RUnlock()
+	return calls
 }
 
 // IsActive calls IsActiveFunc.
@@ -444,6 +497,38 @@ func (mock *ClientMock) SendTelemetryCalls() []struct {
 	mock.lockSendTelemetry.RLock()
 	calls = mock.calls.SendTelemetry
 	mock.lockSendTelemetry.RUnlock()
+	return calls
+}
+
+// SetLocale calls SetLocaleFunc.
+func (mock *ClientMock) SetLocale(localeMoqParam string) {
+	callInfo := struct {
+		LocaleMoqParam string
+	}{
+		LocaleMoqParam: localeMoqParam,
+	}
+	mock.lockSetLocale.Lock()
+	mock.calls.SetLocale = append(mock.calls.SetLocale, callInfo)
+	mock.lockSetLocale.Unlock()
+	if mock.SetLocaleFunc == nil {
+		return
+	}
+	mock.SetLocaleFunc(localeMoqParam)
+}
+
+// SetLocaleCalls gets all the calls that were made to SetLocale.
+// Check the length with:
+//
+//	len(mockedClient.SetLocaleCalls())
+func (mock *ClientMock) SetLocaleCalls() []struct {
+	LocaleMoqParam string
+} {
+	var calls []struct {
+		LocaleMoqParam string
+	}
+	mock.lockSetLocale.RLock()
+	calls = mock.calls.SetLocale
+	mock.lockSetLocale.RUnlock()
 	return calls
 }
 
