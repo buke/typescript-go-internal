@@ -11,6 +11,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/collections"
 	"github.com/buke/typescript-go-internal/pkg/compiler"
 	"github.com/buke/typescript-go-internal/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/pkg/execute/incremental"
 	"github.com/buke/typescript-go-internal/pkg/locale"
 	"github.com/buke/typescript-go-internal/pkg/tracing"
 	"github.com/buke/typescript-go-internal/pkg/tsoptions"
@@ -98,6 +99,15 @@ func EmitFilesAndReportErrors(input EmitInput) (result CompileAndEmitResult) {
 			checkStart := input.Sys.Now()
 			diags := input.ProgramLike.GetSemanticDiagnostics(ctx, file)
 			result.times.checkTime = input.Sys.Now().Sub(checkStart)
+			if program, ok := input.ProgramLike.(*incremental.Program); ok {
+				nestedEmitTime := program.TakeNestedEmitTime()
+				if nestedEmitTime > result.times.checkTime {
+					result.times.checkTime = 0
+				} else {
+					result.times.checkTime -= nestedEmitTime
+				}
+				result.times.emitTime += nestedEmitTime
+			}
 			return diags
 		},
 	)
@@ -108,7 +118,7 @@ func EmitFilesAndReportErrors(input EmitInput) (result CompileAndEmitResult) {
 		emitResult = input.ProgramLike.Emit(ctx, compiler.EmitOptions{
 			WriteFile: input.WriteFile,
 		})
-		result.times.emitTime = input.Sys.Now().Sub(emitStart)
+		result.times.emitTime += input.Sys.Now().Sub(emitStart)
 	}
 	if emitResult != nil {
 		allDiagnostics = append(allDiagnostics, emitResult.Diagnostics...)

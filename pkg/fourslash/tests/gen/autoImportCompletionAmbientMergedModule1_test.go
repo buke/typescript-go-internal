@@ -6,8 +6,10 @@ package fourslash_test
 import (
 	"testing"
 
+	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/fourslash"
 	. "github.com/buke/typescript-go-internal/pkg/fourslash/tests/util"
+	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
 	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
 	"github.com/buke/typescript-go-internal/pkg/testutil"
 )
@@ -66,6 +68,7 @@ export class MoveInsideNextQuote extends MoveQuoteMatch {/*1*/
 				},
 			},
 		},
+		UserPreferences: &lsutil.UserPreferences{IncludeCompletionsWithClassMemberSnippets: core.TSTrue},
 	})
 	f.VerifyApplyCodeActionFromCompletion(t, new("1"), &fourslash.ApplyCodeActionFromCompletionOptions{
 		Name:        "execActionWithCount",
@@ -77,5 +80,6 @@ import { MoveQuoteMatch } from "./motion";
 export class MoveInsideNextQuote extends MoveQuoteMatch {
   keys = ["i", "n", "q"];
 }`),
+		UserPreferences: &lsutil.UserPreferences{IncludeCompletionsWithClassMemberSnippets: core.TSTrue},
 	})
 }

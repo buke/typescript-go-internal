@@ -10,6 +10,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
 	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
 	"github.com/buke/typescript-go-internal/pkg/scanner"
+	"github.com/buke/typescript-go-internal/pkg/spanmap"
 )
 
 func (l *LanguageService) ProvideCodeLenses(ctx context.Context, documentURI lsproto.DocumentUri) (lsproto.CodeLensResponse, error) {
@@ -33,11 +34,15 @@ func (l *LanguageService) ProvideCodeLenses(ctx context.Context, documentURI lsp
 			lastSymbol = currentSymbol
 
 			if userPrefs.ReferencesCodeLensEnabled.IsTrue() && isValidReferenceLensNode(node, userPrefs) {
-				result = append(result, l.newCodeLensForNode(documentURI, file, node, lsproto.CodeLensKindReferences))
+				if codeLens := l.newCodeLensForNode(documentURI, file, node, lsproto.CodeLensKindReferences); codeLens != nil {
+					result = append(result, codeLens)
+				}
 			}
 
 			if userPrefs.ImplementationsCodeLensEnabled.IsTrue() && isValidImplementationsCodeLensNode(node, userPrefs) {
-				result = append(result, l.newCodeLensForNode(documentURI, file, node, lsproto.CodeLensKindImplementations))
+				if codeLens := l.newCodeLensForNode(documentURI, file, node, lsproto.CodeLensKindImplementations); codeLens != nil {
+					result = append(result, codeLens)
+				}
 			}
 		}
 
@@ -136,12 +141,13 @@ func (l *LanguageService) newCodeLensForNode(fileUri lsproto.DocumentUri, file *
 		nodeForRange = nodeName
 	}
 	pos := scanner.SkipTrivia(file.Text(), nodeForRange.Pos())
+	lspRange, fidelity := l.converters.ToLSPRangeForFeature(file, core.NewTextRange(pos, node.End()), spanmap.FeatureCodeLens)
+	if fidelity.IsNone() {
+		return nil
+	}
 
 	return &lsproto.CodeLens{
-		Range: lsproto.Range{
-			Start: l.converters.PositionToLineAndCharacter(file, core.TextPos(pos)),
-			End:   l.converters.PositionToLineAndCharacter(file, core.TextPos(node.End())),
-		},
+		Range: lspRange,
 		Data: &lsproto.CodeLensData{
 			Kind: kind,
 			Uri:  fileUri,

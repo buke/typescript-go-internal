@@ -6,6 +6,8 @@ import (
 	"io"
 
 	"github.com/buke/typescript-go-internal/pkg/bundled"
+	"github.com/buke/typescript-go-internal/pkg/contentmapper"
+	"github.com/buke/typescript-go-internal/pkg/ipc"
 	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
 	"github.com/buke/typescript-go-internal/pkg/project"
 	"github.com/buke/typescript-go-internal/pkg/vfs/osvfs"
@@ -33,6 +35,9 @@ type StdioServerOptions struct {
 	// left unchanged; the client folds this data into its own timing snapshot
 	// on demand via getServerTiming / resetServerTiming requests.
 	CollectTiming bool
+	// RunExternalCode allows configured content mappers to execute.
+	RunExternalCode      bool
+	ContentMapperSpawner contentmapper.Spawner
 }
 
 // StdioServer runs an API session over STDIO using MessagePack protocol.
@@ -55,16 +60,16 @@ func NewStdioServer(options *StdioServerOptions) *StdioServer {
 
 // Run starts the server and blocks until the connection closes.
 func (s *StdioServer) Run(ctx context.Context) error {
-	var transport Transport
+	var transport ipc.Transport
 	if s.options.PipePath != "" {
-		t, err := NewPipeTransport(s.options.PipePath)
+		t, err := ipc.NewPipeTransport(s.options.PipePath)
 		if err != nil {
 			return fmt.Errorf("failed to create pipe transport: %w", err)
 		}
 		defer t.Close()
 		transport = t
 	} else {
-		t := NewStdioTransport(s.options.In, s.options.Out)
+		t := ipc.NewStdioTransport(s.options.In, s.options.Out)
 		defer t.Close()
 		transport = t
 	}
@@ -87,7 +92,9 @@ func (s *StdioServer) Run(ctx context.Context) error {
 			DefaultLibraryPath: s.options.DefaultLibraryPath,
 			PositionEncoding:   lsproto.PositionEncodingKindUTF8,
 			LoggingEnabled:     false,
+			RunExternalCode:    s.options.RunExternalCode,
 		},
+		Spawner: s.options.ContentMapperSpawner,
 	})
 
 	session := NewSession(projectSession, &SessionOptions{
@@ -102,15 +109,15 @@ func (s *StdioServer) Run(ctx context.Context) error {
 	}
 
 	// Create protocol and connection based on async mode
-	var conn Conn
+	var conn ipc.Conn
 	if s.options.Async {
-		protocol := NewJSONRPCProtocol(rwc)
-		asyncConn := NewAsyncConnWithProtocol(rwc, protocol, session)
+		protocol := ipc.NewJSONRPCProtocol(rwc)
+		asyncConn := ipc.NewAsyncConnWithProtocol(rwc, protocol, session)
 		asyncConn.SetCollectTiming(s.options.CollectTiming)
 		conn = asyncConn
 	} else {
 		protocol := NewMessagePackProtocol(rwc)
-		syncConn := NewSyncConn(rwc, protocol, session)
+		syncConn := ipc.NewSyncConn(rwc, protocol, session)
 		syncConn.SetCollectTiming(s.options.CollectTiming)
 		conn = syncConn
 	}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/buke/typescript-go-internal/pkg/ipc"
 	"github.com/buke/typescript-go-internal/pkg/json"
 	"github.com/buke/typescript-go-internal/pkg/vfs"
 )
@@ -21,7 +22,7 @@ type callbackFS struct {
 	enabledCallbacks map[string]bool
 
 	// conn and ctx are set after connection is established
-	conn Conn
+	conn ipc.Conn
 	ctx  context.Context
 }
 
@@ -69,7 +70,7 @@ func newCallbackFS(base vfs.FS, callbacks []string) *callbackFS {
 // SetConnection sets the RPC connection for callbacks.
 // This must be called after the transport connection is established
 // but before any filesystem operations that need callbacks.
-func (fs *callbackFS) SetConnection(ctx context.Context, conn Conn) {
+func (fs *callbackFS) SetConnection(ctx context.Context, conn ipc.Conn) {
 	fs.ctx = ctx
 	fs.conn = conn
 }

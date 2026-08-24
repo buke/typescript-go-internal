@@ -6,8 +6,10 @@ package fourslash_test
 import (
 	"testing"
 
+	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/fourslash"
 	. "github.com/buke/typescript-go-internal/pkg/fourslash/tests/util"
+	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
 	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
 	"github.com/buke/typescript-go-internal/pkg/testutil"
 )
@@ -40,12 +42,12 @@ export declare class BlenderbotSmallPreTrainedModel extends PreTrainedModel {
 		Items: &fourslash.CompletionsExpectedItems{
 			Includes: []fourslash.CompletionsExpectedItem{
 				&lsproto.CompletionItem{
-					Label:               "_get_generation_config",
-					InsertText:          new("_get_generation_config(param: import(\"./generation.js\").GenerationConfigType): import(\"./generation.js\").GenerationConfigType;"),
-					FilterText:          new("_get_generation_config"),
-					AdditionalTextEdits: fourslash.AnyTextEdits,
+					Label:      "_get_generation_config",
+					InsertText: new("_get_generation_config(param: import(\"./generation.js\").GenerationConfigType): import(\"./generation.js\").GenerationConfigType;"),
+					FilterText: new("_get_generation_config"),
 				},
 			},
 		},
+		UserPreferences: &lsutil.UserPreferences{IncludeCompletionsWithClassMemberSnippets: core.TSTrue},
 	})
 }

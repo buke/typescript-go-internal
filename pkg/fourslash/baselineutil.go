@@ -15,6 +15,7 @@ import (
 	"github.com/buke/typescript-go-internal/pkg/debug"
 	"github.com/buke/typescript-go-internal/pkg/ls/lsconv"
 	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/pkg/spanmap"
 	"github.com/buke/typescript-go-internal/pkg/stringutil"
 	"github.com/buke/typescript-go-internal/pkg/testutil/baseline"
 	"github.com/buke/typescript-go-internal/pkg/vfs"
@@ -925,7 +926,7 @@ type textWithContext struct {
 	fileName   string
 	content    string // content of the original file
 	lineStarts *lsconv.LSPLineMap
-	converters *lsconv.Converters
+	converters *testConverters
 
 	// posLineInfo
 	posInfo  *lsproto.Position
@@ -938,9 +939,18 @@ func (t *textWithContext) FileName() string {
 }
 
 // implements lsconv.Script
+func (t *textWithContext) OriginalFileName() string { return t.fileName }
+
+// implements lsconv.Script
 func (t *textWithContext) Text() string {
 	return t.content
 }
+
+// implements lsconv.Script
+func (t *textWithContext) OriginalText() string { return t.content }
+
+// implements lsconv.Script
+func (t *textWithContext) SpanMap() *spanmap.SpanMap { return nil }
 
 func newTextWithContext(fileName string, content string) *textWithContext {
 	t := &textWithContext{
@@ -956,9 +966,9 @@ func newTextWithContext(fileName string, content string) *textWithContext {
 		lineStarts: lsconv.ComputeLSPLineStarts(content),
 	}
 
-	t.converters = lsconv.NewConverters(lsproto.PositionEncodingKindUTF8, func(_ string) *lsconv.LSPLineMap {
+	t.converters = newTestConverters(lsconv.NewConverters(lsproto.PositionEncodingKindUTF8, func(_ string) *lsconv.LSPLineMap {
 		return t.lineStarts
-	})
+	}))
 	t.readableContents.WriteString("// === ")
 	t.readableContents.WriteString(fileName)
 	t.readableContents.WriteString(" ===")

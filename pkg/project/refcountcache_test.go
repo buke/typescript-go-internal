@@ -7,11 +7,67 @@ import (
 
 	"github.com/buke/typescript-go-internal/pkg/ast"
 	"github.com/buke/typescript-go-internal/pkg/bundled"
+	"github.com/buke/typescript-go-internal/pkg/compiler"
+	"github.com/buke/typescript-go-internal/pkg/contentmapper"
+	"github.com/buke/typescript-go-internal/pkg/core"
 	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/pkg/parser"
 	"github.com/buke/typescript-go-internal/pkg/tspath"
 	"github.com/buke/typescript-go-internal/pkg/vfs/vfstest"
+	"github.com/zeebo/xxh3"
 	"gotest.tools/v3/assert"
 )
+
+func TestContentMappedParseCacheBundleLifetime(t *testing.T) {
+	t.Parallel()
+	cache := NewContentMappedParseCache(RefCountCacheOptions{})
+	key := ContentMappedParseCacheKey{SourceFileParseOptions: ast.SourceFileParseOptions{FileName: "/component.vue", Path: "/component.vue"}}
+	canonical := &ast.SourceFile{}
+	supplemental := &ast.SourceFile{}
+	produced := contentmapper.SourceFiles{Canonical: canonical, Supplemental: []*ast.SourceFile{supplemental}}
+
+	// The cache owns the complete transform result as one value, so reuse preserves every file's identity.
+	acquired, err := cache.AcquireOrError(key, func() (contentmapper.SourceFiles, error) { return produced, nil })
+	assert.NilError(t, err)
+	assert.Assert(t, acquired.Canonical == canonical)
+	assert.Assert(t, acquired.Supplemental[0] == supplemental)
+	reused, err := cache.AcquireOrError(key, func() (contentmapper.SourceFiles, error) {
+		panic("cached bundle should be reused")
+	})
+	assert.NilError(t, err)
+	assert.Assert(t, reused.Canonical == canonical)
+	assert.Assert(t, reused.Supplemental[0] == supplemental)
+
+	// Canonical and supplemental files share the bundle's refcount and disappear after its final release.
+	cache.Deref(key)
+	assert.Assert(t, cache.Has(key))
+	cache.Deref(key)
+	assert.Assert(t, !cache.Has(key))
+}
+
+func TestContentMappedParseCacheKeyReconstruction(t *testing.T) {
+	t.Parallel()
+	acquireOptions := ast.SourceFileParseOptions{FileName: "/component.box", Path: "/component.box"}
+	mappedOptions := acquireOptions
+	mappedOptions.ExternalModuleIndicatorOptions.Force = true
+	hash := xxh3.Hash128([]byte("cache key"))
+	file := parser.ParseSourceFile(mappedOptions, "export {};", core.ScriptKindTS)
+	file.Hash = hash
+	file.SetContentMapperInfo(ast.ContentMapperSourceFileInfo{
+		ContentMapper: "mapper",
+		ParseOptions:  acquireOptions,
+	})
+	expected := ContentMappedParseCacheKey{SourceFileParseOptions: acquireOptions, Hash: hash}
+	assert.DeepEqual(t, contentMappedParseCacheKeyForFile(file), expected)
+
+	duplicate := &compiler.DuplicateSourceFile{
+		ParseOptions:              mappedOptions,
+		ContentMapperParseOptions: acquireOptions,
+		Hash:                      hash,
+		ContentMapper:             "mapper",
+	}
+	assert.DeepEqual(t, contentMappedParseCacheKeyForDuplicate(duplicate), expected)
+}
 
 func TestRefCountingCaches(t *testing.T) {
 	t.Parallel()

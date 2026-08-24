@@ -1,14 +1,18 @@
 package project
 
 import (
+	"sync"
+
 	"github.com/buke/typescript-go-internal/pkg/ast"
 	"github.com/buke/typescript-go-internal/pkg/compiler"
+	"github.com/buke/typescript-go-internal/pkg/contentmapper"
 	"github.com/buke/typescript-go-internal/pkg/diagnostics"
 	"github.com/buke/typescript-go-internal/pkg/locale"
 	"github.com/buke/typescript-go-internal/pkg/project/logging"
 	"github.com/buke/typescript-go-internal/pkg/tsoptions"
 	"github.com/buke/typescript-go-internal/pkg/tspath"
 	"github.com/buke/typescript-go-internal/pkg/vfs"
+	"github.com/zeebo/xxh3"
 )
 
 var _ compiler.CompilerHost = (*compilerHost)(nil)
@@ -21,9 +25,11 @@ type compilerHost struct {
 	sourceFS           *sourceFS
 	configFileRegistry *ConfigFileRegistry
 
-	project *Project
-	builder *ProjectCollectionBuilder
-	logger  *logging.LogTree
+	project              *Project
+	builder              *ProjectCollectionBuilder
+	logger               *logging.LogTree
+	contentMapperProject contentmapper.Project
+	contentMapperOnce    sync.Once
 }
 
 func newCompilerHost(
@@ -100,6 +106,66 @@ func (c *compilerHost) GetSourceFile(opts ast.SourceFileParseOptions) *ast.Sourc
 		return c.builder.parseCache.Acquire(key, fh)
 	}
 	return nil
+}
+
+// GetContentMappedSourceFile implements compiler.CompilerHost.
+func (c *compilerHost) GetContentMappedSourceFiles(parseOptions ast.SourceFileParseOptions, mapper *contentmapper.Mapper) (contentmapper.SourceFiles, error) {
+	c.ensureAlive()
+	fh := c.sourceFS.GetFileByPath(parseOptions.FileName, parseOptions.Path)
+	if fh == nil {
+		return contentmapper.SourceFiles{}, nil
+	}
+	diagnosticLocale := locale.Default
+	if c.builder.client != nil {
+		diagnosticLocale = c.builder.client.GetLocale()
+	}
+	c.ensureContentMapperProject()
+	if c.contentMapperProject == nil {
+		return contentmapper.SourceFiles{}, contentmapper.ErrProjectUnavailable
+	}
+	identity, err := c.contentMapperProject.Identity(mapper)
+	if err != nil {
+		return contentmapper.SourceFiles{}, contentmapper.NewTransformError(contentmapper.TransformErrorKindProject, err)
+	}
+	transformIdentity := xxh3.Hash128([]byte(identity))
+	key := contentMappedParseCacheKey(parseOptions, fh.Hash(), transformIdentity, diagnosticLocale)
+	files, err := c.builder.contentMappedParseCache.AcquireOrError(key, func() (contentmapper.SourceFiles, error) {
+		files, transformErr := contentmapper.TransformAndParse(parseOptions, fh.Content(), mapper, c.contentMapperProject)
+		if transformErr != nil {
+			return contentmapper.SourceFiles{}, transformErr
+		}
+		files.Canonical.Hash = key.Hash
+		for _, supplemental := range files.Supplemental {
+			supplemental.Hash = key.Hash
+		}
+		return files, nil
+	})
+	if err == nil {
+		err = contentmapper.CheckSupplementalFileNameCollisions(files, c.FS().FileExists)
+		if err != nil {
+			c.builder.contentMappedParseCache.Deref(key)
+			return contentmapper.SourceFiles{}, err
+		}
+	}
+	return files, err
+}
+
+func (c *compilerHost) ensureContentMapperProject() {
+	c.contentMapperOnce.Do(func() {
+		if c.builder.contentMapperHost == nil {
+			return
+		}
+		commandLine := c.project.getCommandLineWithTypingsFiles()
+		c.contentMapperProject = c.builder.contentMapperHost.Project(contentmapper.ProjectSpec{
+			ConfigFileName:  commandLine.ConfigName(),
+			Mappers:         commandLine.ContentMappers(),
+			CompilerOptions: commandLine.CompilerOptions(),
+		})
+	})
+}
+
+func (c *compilerHost) ContentMapperProject() contentmapper.Project {
+	return c.contentMapperProject
 }
 
 // Trace implements compiler.CompilerHost.
