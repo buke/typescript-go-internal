@@ -48,8 +48,25 @@ jobs:
         run: |
           set -euo pipefail
 
-          if ! UPSTREAM_TAG="$(git -C microsoft/TypeScript describe --tags --exact-match HEAD 2>/dev/null)"; then
-            echo "Submodule is not on an exact tag; skipping release tag."
+          # Shallow submodule clones omit tags, so `describe --exact-match` fails
+          # even when HEAD is a tagged commit. Resolve via ls-remote instead.
+          SHA="$(git -C microsoft/TypeScript rev-parse HEAD)"
+          UPSTREAM_TAG="$(
+            git -C microsoft/TypeScript ls-remote --tags origin \
+              | awk -v sha="$SHA" '
+                  $1 == sha && $2 ~ /^refs\/tags\// && $2 !~ /\^\{\}$/ {
+                    t = $2; sub(/^refs\/tags\//, "", t); print t
+                  }
+                  $1 == sha && $2 ~ /\^\{\}$/ {
+                    t = $2; sub(/^refs\/tags\//, "", t); sub(/\^\{\}$/, "", t); print t
+                  }
+                ' \
+              | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' \
+              | sort -u \
+              | head -n 1 || true
+          )"
+          if [[ -z "${UPSTREAM_TAG}" ]]; then
+            echo "Submodule is not on an exact stable tag; skipping release tag."
             exit 0
           fi
           echo "Upstream tag: ${UPSTREAM_TAG}"
