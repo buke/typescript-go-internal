@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
 	"gotest.tools/v3/assert"
 )
 

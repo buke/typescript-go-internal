@@ -30,3 +30,6 @@ go.work.sum
 # Editor/IDE
 # .idea/
 .vscode/
+
+# Upstream test runner local baselines (never commit)
+testdata/baselines/local/

@@ -7,7 +7,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/testutil/race"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil/race"
 	"gotest.tools/v3/assert"
 )
 

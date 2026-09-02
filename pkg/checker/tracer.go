@@ -3,8 +3,8 @@ package checker
 import (
 	"maps"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/tracing"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/tracing"
 )
 
 // Tracer records types and trace events during type checking. A nil *Tracer

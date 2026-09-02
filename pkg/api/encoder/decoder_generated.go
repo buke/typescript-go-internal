@@ -5,7 +5,7 @@ package encoder
 import (
 	"fmt"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
 )
 
 func (d *astDecoder) createStringNode(kind ast.Kind, data uint32, commonData uint8) (*ast.Node, error) {

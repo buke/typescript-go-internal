@@ -5,13 +5,13 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/debug"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/scanner"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/debug"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/scanner"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 type ContainerFlags int32
@@ -73,6 +73,7 @@ type Binder struct {
 	inAssignmentPattern     bool
 	seenParseError          bool
 	symbolCount             int
+	classifiableNames       collections.Set[string]
 	notConstEnumOnlyModules collections.Set[*ast.Symbol]
 	symbolArena             core.Arena[ast.Symbol]
 	flowNodeArena           core.Arena[ast.FlowNode]
@@ -126,6 +127,7 @@ func bindSourceFile(file *ast.SourceFile) {
 		b.bind(file.AsNode())
 		b.bindDeferredExpandoAssignments()
 		file.SymbolCount = b.symbolCount
+		file.ClassifiableNames = b.classifiableNames
 	})
 }
 
@@ -190,6 +192,9 @@ func (b *Binder) declareSymbolEx(symbolTable ast.SymbolTable, parent *ast.Symbol
 		// you have multiple 'vars' with the same name in the same container).  In this case
 		// just add this node into the declarations list of the symbol.
 		symbol = symbolTable[name]
+		if includes&ast.SymbolFlagsClassifiable != 0 {
+			b.classifiableNames.Add(name)
+		}
 		if symbol == nil {
 			symbol = b.newSymbol(ast.SymbolFlagsNone, name)
 			symbolTable[name] = symbol
@@ -946,6 +951,7 @@ func (b *Binder) bindClassLikeDeclaration(node *ast.Node) {
 		nameText := ast.InternalSymbolNameClass
 		if name != nil {
 			nameText = name.Text()
+			b.classifiableNames.Add(nameText)
 		}
 		b.bindAnonymousDeclaration(node, ast.SymbolFlagsClass, nameText)
 	}
@@ -1560,6 +1566,7 @@ func (b *Binder) bindContainer(node *ast.Node, containerFlags ContainerFlags) {
 		}
 		if node.Kind == ast.KindSourceFile {
 			node.Flags |= b.emitFlags
+			node.AsSourceFile().EndFlowNode = b.currentFlow
 		}
 		if b.currentReturnTarget != nil {
 			b.addAntecedent(b.currentReturnTarget, b.currentFlow)
@@ -2703,6 +2710,21 @@ func (b *Binder) errorOnNode(node *ast.Node, message *diagnostics.Message, args 
 func (b *Binder) errorOnFirstToken(node *ast.Node, message *diagnostics.Message, args ...any) {
 	span := scanner.GetRangeOfTokenAtPosition(b.file, node.Pos())
 	b.addDiagnostic(ast.NewDiagnostic(b.file, span, message, args...))
+}
+
+func (b *Binder) errorOrSuggestionOnNode(isError bool, node *ast.Node, message *diagnostics.Message) {
+	b.errorOrSuggestionOnRange(isError, node, node, message)
+}
+
+func (b *Binder) errorOrSuggestionOnRange(isError bool, startNode *ast.Node, endNode *ast.Node, message *diagnostics.Message) {
+	textRange := core.NewTextRange(scanner.GetRangeOfTokenAtPosition(b.file, startNode.Pos()).Pos(), endNode.End())
+	diagnostic := ast.NewDiagnostic(b.file, textRange, message)
+	if isError {
+		b.addDiagnostic(diagnostic)
+	} else {
+		diagnostic.SetCategory(diagnostics.CategorySuggestion)
+		b.file.BindSuggestionDiagnostics = append(b.file.BindSuggestionDiagnostics, diagnostic)
+	}
 }
 
 // Inside the binder, we may create a diagnostic for an as-yet unbound node (with potentially no parent pointers, implying no accessible source file)

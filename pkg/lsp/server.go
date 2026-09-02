@@ -14,25 +14,24 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/buke/typescript-go-internal/pkg/api"
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/compiler"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/fswatch"
-	"github.com/buke/typescript-go-internal/pkg/json"
-	"github.com/buke/typescript-go-internal/pkg/jsonrpc"
-	"github.com/buke/typescript-go-internal/pkg/locale"
-	"github.com/buke/typescript-go-internal/pkg/ls"
-	"github.com/buke/typescript-go-internal/pkg/ls/lsconv"
-	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lspwatcher"
-	"github.com/buke/typescript-go-internal/pkg/pprof"
-	"github.com/buke/typescript-go-internal/pkg/project"
-	"github.com/buke/typescript-go-internal/pkg/project/ata"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
-	"github.com/buke/typescript-go-internal/pkg/vfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/api"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/fswatch"
+	"github.com/buke/typescript-go-internal/v7/pkg/json"
+	"github.com/buke/typescript-go-internal/v7/pkg/jsonrpc"
+	"github.com/buke/typescript-go-internal/v7/pkg/locale"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/lsconv"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/lsutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lspwatcher"
+	"github.com/buke/typescript-go-internal/v7/pkg/pprof"
+	"github.com/buke/typescript-go-internal/v7/pkg/project"
+	"github.com/buke/typescript-go-internal/v7/pkg/project/ata"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -177,11 +176,7 @@ type Server struct {
 	initializationOptions *lsproto.InitializationOptions
 	clientCapabilities    lsproto.ResolvedClientCapabilities
 	positionEncoding      lsproto.PositionEncodingKind
-	localeMu              sync.RWMutex
 	locale                locale.Locale
-	// initLocale is the locale resolved from the initialize request; it is
-	// used as the fallback when the user's locale preference is "auto".
-	initLocale locale.Locale
 
 	watchEnabled     bool
 	telemetryEnabled bool
@@ -222,8 +217,6 @@ type Server struct {
 	projectProgress *projectLoadingProgress
 
 	startWatchdog func(parentPID int)
-
-	flakeLogging lsproto.DiagnosticFlakeLogLevel
 }
 
 func (s *Server) Session() *project.Session { return s.session }
@@ -367,28 +360,6 @@ func (s *Server) ProgressFinish(message *diagnostics.Message, args ...any) {
 	if s.projectProgress != nil {
 		s.projectProgress.finish(message, args...)
 	}
-}
-
-// GetLocale implements project.Client.
-func (s *Server) GetLocale() locale.Locale {
-	s.localeMu.RLock()
-	defer s.localeMu.RUnlock()
-	return s.locale
-}
-
-// SetLocale implements project.Client.
-func (s *Server) SetLocale(localeString string) {
-	newLocale := s.initLocale
-	if localeString != "auto" {
-		parsed, ok := locale.Parse(localeString)
-		if !ok {
-			return
-		}
-		newLocale = parsed
-	}
-	s.localeMu.Lock()
-	s.locale = newLocale
-	s.localeMu.Unlock()
 }
 
 func (s *Server) RequestConfiguration(ctx context.Context) (lsutil.UserPreferences, error) {
@@ -568,7 +539,7 @@ func (s *Server) dispatchLoop(ctx context.Context) error {
 		}
 
 		s.lastRequestTimeMs.Store(time.Now().UnixMilli())
-		requestCtx := locale.WithLocale(ctx, s.GetLocale())
+		requestCtx := locale.WithLocale(ctx, s.locale)
 		var cancel context.CancelFunc
 		if req.ID != nil {
 			requestCtx, cancel = context.WithCancel(core.WithRequestID(requestCtx, req.ID.String()))
@@ -1067,9 +1038,6 @@ func (s *Server) handleInitialize(ctx context.Context, params *lsproto.Initializ
 			s.logger.SetVerbosity(v)
 		}
 	}
-	if s.initializationOptions.TrackFlakyDiagnostics != nil {
-		s.flakeLogging = *s.initializationOptions.TrackFlakyDiagnostics
-	}
 	s.clientCapabilities = params.Capabilities.Resolve()
 	if s.clientCapabilities.Window.WorkDoneProgress {
 		s.projectProgress = newProjectLoadingProgress(s, s.progressDelay)
@@ -1089,7 +1057,6 @@ func (s *Server) handleInitialize(ctx context.Context, params *lsproto.Initializ
 	if s.initializeParams.Locale != nil {
 		s.locale, _ = locale.Parse(*s.initializeParams.Locale)
 	}
-	s.initLocale = s.locale
 
 	if s.startWatchdog != nil && params.ProcessId.Integer != nil {
 		s.startWatchdog(int(*params.ProcessId.Integer))
@@ -1287,6 +1254,7 @@ func (s *Server) handleInitialized(ctx context.Context, params *lsproto.Initiali
 			TelemetryEnabled:       enableTelemetry,
 			DebounceDelay:          500 * time.Millisecond,
 			PushDiagnosticsEnabled: !disablePushDiagnostics,
+			Locale:                 s.locale,
 		},
 		FS:          s.fs,
 		Logger:      s.logger,
@@ -1395,60 +1363,7 @@ func (s *Server) handleSetLogVerbosity(_ context.Context, params *lsproto.SetLog
 
 func (s *Server) handleDocumentDiagnostic(ctx context.Context, ls *ls.LanguageService, params *lsproto.DocumentDiagnosticParams) (lsproto.DocumentDiagnosticResponse, error) {
 	ctx = core.WithCheckerLifetime(ctx, core.CheckerLifetimeDiagnostics)
-	if s.flakeLogging == lsproto.DiagnosticFlakeLogLevelOff {
-		return ls.ProvideDiagnostics(ctx, params.TextDocument.Uri)
-	}
-	direct, err := ls.ProvideDiagnostics(ctx, params.TextDocument.Uri)
-	if err != nil {
-		return direct, err
-	}
-	ls.GetProgram().Emit(ctx, compiler.EmitOptions{
-		WriteFile: func(fileName, text string, data *compiler.WriteFileData) error {
-			// do nothing
-			return nil
-		},
-	})
-	secondary, err2 := ls.ProvideDiagnostics(ctx, params.TextDocument.Uri)
-	if err2 != nil {
-		return direct, err
-	}
-	missingFromPre, missingFromPost := lsproto.CompareDiagnostics(direct.FullDocumentDiagnosticReport.Items, secondary.FullDocumentDiagnosticReport.Items)
-	if len(missingFromPre) == 0 && len(missingFromPost) == 0 {
-		return direct, err
-	}
-
-	diff := generateDiagnosticDiffString(missingFromPre, missingFromPost, (*lsproto.Diagnostic).AsString)
-
-	s.logger.Error(diff)
-
-	if s.telemetryEnabled {
-		sanitizedDiff := generateDiagnosticDiffString(missingFromPre, missingFromPost, (*lsproto.Diagnostic).CodeAsString)
-		_ = sendNotification(s, lsproto.TelemetryEventInfo, lsproto.TelemetryEvent{
-			RequestFailureTelemetryEvent: &lsproto.RequestFailureTelemetryEvent{
-				Properties: &lsproto.RequestFailureTelemetryProperties{
-					ErrorCode:     lsproto.ErrorCodeInternalError.String(),
-					RequestMethod: "textDocument.diagnostic.flakeLog",
-					Stack:         sanitizedDiff,
-				},
-			},
-		})
-	}
-
-	if s.flakeLogging == lsproto.DiagnosticFlakeLogLevelPanic {
-		panic("flaky diagnostic(s) logged:\n" + diff)
-	}
-	return direct, err
-}
-
-func generateDiagnosticDiffString(missingFromPre []*lsproto.Diagnostic, missingFromPost []*lsproto.Diagnostic, stringifier func(*lsproto.Diagnostic) string) string {
-	var b strings.Builder
-	for _, elem := range missingFromPre {
-		b.WriteString(fmt.Sprintf("Diagnostic %v was present after emit but not before emit\n", stringifier(elem)))
-	}
-	for _, elem := range missingFromPost {
-		b.WriteString(fmt.Sprintf("Diagnostic %v was present before emit but not after emit\n", stringifier(elem)))
-	}
-	return b.String()
+	return ls.ProvideDiagnostics(ctx, params.TextDocument.Uri)
 }
 
 func (s *Server) handleHover(ctx context.Context, ls *ls.LanguageService, params *lsproto.HoverParams) (lsproto.HoverResponse, error) {

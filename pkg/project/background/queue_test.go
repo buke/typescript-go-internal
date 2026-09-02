@@ -6,7 +6,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/project/background"
+	"github.com/buke/typescript-go-internal/v7/pkg/project/background"
 	"gotest.tools/v3/assert"
 )
 

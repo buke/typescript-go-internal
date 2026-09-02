@@ -8,15 +8,15 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/parser"
-	"github.com/buke/typescript-go-internal/pkg/repo"
-	"github.com/buke/typescript-go-internal/pkg/testrunner"
-	"github.com/buke/typescript-go-internal/pkg/testutil/fixtures"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
-	"github.com/buke/typescript-go-internal/pkg/vfs/osvfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/parser"
+	"github.com/buke/typescript-go-internal/v7/pkg/repo"
+	"github.com/buke/typescript-go-internal/v7/pkg/testrunner"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil/fixtures"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/osvfs"
 	"gotest.tools/v3/assert"
 )
 
@@ -209,7 +209,7 @@ test("", async function () {
 	}
 }
 
-func TestSourceFilePositionMapWithNonASCIIStringLiteral(t *testing.T) {
+func TestSourceFileContainsNonASCIIInStringLiteralFastPath(t *testing.T) {
 	t.Parallel()
 	sourceText := `const x = "─";
 
@@ -224,6 +224,7 @@ namespace N {
 
 	file := parser.ParseSourceFile(opts, sourceText, core.ScriptKindTS)
 
+	assert.Assert(t, file.ContainsNonASCII)
 	positionMap := file.GetPositionMap()
 	assert.Assert(t, !positionMap.IsAsciiOnly())
 	afterBoxDrawingCharacter := strings.Index(sourceText, "─") + len("─")

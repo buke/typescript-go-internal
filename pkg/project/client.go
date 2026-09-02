@@ -3,9 +3,8 @@ package project
 import (
 	"context"
 
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/locale"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
 )
 
 type Client interface {
@@ -19,8 +18,4 @@ type Client interface {
 	ProgressFinish(message *diagnostics.Message, args ...any)
 	SendTelemetry(ctx context.Context, telemetry lsproto.TelemetryEvent) error
 	IsActive() bool
-	// SetLocale updates the locale used for diagnostic messages.
-	SetLocale(locale string)
-	// GetLocale returns the current display locale for diagnostic messages.
-	GetLocale() locale.Locale
 }

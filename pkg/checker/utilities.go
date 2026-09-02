@@ -7,16 +7,16 @@ import (
 	"sync"
 	"unicode/utf8"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/binder"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/debug"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/jsnum"
-	"github.com/buke/typescript-go-internal/pkg/module"
-	"github.com/buke/typescript-go-internal/pkg/printer"
-	"github.com/buke/typescript-go-internal/pkg/scanner"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/binder"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/debug"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/jsnum"
+	"github.com/buke/typescript-go-internal/v7/pkg/module"
+	"github.com/buke/typescript-go-internal/v7/pkg/printer"
+	"github.com/buke/typescript-go-internal/v7/pkg/scanner"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 func NewDiagnosticForNode(node *ast.Node, message *diagnostics.Message, args ...any) *ast.Diagnostic {
@@ -127,29 +127,6 @@ func isCompoundLikeAssignment(assignment *ast.Node) bool {
 
 func isConstTypeReference(node *ast.Node) bool {
 	return ast.IsTypeReferenceNode(node) && len(node.TypeArguments()) == 0 && ast.IsIdentifier(node.AsTypeReferenceNode().TypeName) && node.AsTypeReferenceNode().TypeName.Text() == "const"
-}
-
-// isConstTypeReferenceName reports whether node is the `const` type name of a `const`
-// assertion (`x as const` / `<const>x`), which must not be resolved as a real name.
-func isConstTypeReferenceName(node *ast.Node) bool {
-	return node != nil && ast.IsIdentifier(node) &&
-		node.Parent != nil && isConstTypeReference(node.Parent) &&
-		node.Parent.Parent != nil && ast.IsAssertionExpression(node.Parent.Parent)
-}
-
-// isExportAssignmentExpressionName reports whether node is (the root entity name of) the
-// expression of an `export =` / `export default` assignment. Referencing a namespace or
-// type-only name there is legal, and checkExportAssignment decides whether it is an error,
-// so checkIdentifier must not report a value-usage error for it.
-func isExportAssignmentExpressionName(node *ast.Node) bool {
-	if node == nil {
-		return false
-	}
-	current := node
-	for current.Parent != nil && ast.IsPropertyAccessOrQualifiedName(current.Parent) {
-		current = current.Parent
-	}
-	return current.Parent != nil && ast.IsExportAssignment(current.Parent) && current.Parent.Expression() == current
 }
 
 func GetSingleVariableOfVariableStatement(node *ast.Node) *ast.Node {

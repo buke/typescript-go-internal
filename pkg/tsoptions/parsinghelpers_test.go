@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
 )
 
 func TestParseCompilerOptionNoMissingFields(t *testing.T) {

@@ -10,14 +10,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/debug"
-	"github.com/buke/typescript-go-internal/pkg/ls/lsconv"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
-	"github.com/buke/typescript-go-internal/pkg/stringutil"
-	"github.com/buke/typescript-go-internal/pkg/testutil/baseline"
-	"github.com/buke/typescript-go-internal/pkg/vfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/debug"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/lsconv"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/stringutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil/baseline"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs"
 )
 
 const (
@@ -34,7 +34,6 @@ const (
 	inlayHintsCmd               baselineCommand = "Inlay Hints"
 	nonSuggestionDiagnosticsCmd baselineCommand = "Syntax and Semantic Diagnostics"
 	quickInfoCmd                baselineCommand = "QuickInfo"
-	vsQuickInfoCmd              baselineCommand = "VSQuickInfo"
 	linkedEditingCmd            baselineCommand = "linkedEditing"
 	renameCmd                   baselineCommand = "findRenameLocations"
 	signatureHelpCmd            baselineCommand = "SignatureHelp"
@@ -80,7 +79,7 @@ func getBaselineFileName(t *testing.T, command baselineCommand) string {
 
 func getBaselineExtension(command baselineCommand) string {
 	switch command {
-	case quickInfoCmd, vsQuickInfoCmd, signatureHelpCmd, smartSelectionCmd, inlayHintsCmd, nonSuggestionDiagnosticsCmd, documentSymbolsCmd, closingTagCmd, vsFindAllReferencesCmd:
+	case quickInfoCmd, signatureHelpCmd, smartSelectionCmd, inlayHintsCmd, nonSuggestionDiagnosticsCmd, documentSymbolsCmd, closingTagCmd, vsFindAllReferencesCmd:
 		return "baseline"
 	case callHierarchyCmd:
 		return "callHierarchy.txt"

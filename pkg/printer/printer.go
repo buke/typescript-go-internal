@@ -23,13 +23,13 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/debug"
-	"github.com/buke/typescript-go-internal/pkg/scanner"
-	"github.com/buke/typescript-go-internal/pkg/sourcemap"
-	"github.com/buke/typescript-go-internal/pkg/stringutil"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/debug"
+	"github.com/buke/typescript-go-internal/v7/pkg/scanner"
+	"github.com/buke/typescript-go-internal/v7/pkg/sourcemap"
+	"github.com/buke/typescript-go-internal/v7/pkg/stringutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 type PrinterOptions struct {
@@ -6081,7 +6081,7 @@ func (p *Printer) generateName(name *ast.MemberName) {
 // Returns a value indicating whether a name is unique globally or within the current file.
 func (p *Printer) isFileLevelUniqueNameInCurrentFile(name string, _ bool) bool {
 	if p.currentSourceFile != nil {
-		return p.emitContext.IsFileLevelUniqueName(p.currentSourceFile, name, p.HasGlobalName)
+		return IsFileLevelUniqueName(p.currentSourceFile, name, p.HasGlobalName)
 	} else {
 		return true
 	}

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/buke/typescript-go-internal/pkg/bundled"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
-	"github.com/buke/typescript-go-internal/pkg/project"
-	"github.com/buke/typescript-go-internal/pkg/vfs/osvfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/bundled"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/project"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/osvfs"
 )
 
 // StdioServerOptions configures the STDIO-based API server.

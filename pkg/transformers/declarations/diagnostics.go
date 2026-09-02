@@ -1,10 +1,10 @@
 package declarations
 
 import (
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/printer"
-	"github.com/buke/typescript-go-internal/pkg/scanner"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/printer"
+	"github.com/buke/typescript-go-internal/v7/pkg/scanner"
 )
 
 type GetSymbolAccessibilityDiagnostic = func(symbolAccessibilityResult printer.SymbolAccessibilityResult) *SymbolAccessibilityDiagnostic
@@ -413,7 +413,7 @@ func getParameterDeclarationTypeVisibilityDiagnosticMessage(node *ast.Node, symb
 			)
 		}
 
-	case ast.KindFunctionDeclaration, ast.KindFunctionType, ast.KindArrowFunction, ast.KindFunctionExpression:
+	case ast.KindFunctionDeclaration, ast.KindFunctionType:
 		return selectDiagnosticBasedOnModuleName(
 			symbolAccessibilityResult,
 			diagnostics.Parameter_0_of_exported_function_has_or_is_using_name_1_from_external_module_2_but_cannot_be_named,
@@ -427,7 +427,6 @@ func getParameterDeclarationTypeVisibilityDiagnosticMessage(node *ast.Node, symb
 			diagnostics.Parameter_0_of_accessor_has_or_is_using_name_1_from_private_module_2,
 			diagnostics.Parameter_0_of_accessor_has_or_is_using_private_name_1,
 		)
-
 	default:
 		panic("Unknown parent for parameter: " + node.Parent.Kind.String())
 	}
@@ -621,7 +620,7 @@ func createReturnTypeError(node *ast.Node) *ast.Diagnostic {
 }
 
 func createBindingElementError(node *ast.Node) *ast.Diagnostic {
-	return createDiagnosticForNode(node, diagnostics.Binding_elements_with_initializers_can_t_be_exported_directly_with_isolatedDeclarations)
+	return createDiagnosticForNode(node, diagnostics.Binding_elements_can_t_be_exported_directly_with_isolatedDeclarations)
 }
 
 func createVariableOrPropertyError(node *ast.Node) *ast.Diagnostic {

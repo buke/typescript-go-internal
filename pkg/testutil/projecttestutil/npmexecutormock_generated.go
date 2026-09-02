@@ -6,7 +6,7 @@ package projecttestutil
 import (
 	"sync"
 
-	"github.com/buke/typescript-go-internal/pkg/project/ata"
+	"github.com/buke/typescript-go-internal/v7/pkg/project/ata"
 )
 
 // Ensure, that NpmExecutorMock does implement ata.NpmExecutor.

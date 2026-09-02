@@ -6,19 +6,19 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/debug"
-	"github.com/buke/typescript-go-internal/pkg/jsnum"
-	"github.com/buke/typescript-go-internal/pkg/module"
-	"github.com/buke/typescript-go-internal/pkg/modulespecifiers"
-	"github.com/buke/typescript-go-internal/pkg/nodebuilder"
-	"github.com/buke/typescript-go-internal/pkg/printer"
-	"github.com/buke/typescript-go-internal/pkg/pseudochecker"
-	"github.com/buke/typescript-go-internal/pkg/scanner"
-	"github.com/buke/typescript-go-internal/pkg/stringutil"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/debug"
+	"github.com/buke/typescript-go-internal/v7/pkg/jsnum"
+	"github.com/buke/typescript-go-internal/v7/pkg/module"
+	"github.com/buke/typescript-go-internal/v7/pkg/modulespecifiers"
+	"github.com/buke/typescript-go-internal/v7/pkg/nodebuilder"
+	"github.com/buke/typescript-go-internal/v7/pkg/printer"
+	"github.com/buke/typescript-go-internal/v7/pkg/pseudochecker"
+	"github.com/buke/typescript-go-internal/v7/pkg/scanner"
+	"github.com/buke/typescript-go-internal/v7/pkg/stringutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 type CompositeSymbolIdentity struct {
@@ -236,19 +236,13 @@ func (b *NodeBuilderImpl) checkTypeExpandability(t *Type) {
 	}
 	// Push t onto the type stack so shouldExpandType's cycle detection works correctly.
 	b.ctx.typeStack = append(b.ctx.typeStack, t)
-	defer func() {
-		b.ctx.typeStack = b.ctx.typeStack[:len(b.ctx.typeStack)-1]
-	}()
-	// If t is an ancestor in the current expansion, return early to avoid unbounded recursion.
-	if b.isTypeOnStack(t) {
-		return
-	}
 	if t.alias != nil {
 		b.shouldExpandType(t, true)
 	}
 	if !b.ctx.canIncreaseExpansionDepth {
 		b.shouldExpandType(t, false)
 	}
+	b.ctx.typeStack = b.ctx.typeStack[:len(b.ctx.typeStack)-1]
 	if b.ctx.canIncreaseExpansionDepth {
 		return
 	}
@@ -503,7 +497,7 @@ func (b *NodeBuilderImpl) canReuseExistingJSTypeNode(existing *ast.TypeNode, t *
 }
 
 func (b *NodeBuilderImpl) tryGetResolvedSymbolFromTypeNode(node *ast.Node) *ast.Symbol {
-	if node == nil || node.Parent == nil {
+	if node == nil {
 		return nil
 	}
 	b.ch.getTypeFromTypeNode(node)
@@ -2160,15 +2154,7 @@ func (b *NodeBuilderImpl) indexInfoToIndexSignatureDeclarationHelper(indexInfo *
 }
 
 func hasTypeAnnotation(declaration *ast.Declaration) bool {
-	if declaration == nil || declaration.Type() == nil {
-		return false
-	}
-	// Type alias declarations have a .Type() that is their type definition, not a type annotation on a value.
-	// Exclude them so callers don't mistake them for annotated value declarations.
-	if ast.IsTypeAliasDeclaration(declaration) || ast.IsJSTypeAliasDeclaration(declaration) {
-		return false
-	}
-	return true
+	return declaration != nil && declaration.Type() != nil
 }
 
 /**
@@ -2192,22 +2178,14 @@ func (b *NodeBuilderImpl) serializeTypeForDeclaration(declaration *ast.Declarati
 		symbol = b.ch.getSymbolOfDeclaration(declaration)
 	}
 	if t == nil {
-		if symbol == nil {
-			if ast.IsVariableLike(declaration) {
-				t = b.ch.getTypeForVariableLikeDeclaration(declaration, false, CheckModeNormal)
+		t = b.ctx.enclosingSymbolTypes[ast.GetSymbolId(symbol)]
+		if t == nil {
+			if symbol.Flags&ast.SymbolFlagsAccessor != 0 && declaration.Kind == ast.KindSetAccessor {
+				t = b.ch.instantiateType(b.ch.getWriteTypeOfSymbol(symbol), b.ctx.mapper)
+			} else if symbol != nil && (symbol.Flags&(ast.SymbolFlagsTypeLiteral|ast.SymbolFlagsSignature) == 0) {
+				t = b.ch.instantiateType(b.ch.getWidenedLiteralType(b.ch.getTypeOfSymbol(symbol)), b.ctx.mapper)
 			} else {
 				t = b.ch.errorType
-			}
-		} else {
-			t = b.ctx.enclosingSymbolTypes[ast.GetSymbolId(symbol)]
-			if t == nil {
-				if symbol.Flags&ast.SymbolFlagsAccessor != 0 && declaration.Kind == ast.KindSetAccessor {
-					t = b.ch.instantiateType(b.ch.getWriteTypeOfSymbol(symbol), b.ctx.mapper)
-				} else if symbol != nil && (symbol.Flags&(ast.SymbolFlagsTypeLiteral|ast.SymbolFlagsSignature) == 0) {
-					t = b.ch.instantiateType(b.ch.getWidenedLiteralType(b.ch.getTypeOfSymbol(symbol)), b.ctx.mapper)
-				} else {
-					t = b.ch.errorType
-				}
 			}
 		}
 	}
@@ -2229,17 +2207,14 @@ func (b *NodeBuilderImpl) serializeTypeForDeclaration(declaration *ast.Declarati
 	var reportedInferenceFallback bool
 	// !!! expandable hover support
 	if !b.isActivelyExpanding() && tryReuse && b.ctx.enclosingDeclaration != nil && declaration != nil && (ast.IsAccessor(declaration) || (ast.HasInferredType(declaration) && !ast.NodeIsSynthesized(declaration) && (t.ObjectFlags()&ObjectFlagsRequiresWidening) == 0)) {
-		var remove func()
-		if symbol != nil {
-			remove = b.addSymbolTypeToContext(symbol, t)
-		}
+		remove := b.addSymbolTypeToContext(symbol, t)
 		var pt *pseudochecker.PseudoType
 		if ast.IsAccessor(declaration) {
 			pt = b.pc.GetTypeOfAccessor(declaration)
 		} else {
 			pt = b.pc.GetTypeOfDeclaration(declaration)
 		}
-		if (pt == nil || pt.Kind == pseudochecker.PseudoTypeKindNoResult) && ast.IsBinaryExpression(declaration) && symbol != nil {
+		if (pt == nil || pt.Kind == pseudochecker.PseudoTypeKindNoResult) && ast.IsBinaryExpression(declaration) {
 			if decl := core.Find(symbol.Declarations, hasTypeAnnotation); decl != nil {
 				// Binary expressions have a first-in-wins type annotation system. The first one with an annotation supplies the type for the rest.
 				pt = b.pc.GetTypeOfDeclaration(decl)
@@ -2276,9 +2251,7 @@ func (b *NodeBuilderImpl) serializeTypeForDeclaration(declaration *ast.Declarati
 				}
 			}
 		}
-		if remove != nil {
-			remove()
-		}
+		remove()
 	}
 	if result == nil {
 		if reportedInferenceFallback {
@@ -2884,9 +2857,6 @@ func (b *NodeBuilderImpl) createAnonymousTypeNodeEx(t *Type, forceClassExpansion
 
 func (b *NodeBuilderImpl) getTypeFromTypeNode(node *ast.TypeNode, noMappedTypes bool) *Type {
 	// !!! noMappedTypes optional param support
-	if node.Parent == nil {
-		return b.ch.errorType
-	}
 	t := b.ch.getTypeFromTypeNode(node)
 	if b.ctx.mapper == nil {
 		return t

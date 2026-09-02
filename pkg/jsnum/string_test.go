@@ -9,8 +9,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/json"
-	"github.com/buke/typescript-go-internal/pkg/testutil/jstest"
+	"github.com/buke/typescript-go-internal/v7/pkg/json"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil/jstest"
 	"gotest.tools/v3/assert"
 )
 

@@ -3,7 +3,7 @@ package checker
 import (
 	"slices"
 
-	"github.com/buke/typescript-go-internal/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
 )
 
 // TypeMapperKind
@@ -49,17 +49,6 @@ func (c *Checker) combineTypeMappers(m1 *TypeMapper, m2 *TypeMapper) *TypeMapper
 		return newCompositeTypeMapper(c, m1, m2)
 	}
 	return m2
-}
-
-func (c *Checker) mapTypeWithCompositeMapper(t *Type, m1 *TypeMapper, m2 *TypeMapper) *Type {
-	if m1 == nil {
-		return m2.Map(t)
-	}
-	t1 := m1.Map(t)
-	if t1 != t {
-		return c.instantiateType(t1, m2)
-	}
-	return m2.Map(t)
 }
 
 func mergeTypeMappers(m1 *TypeMapper, m2 *TypeMapper) *TypeMapper {

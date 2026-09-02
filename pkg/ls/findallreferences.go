@@ -8,21 +8,21 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/astnav"
-	"github.com/buke/typescript-go-internal/pkg/binder"
-	"github.com/buke/typescript-go-internal/pkg/checker"
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/compiler"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/debug"
-	"github.com/buke/typescript-go-internal/pkg/ls/lsconv"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
-	"github.com/buke/typescript-go-internal/pkg/printer"
-	"github.com/buke/typescript-go-internal/pkg/scanner"
-	"github.com/buke/typescript-go-internal/pkg/stringutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/astnav"
+	"github.com/buke/typescript-go-internal/v7/pkg/binder"
+	"github.com/buke/typescript-go-internal/v7/pkg/checker"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/compiler"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/debug"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/lsconv"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/printer"
+	"github.com/buke/typescript-go-internal/v7/pkg/scanner"
+	"github.com/buke/typescript-go-internal/v7/pkg/stringutil"
 
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 // === types for settings ===
@@ -647,19 +647,10 @@ func (l *LanguageService) provideSymbolsAndEntries(ctx context.Context, uri lspr
 	var implementationEntries []*SymbolAndEntries
 	var queue []*ReferenceEntry
 	var seenNodes collections.Set[*ast.Node]
-	var seenDefinitions collections.Set[*ast.Symbol]
 	addToQueue := func(symbolAndEntries []*SymbolAndEntries) {
+		implementationEntries = core.Concatenate(implementationEntries, symbolAndEntries)
 		for _, s := range symbolAndEntries {
-			var newReferences []*ReferenceEntry
-			for _, ref := range s.references {
-				if seenNodes.AddIfAbsent(ref.node) {
-					queue = append(queue, ref)
-					newReferences = append(newReferences, ref)
-				}
-			}
-			if len(newReferences) > 0 || s.definition == nil || seenDefinitions.AddIfAbsent(s.definition.symbol) {
-				implementationEntries = append(implementationEntries, &SymbolAndEntries{definition: s.definition, references: newReferences})
-			}
+			queue = append(queue, s.references...)
 		}
 	}
 
@@ -671,7 +662,8 @@ func (l *LanguageService) provideSymbolsAndEntries(ctx context.Context, uri lspr
 
 		entry := queue[0]
 		queue = queue[1:]
-		if entry.node != nil {
+		if entry.node != nil && !seenNodes.Has(entry.node) {
+			seenNodes.Add(entry.node)
 			addToQueue(l.getSymbolAndEntries(ctx, entry.node.Pos(), entry.node, program, isRename, implementations))
 		}
 	}

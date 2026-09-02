@@ -3,10 +3,10 @@ package tsc_test
 import (
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/execute/tsc"
-	"github.com/buke/typescript-go-internal/pkg/tsoptions"
-	"github.com/buke/typescript-go-internal/pkg/vfs"
-	"github.com/buke/typescript-go-internal/pkg/vfs/vfstest"
+	"github.com/buke/typescript-go-internal/v7/pkg/execute/tsc"
+	"github.com/buke/typescript-go-internal/v7/pkg/tsoptions"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/vfstest"
 )
 
 type testParseConfigHost struct {

@@ -11,8 +11,8 @@ import (
 	"testing/fstest"
 	"unicode/utf16"
 
-	"github.com/buke/typescript-go-internal/pkg/testutil"
-	"github.com/buke/typescript-go-internal/pkg/vfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs"
 	"gotest.tools/v3/assert"
 )
 

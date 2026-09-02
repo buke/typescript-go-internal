@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/project/ata"
+	"github.com/buke/typescript-go-internal/v7/pkg/project/ata"
 	"gotest.tools/v3/assert"
 )
 

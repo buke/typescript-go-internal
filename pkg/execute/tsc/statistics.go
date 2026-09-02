@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/buke/typescript-go-internal/pkg/compiler"
+	"github.com/buke/typescript-go-internal/v7/pkg/compiler"
 )
 
 type tableRow struct {

@@ -5,13 +5,13 @@ import (
 	"math"
 	"slices"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/debug"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/jsnum"
-	"github.com/buke/typescript-go-internal/pkg/parser"
-	"github.com/buke/typescript-go-internal/pkg/scanner"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/debug"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/jsnum"
+	"github.com/buke/typescript-go-internal/v7/pkg/parser"
+	"github.com/buke/typescript-go-internal/v7/pkg/scanner"
 )
 
 type JsxFlags uint32
@@ -36,7 +36,6 @@ type JsxElementLinks struct {
 	resolvedJsxElementAttributesType *Type       // Resolved element attributes type of a JSX opening-like element
 	jsxNamespace                     *ast.Symbol // Resolved JSX namespace symbol for this node
 	jsxImplicitImportContainer       *ast.Symbol // Resolved module symbol the implicit JSX import of this file should refer to
-	firstJSXTagInFile                *ast.Node   // The first JSX tag in the file
 }
 
 var JsxNames = struct {
@@ -756,8 +755,11 @@ func (c *Checker) createJsxAttributesTypeFromAttributesProperty(openingLikeEleme
 				if attributeDecl.Name().Text() == jsxChildrenPropertyName {
 					explicitlySpecifyChildrenAttribute = true
 				}
-				if ast.IsIdentifier(attributeDecl.Name()) {
-					c.checkDeprecatedProperty(attributeDecl.Name(), contextualType)
+				if contextualType != nil {
+					prop := c.getPropertyOfType(contextualType, member.Name)
+					if prop != nil && prop.Declarations != nil && c.isDeprecatedSymbol(prop) && ast.IsIdentifier(attributeDecl.Name()) {
+						c.addDeprecatedSuggestion(attributeDecl.Name(), prop.Declarations, attributeDecl.Name().Text())
+					}
 				}
 				if contextualType != nil && checkMode&CheckModeInferential != 0 && checkMode&CheckModeSkipContextSensitive == 0 && c.isContextSensitive(attributeDecl) {
 					inferenceContext := c.getInferenceContext(attributes)
@@ -1449,39 +1451,29 @@ func markAsSynthetic(node *ast.Node) bool {
 }
 
 func (c *Checker) getJsxNamespaceContainerForImplicitImport(location *ast.Node) *ast.Symbol {
-	file := ast.GetSourceFileOfNode(location)
-	links := c.jsxElementLinks.Get(file.AsNode())
-	if links.jsxImplicitImportContainer != nil {
-		return core.IfElse(links.jsxImplicitImportContainer == c.unknownSymbol, nil, links.jsxImplicitImportContainer)
-	}
-	canonicalErrorTag := links.firstJSXTagInFile
-	if canonicalErrorTag == nil {
-		var visit ast.Visitor
-		visit = func(node *ast.Node) bool {
-			if ast.IsJsxElement(node) || ast.IsJsxSelfClosingElement(node) {
-				links.firstJSXTagInFile = node
-				return true
-			}
-			if ast.IsJsxFragment(node) {
-				links.firstJSXTagInFile = node.AsJsxFragment().OpeningFragment // to match strada, fragments issue errors on the opening fragment instead of the whole tag
-				return true
-			}
-			return node.ForEachChild(visit)
+	var file *ast.SourceFile
+	var links *JsxElementLinks
+	if location != nil {
+		if file = ast.GetSourceFileOfNode(location); file != nil {
+			links = c.jsxElementLinks.Get(file.AsNode())
 		}
-		file.ForEachChild(visit)
-		canonicalErrorTag = links.firstJSXTagInFile
+	}
+	if links != nil && links.jsxImplicitImportContainer != nil {
+		return core.IfElse(links.jsxImplicitImportContainer == c.unknownSymbol, nil, links.jsxImplicitImportContainer)
 	}
 	moduleReference, specifier := c.getJSXRuntimeImportSpecifier(file)
 	if moduleReference == "" {
 		return nil
 	}
 	errorMessage := diagnostics.This_JSX_tag_requires_the_module_path_0_to_exist_but_none_could_be_found_Make_sure_you_have_types_for_the_appropriate_package_installed
-	mod := c.resolveExternalModule(core.OrElse(specifier, canonicalErrorTag), moduleReference, errorMessage, canonicalErrorTag, false)
+	mod := c.resolveExternalModule(core.OrElse(specifier, location), moduleReference, errorMessage, location, false)
 	var result *ast.Symbol
 	if mod != nil && mod != c.unknownSymbol {
 		result = c.getMergedSymbol(c.resolveSymbol(mod))
 	}
-	links.jsxImplicitImportContainer = core.OrElse(result, c.unknownSymbol)
+	if links != nil {
+		links.jsxImplicitImportContainer = core.OrElse(result, c.unknownSymbol)
+	}
 	return result
 }
 

@@ -37,24 +37,14 @@ const { a: { b: { c } } } = getNested();
 
 
 //// [test.d.ts]
-declare const { foo }: {
-    foo: {
-        test: number;
-    };
+declare const foo: {
+    test: number;
 };
 export type AliasType = typeof foo;
-declare const { foo: renamed }: {
-    foo: {
-        test: number;
-    };
+declare const renamed: {
+    test: number;
 };
 export type AliasType2 = typeof renamed;
-declare const { a: { b: { c } } }: {
-    a: {
-        b: {
-            c: string;
-        };
-    };
-};
+declare const c: string;
 export type AliasType3 = typeof c;
 export {};

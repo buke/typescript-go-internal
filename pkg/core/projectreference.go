@@ -1,11 +1,11 @@
 package core
 
-import "github.com/buke/typescript-go-internal/pkg/tspath"
+import "github.com/buke/typescript-go-internal/v7/pkg/tspath"
 
 type ProjectReference struct {
-	Path         string `json:"path"`
-	OriginalPath string `json:"originalPath"`
-	Circular     bool   `json:"circular"`
+	Path         string
+	OriginalPath string
+	Circular     bool
 }
 
 func ResolveProjectReferencePath(ref *ProjectReference) string {

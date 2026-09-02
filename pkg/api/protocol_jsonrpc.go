@@ -3,8 +3,8 @@ package api
 import (
 	"io"
 
-	"github.com/buke/typescript-go-internal/pkg/json"
-	"github.com/buke/typescript-go-internal/pkg/jsonrpc"
+	"github.com/buke/typescript-go-internal/v7/pkg/json"
+	"github.com/buke/typescript-go-internal/v7/pkg/jsonrpc"
 )
 
 // JSONRPCProtocol implements the Protocol interface using JSON-RPC 2.0

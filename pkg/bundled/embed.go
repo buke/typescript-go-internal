@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/buke/typescript-go-internal/pkg/vfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs"
 )
 
 const embedded = true

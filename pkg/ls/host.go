@@ -1,10 +1,10 @@
 package ls
 
 import (
-	"github.com/buke/typescript-go-internal/pkg/ls/autoimport"
-	"github.com/buke/typescript-go-internal/pkg/ls/lsconv"
-	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
-	"github.com/buke/typescript-go-internal/pkg/sourcemap"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/autoimport"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/lsconv"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/lsutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/sourcemap"
 )
 
 type Host interface {

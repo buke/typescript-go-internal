@@ -4,10 +4,10 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/stringutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/stringutil"
 )
 
 func init() {
@@ -1349,6 +1349,7 @@ func (p *Parser) parseJSDocIdentifierName(diagnosticMessage *diagnostics.Message
 	pos := p.scanner.TokenStart()
 	end := p.scanner.TokenEnd()
 	text := p.scanner.TokenValue()
+	p.internIdentifier(text)
 	p.nextTokenJSDoc()
 	return p.finishNodeWithEnd(p.newIdentifier(text), pos, end)
 }

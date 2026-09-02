@@ -8,5 +8,5 @@ FileNames::
 
 
 Errors::
-error TS5025: Unknown compiler option '--declarations'. Did you mean 'declaration'?
-error TS5025: Unknown compiler option '--allowTS'. Did you mean 'allowJs'?
+error TS5023: Unknown compiler option '--declarations'.
+error TS5023: Unknown compiler option '--allowTS'.

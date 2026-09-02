@@ -1,7 +1,7 @@
 package ast
 
 import (
-	"github.com/buke/typescript-go-internal/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
 )
 
 type SubtreeFacts uint32

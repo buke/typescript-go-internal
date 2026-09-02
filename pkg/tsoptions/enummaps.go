@@ -3,9 +3,9 @@ package tsoptions
 import (
 	"slices"
 
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 var LibMap = collections.NewOrderedMapFromList([]collections.MapEntry[string, any]{

@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 var (

@@ -71,24 +71,9 @@ export { foo, arr };
 //// [index.d.ts]
 import { foo, arr } from './foo';
 export { foo, arr };
-declare const { bar: baz, bat, bam: { bork: { bar: ibar, baz: ibaz } } }: {
-    bar: string;
-    bat: string;
-    bam: {
-        bork: {
-            bar: string;
-            baz: string;
-        };
-    };
-};
+declare const baz: string, ibaz: string;
 export { baz, ibaz };
-declare const [, one, , [, bee, , [, { sec }]]]: [0, 1, 2, ["a", "b", "c", [{
-    def: 'def';
-}, {
-    sec: 'sec';
-}]]];
+declare const one: 1, bee: "b", sec: "sec";
 export { one, bee, sec };
-declare const { foo: foo2 }: {
-    foo: string;
-};
+declare const foo2: string;
 export { foo2 };

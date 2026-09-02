@@ -4,18 +4,18 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/astnav"
-	"github.com/buke/typescript-go-internal/pkg/checker"
-	"github.com/buke/typescript-go-internal/pkg/compiler"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/locale"
-	"github.com/buke/typescript-go-internal/pkg/ls/autoimport"
-	"github.com/buke/typescript-go-internal/pkg/ls/change"
-	"github.com/buke/typescript-go-internal/pkg/nodebuilder"
-	"github.com/buke/typescript-go-internal/pkg/printer"
-	"github.com/buke/typescript-go-internal/pkg/scanner"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/astnav"
+	"github.com/buke/typescript-go-internal/v7/pkg/checker"
+	"github.com/buke/typescript-go-internal/v7/pkg/compiler"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/locale"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/autoimport"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/change"
+	"github.com/buke/typescript-go-internal/v7/pkg/nodebuilder"
+	"github.com/buke/typescript-go-internal/v7/pkg/printer"
+	"github.com/buke/typescript-go-internal/v7/pkg/scanner"
 )
 
 var isolatedDeclarationsFixErrorCodes = []int32{
@@ -26,7 +26,7 @@ var isolatedDeclarationsFixErrorCodes = []int32{
 	diagnostics.Parameter_must_have_an_explicit_type_annotation_with_isolatedDeclarations.Code(),
 	diagnostics.Property_must_have_an_explicit_type_annotation_with_isolatedDeclarations.Code(),
 	diagnostics.Expression_type_can_t_be_inferred_with_isolatedDeclarations.Code(),
-	diagnostics.Binding_elements_with_initializers_can_t_be_exported_directly_with_isolatedDeclarations.Code(),
+	diagnostics.Binding_elements_can_t_be_exported_directly_with_isolatedDeclarations.Code(),
 	diagnostics.Computed_property_names_on_class_or_object_literals_cannot_be_inferred_with_isolatedDeclarations.Code(),
 	diagnostics.Computed_properties_must_be_number_or_string_literals_variables_or_dotted_expressions_with_isolatedDeclarations.Code(),
 	diagnostics.Enum_member_initializers_must_be_computable_without_references_to_external_symbols_with_isolatedDeclarations.Code(),

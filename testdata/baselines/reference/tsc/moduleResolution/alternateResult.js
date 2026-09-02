@@ -424,12 +424,7 @@ export {};
               "messageArgs": [
                 "/home/src/projects/project/node_modules/foo/index.d.ts",
                 "foo"
-              ],
-              "repopulateInfo": {
-                "kind": 2,
-                "moduleReference": "foo",
-                "mode": 99
-              }
+              ]
             }
           ]
         },
@@ -453,12 +448,7 @@ export {};
               "messageArgs": [
                 "/home/src/projects/project/node_modules/@types/bar/index.d.ts",
                 "@types/bar"
-              ],
-              "repopulateInfo": {
-                "kind": 2,
-                "moduleReference": "bar",
-                "mode": 99
-              }
+              ]
             }
           ]
         }
@@ -1624,12 +1614,7 @@ Found 1 error in index.mts[90m:1[0m
               "messageArgs": [
                 "/home/src/projects/project/node_modules/foo/index.d.ts",
                 "foo"
-              ],
-              "repopulateInfo": {
-                "kind": 2,
-                "moduleReference": "foo",
-                "mode": 99
-              }
+              ]
             }
           ]
         }
@@ -2161,12 +2146,7 @@ Found 1 error in index.mts[90m:4[0m
               "messageArgs": [
                 "/home/src/projects/project/node_modules/@types/bar2/index.d.ts",
                 "@types/bar2"
-              ],
-              "repopulateInfo": {
-                "kind": 2,
-                "moduleReference": "bar2",
-                "mode": 99
-              }
+              ]
             }
           ]
         }
@@ -2499,12 +2479,7 @@ Found 2 errors in the same file, starting at: index.mts[90m:3[0m
               "messageArgs": [
                 "/home/src/projects/project/node_modules/foo2/index.d.ts",
                 "foo2"
-              ],
-              "repopulateInfo": {
-                "kind": 2,
-                "moduleReference": "foo2",
-                "mode": 99
-              }
+              ]
             }
           ]
         },
@@ -2528,12 +2503,7 @@ Found 2 errors in the same file, starting at: index.mts[90m:3[0m
               "messageArgs": [
                 "/home/src/projects/project/node_modules/@types/bar2/index.d.ts",
                 "@types/bar2"
-              ],
-              "repopulateInfo": {
-                "kind": 2,
-                "moduleReference": "bar2",
-                "mode": 99
-              }
+              ]
             }
           ]
         }

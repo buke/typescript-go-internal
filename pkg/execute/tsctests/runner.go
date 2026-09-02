@@ -8,11 +8,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/execute"
-	"github.com/buke/typescript-go-internal/pkg/execute/tsc"
-	"github.com/buke/typescript-go-internal/pkg/testutil/baseline"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/execute"
+	"github.com/buke/typescript-go-internal/v7/pkg/execute/tsc"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil/baseline"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 type tscEdit struct {

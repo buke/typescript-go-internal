@@ -8,19 +8,19 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/ls"
-	"github.com/buke/typescript-go-internal/pkg/ls/autoimport"
-	"github.com/buke/typescript-go-internal/pkg/ls/lsconv"
-	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
-	"github.com/buke/typescript-go-internal/pkg/project/ata"
-	"github.com/buke/typescript-go-internal/pkg/project/dirty"
-	"github.com/buke/typescript-go-internal/pkg/project/logging"
-	"github.com/buke/typescript-go-internal/pkg/sourcemap"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
-	"github.com/buke/typescript-go-internal/pkg/vfs/vfsmatch"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/autoimport"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/lsconv"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/lsutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/project/ata"
+	"github.com/buke/typescript-go-internal/v7/pkg/project/dirty"
+	"github.com/buke/typescript-go-internal/v7/pkg/project/logging"
+	"github.com/buke/typescript-go-internal/v7/pkg/sourcemap"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/vfsmatch"
 )
 
 type Snapshot struct {
@@ -282,8 +282,6 @@ func (s *Snapshot) Clone(ctx context.Context, change SnapshotChange, overlays ma
 			logger.Logf("Reason: RequestedLoadProjectTree - %v", getDetails())
 		case UpdateReasonIdleCleanDiskCache:
 			logger.Logf("Reason: IdleCleanDiskCache")
-		case UpdateReasonDidChangeConfigFile:
-			logger.Logf("Reason: DidChangeConfigFile - %v", getDetails())
 		}
 	}
 
@@ -308,7 +306,7 @@ func (s *Snapshot) Clone(ctx context.Context, change SnapshotChange, overlays ma
 	} else {
 		change.fileChanges = fs.expandAndFilterWatchEvents(change.fileChanges)
 		change.fileChanges = s.fs.expandRealpathAliases(change.fileChanges)
-		change.fileChanges = fs.markDirtyFiles(change.fileChanges)
+		fs.markDirtyFiles(change.fileChanges)
 		change.fileChanges = fs.convertOpenAndCloseToChanges(change.fileChanges)
 	}
 

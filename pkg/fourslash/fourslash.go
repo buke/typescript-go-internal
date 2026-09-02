@@ -13,31 +13,31 @@ import (
 	"unicode/utf8"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/buke/typescript-go-internal/pkg/bundled"
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/diagnosticwriter"
-	"github.com/buke/typescript-go-internal/pkg/execute/tsctests"
-	"github.com/buke/typescript-go-internal/pkg/json"
-	"github.com/buke/typescript-go-internal/pkg/jsonrpc"
-	"github.com/buke/typescript-go-internal/pkg/locale"
-	"github.com/buke/typescript-go-internal/pkg/ls"
-	"github.com/buke/typescript-go-internal/pkg/ls/lsconv"
-	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
-	"github.com/buke/typescript-go-internal/pkg/lsp"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
-	"github.com/buke/typescript-go-internal/pkg/project"
-	"github.com/buke/typescript-go-internal/pkg/repo"
-	"github.com/buke/typescript-go-internal/pkg/stringutil"
-	"github.com/buke/typescript-go-internal/pkg/testutil/baseline"
-	"github.com/buke/typescript-go-internal/pkg/testutil/harnessutil"
-	"github.com/buke/typescript-go-internal/pkg/testutil/lsptestutil"
-	"github.com/buke/typescript-go-internal/pkg/testutil/tsbaseline"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
-	"github.com/buke/typescript-go-internal/pkg/vfs"
-	"github.com/buke/typescript-go-internal/pkg/vfs/iovfs"
-	"github.com/buke/typescript-go-internal/pkg/vfs/vfstest"
+	"github.com/buke/typescript-go-internal/v7/pkg/bundled"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnosticwriter"
+	"github.com/buke/typescript-go-internal/v7/pkg/execute/tsctests"
+	"github.com/buke/typescript-go-internal/v7/pkg/json"
+	"github.com/buke/typescript-go-internal/v7/pkg/jsonrpc"
+	"github.com/buke/typescript-go-internal/v7/pkg/locale"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/lsconv"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/lsutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/project"
+	"github.com/buke/typescript-go-internal/v7/pkg/repo"
+	"github.com/buke/typescript-go-internal/v7/pkg/stringutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil/baseline"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil/harnessutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil/lsptestutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil/tsbaseline"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/iovfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/vfstest"
 	"gotest.tools/v3/assert"
 )
 
@@ -2857,75 +2857,6 @@ func (f *FourslashTest) VerifyBaselineHover(t *testing.T) {
 	}
 }
 
-// VerifyBaselineVSHover is like VerifyBaselineHover, but asserts on the VS-specific rich hover
-// content (Hover.VSRawContent / the "_vs_rawContent" wire field) that the LSP server emits for
-// clients advertising the VSSupportsVisualStudioExtensions capability.
-func (f *FourslashTest) VerifyBaselineVSHover(t *testing.T) {
-	markersAndItems := core.MapFiltered(f.Markers(), func(marker *Marker) (markerAndItem[*lsproto.Hover], bool) {
-		if marker.Name == nil {
-			return markerAndItem[*lsproto.Hover]{}, false
-		}
-
-		params := &lsproto.HoverParams{
-			TextDocument: lsproto.TextDocumentIdentifier{
-				Uri: lsconv.FileNameToDocumentURI(marker.fileName),
-			},
-			Position: marker.LSPosition,
-		}
-
-		result := sendRequest(t, f, lsproto.TextDocumentHoverInfo, params)
-		return markerAndItem[*lsproto.Hover]{Marker: marker, Item: result.Hover}, true
-	})
-
-	getRange := func(item *lsproto.Hover) *lsproto.Range {
-		if item == nil || item.Range == nil {
-			return nil
-		}
-		return item.Range
-	}
-
-	getTooltipLines := func(item, _prev *lsproto.Hover) []string {
-		if item == nil {
-			return nil
-		}
-		if item.VSRawContent == nil {
-			return []string{"(no _vs_rawContent; is VSSupportsVisualStudioExtensions set on the test's ClientCapabilities?)"}
-		}
-		return renderVSContainerElement(item.VSRawContent, "")
-	}
-
-	f.addResultToBaseline(t, vsQuickInfoCmd, annotateContentWithTooltips(t, f, markersAndItems, "vsquickinfo", getRange, getTooltipLines))
-	if jsonStr, err := core.StringifyJson(markersAndItems, "", "  "); err == nil {
-		f.writeToBaseline(vsQuickInfoCmd, jsonStr)
-	} else {
-		t.Fatalf("Failed to stringify markers and items for baseline: %v", err)
-	}
-}
-
-// renderVSContainerElement renders a VS rich-content container element (icon + colorized runs,
-// possibly nested for the stacked display-line/documentation shape) into readable baseline lines.
-func renderVSContainerElement(el *lsproto.VSContainerElement, indent string) []string {
-	lines := []string{fmt.Sprintf("%sContainerElement (Style=%s)", indent, el.Style)}
-	childIndent := indent + "  "
-	for _, child := range el.Elements {
-		switch {
-		case child.ImageElement != nil:
-			imageId := child.ImageElement.ImageId
-			lines = append(lines, fmt.Sprintf("%sImageElement { Guid: %s, Id: 0x%X }", childIndent, imageId.Guid, imageId.Id))
-		case child.ClassifiedTextElement != nil:
-			lines = append(lines, childIndent+"ClassifiedTextElement")
-			for _, run := range child.ClassifiedTextElement.Runs {
-				lines = append(lines, fmt.Sprintf("%s  [%s] %q", childIndent, run.ClassificationTypeName, run.Text))
-			}
-		case child.ContainerElement != nil:
-			lines = append(lines, renderVSContainerElement(child.ContainerElement, childIndent)...)
-		default:
-			lines = append(lines, childIndent+"<empty union element>")
-		}
-	}
-	return lines
-}
-
 func appendLinesForMarkedStringWithLanguage(result []string, ms *lsproto.MarkedStringWithLanguage) []string {
 	result = append(result, "```"+ms.Language)
 	result = append(result, ms.Value)
@@ -4751,26 +4682,6 @@ func (f *FourslashTest) VerifyRenameSucceeded(t *testing.T, preferences *lsutil.
 	if renameResult.WorkspaceEdit == nil || renameResult.WorkspaceEdit.Changes == nil || len(*renameResult.WorkspaceEdit.Changes) == 0 {
 		t.Fatal(prefix + "prepareRename succeeded but textDocument/rename returned no changes")
 	}
-}
-
-func (f *FourslashTest) VerifyRenameRange(t *testing.T, expectedRange lsproto.Range, expectedPlaceholder string, preferences *lsutil.UserPreferences) {
-	t.Helper()
-	if preferences != nil {
-		defer f.ConfigureWithReset(t, *preferences)()
-	}
-	params := &lsproto.PrepareRenameParams{
-		TextDocument: lsproto.TextDocumentIdentifier{
-			Uri: lsconv.FileNameToDocumentURI(f.activeFilename),
-		},
-		Position: f.currentCaretPosition,
-	}
-
-	result := sendRequest(t, f, lsproto.TextDocumentPrepareRenameInfo, params)
-	if result.PrepareRenamePlaceholder == nil {
-		t.Fatal(f.getCurrentPositionPrefix() + "Expected prepareRename to return a range and placeholder")
-	}
-	assert.DeepEqual(t, result.PrepareRenamePlaceholder.Range, expectedRange)
-	assert.Equal(t, result.PrepareRenamePlaceholder.Placeholder, expectedPlaceholder)
 }
 
 func (f *FourslashTest) RenameAtCaret(t *testing.T, newName string) lsproto.RenameResponse {

@@ -1,16 +1,15 @@
 package lsutil
 
 import (
-	"maps"
 	"reflect"
 	"slices"
 	"strings"
 	"sync"
 
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/json"
-	"github.com/buke/typescript-go-internal/pkg/modulespecifiers"
-	"github.com/buke/typescript-go-internal/pkg/vfs/vfsmatch"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/json"
+	"github.com/buke/typescript-go-internal/v7/pkg/modulespecifiers"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/vfsmatch"
 )
 
 func NewDefaultUserPreferences() UserPreferences {
@@ -177,7 +176,6 @@ type UserPreferences struct {
 	DisableLineTextInReferences core.Tristate `raw:"disableLineTextInReferences"` // !!!
 	DisplayPartsForJSDoc        core.Tristate `raw:"displayPartsForJSDoc"`        // !!!
 	ReportStyleChecksAsWarnings core.Tristate `raw:"reportStyleChecksAsWarnings" config:"reportStyleChecksAsWarnings"`
-	Locale                      string        `config:"locale"`
 
 	// ------- ATA -------
 
@@ -888,19 +886,7 @@ func ParseUserPreferences(items map[string]any) UserPreferences {
 	// editor < javascript < typescript < js/ts
 	if editorItem, ok := items["editor"]; ok && editorItem != nil {
 		if editorSettings, ok := editorItem.(map[string]any); ok {
-			normalizedSettings := make(map[string]any, len(editorSettings)+2)
-			maps.Copy(normalizedSettings, editorSettings)
-			if tabSize, ok := normalizedSettings["tabSize"]; ok {
-				if _, hasIndentSize := normalizedSettings["indentSize"]; !hasIndentSize {
-					normalizedSettings["indentSize"] = tabSize
-				}
-			}
-			if insertSpaces, ok := normalizedSettings["insertSpaces"]; ok {
-				if _, hasConvertTabsToSpaces := normalizedSettings["convertTabsToSpaces"]; !hasConvertTabsToSpaces {
-					normalizedSettings["convertTabsToSpaces"] = insertSpaces
-				}
-			}
-			prefs = prefs.withConfig(map[string]any{"unstable": normalizedSettings})
+			prefs = prefs.withConfig(map[string]any{"unstable": editorSettings})
 		}
 	}
 	// Apply javascript, then typescript, then js/ts (highest precedence).

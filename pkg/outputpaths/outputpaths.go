@@ -3,9 +3,9 @@ package outputpaths
 import (
 	"strings"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 type OutputPathsHost interface {
@@ -39,13 +39,7 @@ func (o *OutputPaths) DeclarationMapPath() string {
 	return o.declarationMapPath
 }
 
-type ForceEmitPaths struct {
-	Dts            bool
-	Js             bool
-	DeclarationMap bool
-}
-
-func GetOutputPathsFor(sourceFile *ast.SourceFile, options *core.CompilerOptions, host OutputPathsHost, force ForceEmitPaths) *OutputPaths {
+func GetOutputPathsFor(sourceFile *ast.SourceFile, options *core.CompilerOptions, host OutputPathsHost, forceDtsEmit bool) *OutputPaths {
 	ownOutputFilePath := getOwnEmitOutputFilePath(sourceFile.FileName(), options, host, GetOutputExtension(sourceFile.FileName(), options.Jsx))
 	isJsonFile := ast.IsJsonSourceFile(sourceFile)
 	// If json file emits to the same location skip writing it, if emitDeclarationOnly skip writing it
@@ -55,15 +49,15 @@ func GetOutputPathsFor(sourceFile *ast.SourceFile, options *core.CompilerOptions
 			UseCaseSensitiveFileNames: host.UseCaseSensitiveFileNames(),
 		}) == 0
 	paths := &OutputPaths{}
-	if (force.Js || options.EmitDeclarationOnly != core.TSTrue) && !isJsonEmittedToSameLocation {
+	if options.EmitDeclarationOnly != core.TSTrue && !isJsonEmittedToSameLocation {
 		paths.jsFilePath = ownOutputFilePath
 		if !ast.IsJsonSourceFile(sourceFile) {
 			paths.sourceMapFilePath = GetSourceMapFilePath(paths.jsFilePath, options)
 		}
 	}
-	if force.Dts || options.GetEmitDeclarations() && !isJsonFile {
+	if forceDtsEmit || options.GetEmitDeclarations() && !isJsonFile {
 		paths.declarationFilePath = GetDeclarationEmitOutputFilePath(sourceFile.FileName(), options, host)
-		if options.GetAreDeclarationMapsEnabled() || force.DeclarationMap && options.DeclarationMap.IsTrue() {
+		if options.GetAreDeclarationMapsEnabled() {
 			paths.declarationMapPath = paths.declarationFilePath + ".map"
 		}
 	}
@@ -72,7 +66,7 @@ func GetOutputPathsFor(sourceFile *ast.SourceFile, options *core.CompilerOptions
 
 func ForEachEmittedFile(host OutputPathsHost, options *core.CompilerOptions, action func(emitFileNames *OutputPaths, sourceFile *ast.SourceFile) bool, sourceFiles []*ast.SourceFile, forceDtsEmit bool) bool {
 	for _, sourceFile := range sourceFiles {
-		if action(GetOutputPathsFor(sourceFile, options, host, ForceEmitPaths{Dts: forceDtsEmit}), sourceFile) {
+		if action(GetOutputPathsFor(sourceFile, options, host, forceDtsEmit), sourceFile) {
 			return true
 		}
 	}

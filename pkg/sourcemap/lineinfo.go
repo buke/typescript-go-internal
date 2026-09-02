@@ -1,6 +1,6 @@
 package sourcemap
 
-import "github.com/buke/typescript-go-internal/pkg/core"
+import "github.com/buke/typescript-go-internal/v7/pkg/core"
 
 type ECMALineInfo struct {
 	text       string

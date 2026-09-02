@@ -1,9 +1,9 @@
 package checker
 
 import (
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
 )
 
 func (c *Checker) GetStringType() *Type {
@@ -68,10 +68,6 @@ func (c *Checker) GetUndefinedSymbol() *ast.Symbol {
 
 func (c *Checker) GetArgumentsSymbol() *ast.Symbol {
 	return c.argumentsSymbol
-}
-
-func (c *Checker) GetUnknownSignature() *Signature {
-	return c.unknownSignature
 }
 
 func (c *Checker) GetUnionType(types []*Type) *Type {

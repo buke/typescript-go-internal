@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/buke/typescript-go-internal/pkg/json"
+	"github.com/buke/typescript-go-internal/v7/pkg/json"
 )
 
 var (

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/buke/typescript-go-internal/pkg/json"
+	"github.com/buke/typescript-go-internal/v7/pkg/json"
 )
 
 // JSONRPCVersion represents the JSON-RPC version field, always "2.0".

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/buke/typescript-go-internal/pkg/json"
-	"github.com/buke/typescript-go-internal/pkg/vfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/json"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs"
 )
 
 // callbackFS wraps a base filesystem and delegates certain operations
@@ -32,7 +32,6 @@ const (
 	callbackDirectoryExists      = "directoryExists"
 	callbackGetAccessibleEntries = "getAccessibleEntries"
 	callbackRealpath             = "realpath"
-	callbackWriteFile            = "writeFile"
 )
 
 func isCallbackName(name string) bool {
@@ -41,8 +40,7 @@ func isCallbackName(name string) bool {
 		callbackFileExists,
 		callbackDirectoryExists,
 		callbackGetAccessibleEntries,
-		callbackRealpath,
-		callbackWriteFile:
+		callbackRealpath:
 		return true
 	default:
 		return false
@@ -197,21 +195,8 @@ func (fs *callbackFS) Realpath(path string) string {
 	return fs.base.Realpath(path)
 }
 
-// WriteFile implements vfs.FS.
+// WriteFile implements vfs.FS - always delegates to base (no callback support).
 func (fs *callbackFS) WriteFile(path string, data string) error {
-	if fs.isEnabled(callbackWriteFile) {
-		payload := struct {
-			Path string `json:"path"`
-			Data string `json:"data"`
-		}{Path: path, Data: data}
-
-		_, err := fs.call(callbackWriteFile, payload)
-		if err != nil {
-			return err
-		}
-		return nil
-	}
-
 	return fs.base.WriteFile(path, data)
 }
 

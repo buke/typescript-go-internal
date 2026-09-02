@@ -1,6 +1,6 @@
 package ast
 
-import "github.com/buke/typescript-go-internal/pkg/core"
+import "github.com/buke/typescript-go-internal/v7/pkg/core"
 
 // Ideally, this would get cached on the node factory so there's only ever one set of closures made per factory
 func getDeepCloneVisitor(f *NodeFactory, syntheticLocation bool) *NodeVisitor {

@@ -1,0 +1,85 @@
+name: Release Tag
+
+on:
+  pull_request:
+    types: [closed]
+  push:
+    branches: [main]
+  workflow_dispatch:
+    # Manual re-run / repair only — not the primary first-release path
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-tag
+  cancel-in-progress: false
+
+jobs:
+  tag:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'push' ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.merged == true &&
+       contains(github.event.pull_request.labels.*.name, 'sync'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          submodules: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Init TypeScript submodule (sparse)
+        run: |
+          set -euo pipefail
+          git submodule sync -- microsoft/TypeScript
+          git submodule update --init --depth 1 microsoft/TypeScript
+          if git -C microsoft/TypeScript sparse-checkout list >/dev/null 2>&1; then
+            git -C microsoft/TypeScript sparse-checkout set tsc
+          else
+            git -C microsoft/TypeScript sparse-checkout init --cone || true
+            git -C microsoft/TypeScript sparse-checkout set tsc || true
+          fi
+
+      - name: Resolve upstream tag and push matching tag
+        run: |
+          set -euo pipefail
+
+          if ! UPSTREAM_TAG="$(git -C microsoft/TypeScript describe --tags --exact-match HEAD 2>/dev/null)"; then
+            echo "Submodule is not on an exact tag; skipping release tag."
+            exit 0
+          fi
+          echo "Upstream tag: ${UPSTREAM_TAG}"
+
+          if [[ ! "${UPSTREAM_TAG}" =~ ^v([0-9]+)\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Upstream tag ${UPSTREAM_TAG} is not a stable vMAJOR.MINOR.PATCH; skipping."
+            exit 0
+          fi
+          MAJOR="${BASH_REMATCH[1]}"
+
+          MODULE="$(awk '/^module /{print $2}' go.mod)"
+          if [[ ! "${MODULE}" =~ /v${MAJOR}$ ]]; then
+            echo "go.mod module path '${MODULE}' does not end with /v${MAJOR} (required for tag ${UPSTREAM_TAG})."
+            echo "Bump the module major path before tagging."
+            exit 1
+          fi
+
+          if git rev-parse -q --verify "refs/tags/${UPSTREAM_TAG}" >/dev/null; then
+            echo "Tag ${UPSTREAM_TAG} already exists on this repo; skipping."
+            exit 0
+          fi
+
+          # Also skip if the remote already has it (race with push event + PR closed)
+          if git ls-remote --tags origin "refs/tags/${UPSTREAM_TAG}" | grep -q .; then
+            echo "Tag ${UPSTREAM_TAG} already exists on origin; skipping."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "${UPSTREAM_TAG}" -m "TypeScript ${UPSTREAM_TAG}"
+          git push origin "refs/tags/${UPSTREAM_TAG}"
+          echo "Pushed tag ${UPSTREAM_TAG}"

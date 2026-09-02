@@ -6,7 +6,8 @@
 // | ----------------------------------------------------------------------
 // | ```typescript
 // | namespace ns {
-// |     export let default: any;
+// |     let circle: Shape;
+// |     export { circle as default };
 // |     export { Shape };
 // | }
 // | ```
@@ -75,7 +76,7 @@
       "hover": {
         "contents": {
           "kind": "markdown",
-          "value": "```typescript\nnamespace ns {\n    export let default: any;\n    export { Shape };\n}\n```\n"
+          "value": "```typescript\nnamespace ns {\n    let circle: Shape;\n    export { circle as default };\n    export { Shape };\n}\n```\n"
         },
         "range": {
           "start": {
@@ -86,7 +87,8 @@
             "line": 1,
             "character": 20
           }
-        }
+        },
+        "canIncreaseVerbosity": true
       },
       "verbosityLevel": 1
     }

@@ -3,7 +3,7 @@ package diagnostics
 import (
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/locale"
+	"github.com/buke/typescript-go-internal/v7/pkg/locale"
 	"golang.org/x/text/language"
 	"gotest.tools/v3/assert"
 )

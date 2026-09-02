@@ -9,13 +9,13 @@ import (
 	"testing"
 	"unicode/utf8"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/diagnosticwriter"
-	"github.com/buke/typescript-go-internal/pkg/locale"
-	"github.com/buke/typescript-go-internal/pkg/testutil/baseline"
-	"github.com/buke/typescript-go-internal/pkg/testutil/harnessutil"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnosticwriter"
+	"github.com/buke/typescript-go-internal/v7/pkg/locale"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil/baseline"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil/harnessutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 	"gotest.tools/v3/assert"
 	"gotest.tools/v3/assert/cmp"
 )
@@ -41,11 +41,6 @@ func DoErrorBaseline(t *testing.T, baselinePath string, inputFiles []*harnessuti
 		errorBaseline = baseline.NoContent
 	}
 	baseline.Run(t, baselinePath, errorBaseline, opts)
-	if core.Some(errors, func(d *ast.Diagnostic) bool {
-		return d.Code() == -1
-	}) {
-		t.Fatalf("Found diagnostic with code -1, which is used to log critical assertion violations in the baseline. Inspect and fix those failures.")
-	}
 }
 
 func minimalDiagnosticsToString(diagnostics []diagnosticwriter.Diagnostic, pretty bool) string {

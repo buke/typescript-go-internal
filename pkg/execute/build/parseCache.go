@@ -3,7 +3,7 @@ package build
 import (
 	"sync"
 
-	"github.com/buke/typescript-go-internal/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
 )
 
 type parseCacheEntry[V comparable] struct {

@@ -5,8 +5,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 //go:generate go run golang.org/x/tools/cmd/stringer@latest -type=ModuleKind -trimprefix=ModuleKind -output=modulekind_stringer_generated.go

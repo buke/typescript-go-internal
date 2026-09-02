@@ -49,9 +49,7 @@ export declare const barrel: {
 };
 export {};
 //// [indirect.d.ts]
-declare const { bar }: {
-    bar: () => Promise<string>;
-};
+declare const bar: () => Promise<string>;
 export { bar };
 //// [main.d.ts]
 export {};

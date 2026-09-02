@@ -8,10 +8,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/buke/typescript-go-internal/pkg/execute/watchmanager"
-	"github.com/buke/typescript-go-internal/pkg/fswatch"
-	"github.com/buke/typescript-go-internal/pkg/testutil/fsbaselineutil"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/execute/watchmanager"
+	"github.com/buke/typescript-go-internal/v7/pkg/fswatch"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil/fsbaselineutil"
 )
 
 // MockWatchBackend implements watchmanager.WatchBackend for testing. It
@@ -20,10 +19,9 @@ import (
 // SendEvents, which routes them only through watches whose paths
 // match, enforcing that tests fail if the wrong watches are set up.
 type MockWatchBackend struct {
-	mu                        sync.Mutex
-	Dirs                      map[string]*MockWatch
-	DirectoryExists           func(string) bool // if set, WatchDirectory fails for non-existent dirs
-	UseCaseSensitiveFileNames bool
+	mu              sync.Mutex
+	Dirs            map[string]*MockWatch
+	DirectoryExists func(string) bool // if set, WatchDirectory fails for non-existent dirs
 }
 
 var _ watchmanager.WatchBackend = (*MockWatchBackend)(nil)
@@ -111,7 +109,7 @@ func (m *MockWatchBackend) SendEvents(events []fswatch.Event) {
 			if w.Ignore != nil && w.Ignore(e.Path) {
 				continue
 			}
-			if !pathIsUnder(e.Path, w.Path, w.Recursive, m.UseCaseSensitiveFileNames) {
+			if !pathIsUnder(e.Path, w.Path, w.Recursive) {
 				continue
 			}
 			if t, ok := targets[w]; ok {
@@ -125,23 +123,6 @@ func (m *MockWatchBackend) SendEvents(events []fswatch.Event) {
 
 	for _, t := range targets {
 		t.cb(t.events, nil)
-	}
-}
-
-// SendOverflow simulates a kernel event-queue overflow by invoking every
-// active watch callback with fswatch.ErrOverflow. The watch manager treats
-// this as a signal that events were dropped and a full rebuild is required.
-func (m *MockWatchBackend) SendOverflow() {
-	m.mu.Lock()
-	var cbs []fswatch.WatchCallback
-	for _, w := range m.Dirs {
-		if !w.Closed {
-			cbs = append(cbs, w.Callback)
-		}
-	}
-	m.mu.Unlock()
-	for _, cb := range cbs {
-		cb(nil, fswatch.ErrOverflow)
 	}
 }
 
@@ -181,11 +162,7 @@ func (m *MockWatchBackend) SendChangedPaths(changes []fsbaselineutil.FileChange)
 
 // pathIsUnder reports whether eventPath is inside dir. If recursive is
 // false, only direct children match.
-func pathIsUnder(eventPath, dir string, recursive, useCaseSensitiveFileNames bool) bool {
-	if !useCaseSensitiveFileNames {
-		eventPath = tspath.GetCanonicalFileName(eventPath, false)
-		dir = tspath.GetCanonicalFileName(dir, false)
-	}
+func pathIsUnder(eventPath, dir string, recursive bool) bool {
 	if !strings.HasPrefix(eventPath, dir) {
 		return false
 	}

@@ -8,11 +8,11 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/json"
-	"github.com/buke/typescript-go-internal/pkg/jsonrpc"
-	"github.com/buke/typescript-go-internal/pkg/lsp"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/json"
+	"github.com/buke/typescript-go-internal/v7/pkg/jsonrpc"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
 	"golang.org/x/sync/errgroup"
 	"gotest.tools/v3/assert"
 )

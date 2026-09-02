@@ -3,13 +3,13 @@ package moduletransforms
 import (
 	"slices"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/binder"
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/printer"
-	"github.com/buke/typescript-go-internal/pkg/transformers"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/binder"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/printer"
+	"github.com/buke/typescript-go-internal/v7/pkg/transformers"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 type CommonJSModuleTransformer struct {
@@ -1964,7 +1964,7 @@ func (tx *CommonJSModuleTransformer) shimOrRewriteImportOrRequireCall(node *ast.
 	expression := tx.Visitor().VisitNode(node.Expression)
 	argumentsList := node.Arguments
 	if len(node.Arguments.Nodes) > 0 {
-		firstArgument := tx.Visitor().VisitNode(node.Arguments.Nodes[0])
+		firstArgument := node.Arguments.Nodes[0]
 		firstArgumentChanged := false
 		if ast.IsStringLiteralLike(firstArgument) {
 			rewritten := rewriteModuleSpecifier(tx.EmitContext(), firstArgument, tx.compilerOptions)

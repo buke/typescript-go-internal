@@ -6,16 +6,16 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/compiler"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/json"
-	"github.com/buke/typescript-go-internal/pkg/outputpaths"
-	"github.com/buke/typescript-go-internal/pkg/packagejson"
-	"github.com/buke/typescript-go-internal/pkg/tracing"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/compiler"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/json"
+	"github.com/buke/typescript-go-internal/v7/pkg/outputpaths"
+	"github.com/buke/typescript-go-internal/v7/pkg/packagejson"
+	"github.com/buke/typescript-go-internal/v7/pkg/tracing"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 type SignatureUpdateKind byte
@@ -185,7 +185,7 @@ func (p *Program) getSemanticDiagnosticsOfFile(file *ast.SourceFile) []*ast.Diag
 func (p *Program) GetDeclarationDiagnostics(ctx context.Context, file *ast.SourceFile) []*ast.Diagnostic {
 	p.panicIfNoProgram("GetDeclarationDiagnostics")
 	result := emitFiles(ctx, p, compiler.EmitOptions{
-		TargetSourceFiles: core.SingleElementSlice(file),
+		TargetSourceFile: file,
 	}, true)
 	if result != nil {
 		return result.Diagnostics
@@ -207,13 +207,13 @@ func (p *Program) Emit(ctx context.Context, options compiler.EmitOptions) *compi
 	if p.snapshot.options.NoEmit.IsTrue() {
 		result = &compiler.EmitResult{EmitSkipped: true}
 	} else {
-		result = compiler.HandleNoEmitOnError(ctx, p, options.TargetSourceFiles)
+		result = compiler.HandleNoEmitOnError(ctx, p, options.TargetSourceFile)
 		if ctx.Err() != nil {
 			return nil
 		}
 	}
 	if result != nil {
-		if options.TargetSourceFiles != nil {
+		if options.TargetSourceFile != nil {
 			return result
 		}
 
