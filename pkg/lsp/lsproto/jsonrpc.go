@@ -3,8 +3,8 @@ package lsproto
 import (
 	"fmt"
 
-	"github.com/buke/typescript-go-internal/pkg/json"
-	"github.com/buke/typescript-go-internal/pkg/jsonrpc"
+	"github.com/buke/typescript-go-internal/v7/pkg/json"
+	"github.com/buke/typescript-go-internal/v7/pkg/jsonrpc"
 )
 
 // NewID creates an ID from an IntegerOrString value.

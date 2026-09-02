@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
 	"gotest.tools/v3/assert"
 )
 

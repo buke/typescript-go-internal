@@ -6,11 +6,11 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/bundled"
-	"github.com/buke/typescript-go-internal/pkg/lsp"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
-	"github.com/buke/typescript-go-internal/pkg/testutil/lsptestutil"
-	"github.com/buke/typescript-go-internal/pkg/vfs/vfstest"
+	"github.com/buke/typescript-go-internal/v7/pkg/bundled"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil/lsptestutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/vfstest"
 	"gotest.tools/v3/assert"
 )
 

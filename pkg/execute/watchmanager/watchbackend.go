@@ -4,8 +4,8 @@ import (
 	"io"
 	"strings"
 
-	"github.com/buke/typescript-go-internal/pkg/fswatch"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/fswatch"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 // WatchBackend abstracts fswatch.Watcher for testing

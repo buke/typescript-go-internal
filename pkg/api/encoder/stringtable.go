@@ -3,7 +3,7 @@ package encoder
 import (
 	"strings"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
 )
 
 type stringTable struct {

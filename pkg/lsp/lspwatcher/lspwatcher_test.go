@@ -10,12 +10,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/buke/typescript-go-internal/pkg/bundled"
-	"github.com/buke/typescript-go-internal/pkg/fswatch"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
-	"github.com/buke/typescript-go-internal/pkg/project/logging"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
-	"github.com/buke/typescript-go-internal/pkg/vfs/osvfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/bundled"
+	"github.com/buke/typescript-go-internal/v7/pkg/fswatch"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/project/logging"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/osvfs"
 )
 
 func waitFor(t *testing.T, cond func() bool, msg string) {

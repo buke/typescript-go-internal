@@ -10,23 +10,23 @@ import (
 	"sync"
 	"time"
 
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/compiler"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/execute"
-	"github.com/buke/typescript-go-internal/pkg/execute/incremental"
-	"github.com/buke/typescript-go-internal/pkg/execute/tsc"
-	"github.com/buke/typescript-go-internal/pkg/execute/watchmanager"
-	"github.com/buke/typescript-go-internal/pkg/locale"
-	"github.com/buke/typescript-go-internal/pkg/testutil/fsbaselineutil"
-	"github.com/buke/typescript-go-internal/pkg/testutil/harnessutil"
-	"github.com/buke/typescript-go-internal/pkg/testutil/stringtestutil"
-	"github.com/buke/typescript-go-internal/pkg/tsoptions"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
-	"github.com/buke/typescript-go-internal/pkg/vfs"
-	"github.com/buke/typescript-go-internal/pkg/vfs/iovfs"
-	"github.com/buke/typescript-go-internal/pkg/vfs/vfstest"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/compiler"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/execute"
+	"github.com/buke/typescript-go-internal/v7/pkg/execute/incremental"
+	"github.com/buke/typescript-go-internal/v7/pkg/execute/tsc"
+	"github.com/buke/typescript-go-internal/v7/pkg/execute/watchmanager"
+	"github.com/buke/typescript-go-internal/v7/pkg/locale"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil/fsbaselineutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil/harnessutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil/stringtestutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/tsoptions"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/iovfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/vfstest"
 	"golang.org/x/text/language"
 )
 
@@ -135,7 +135,6 @@ func newTestSys(tscInput *tscInput, forIncrementalCorrectness bool) *TestSys {
 	sys.forIncrementalCorrectness = forIncrementalCorrectness
 	sys.mockWatchBackend = NewMockWatchBackend()
 	sys.mockWatchBackend.DirectoryExists = sys.fs.FS.DirectoryExists
-	sys.mockWatchBackend.UseCaseSensitiveFileNames = !tscInput.ignoreCase
 	sys.fsDiffer = &fsbaselineutil.FSDiffer{
 		FS:           sys.fs.FS.(iovfs.FsWithSys),
 		DefaultLibs:  func() *collections.SyncSet[string] { return sys.fs.defaultLibs },

@@ -6,8 +6,8 @@ package fourslash_test
 import (
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/fourslash"
-	"github.com/buke/typescript-go-internal/pkg/testutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/fourslash"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil"
 )
 
 func TestCodeFixMissingTypeAnnotationOnExports58_genercs_doesnt_drop_trailing_unknown_2(t *testing.T) {

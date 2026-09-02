@@ -5,16 +5,16 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/astnav"
-	"github.com/buke/typescript-go-internal/pkg/checker"
-	"github.com/buke/typescript-go-internal/pkg/compiler"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/debug"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
-	"github.com/buke/typescript-go-internal/pkg/nodebuilder"
-	"github.com/buke/typescript-go-internal/pkg/printer"
-	"github.com/buke/typescript-go-internal/pkg/scanner"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/astnav"
+	"github.com/buke/typescript-go-internal/v7/pkg/checker"
+	"github.com/buke/typescript-go-internal/v7/pkg/compiler"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/debug"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/nodebuilder"
+	"github.com/buke/typescript-go-internal/v7/pkg/printer"
+	"github.com/buke/typescript-go-internal/v7/pkg/scanner"
 )
 
 type callInvocation struct {

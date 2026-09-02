@@ -6,16 +6,16 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/compiler"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
-	"github.com/buke/typescript-go-internal/pkg/module"
-	"github.com/buke/typescript-go-internal/pkg/modulespecifiers"
-	"github.com/buke/typescript-go-internal/pkg/scanner"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/compiler"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/lsutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/module"
+	"github.com/buke/typescript-go-internal/v7/pkg/modulespecifiers"
+	"github.com/buke/typescript-go-internal/v7/pkg/scanner"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 type View struct {

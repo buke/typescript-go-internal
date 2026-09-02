@@ -7,11 +7,11 @@ import (
 	"runtime/debug"
 	"sync"
 
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/compiler"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/compiler"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 type Project interface {

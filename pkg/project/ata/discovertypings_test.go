@@ -4,13 +4,13 @@ import (
 	"maps"
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/project/ata"
-	"github.com/buke/typescript-go-internal/pkg/project/logging"
-	"github.com/buke/typescript-go-internal/pkg/semver"
-	"github.com/buke/typescript-go-internal/pkg/testutil/projecttestutil"
-	"github.com/buke/typescript-go-internal/pkg/vfs/vfstest"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/project/ata"
+	"github.com/buke/typescript-go-internal/v7/pkg/project/logging"
+	"github.com/buke/typescript-go-internal/v7/pkg/semver"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil/projecttestutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/vfstest"
 	"gotest.tools/v3/assert"
 )
 

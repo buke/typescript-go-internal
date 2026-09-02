@@ -3,10 +3,10 @@ package format_test
 import (
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/format"
-	"github.com/buke/typescript-go-internal/pkg/parser"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/format"
+	"github.com/buke/typescript-go-internal/v7/pkg/parser"
 	"gotest.tools/v3/assert"
 )
 

@@ -1,8 +1,8 @@
 package project
 
 import (
-	"github.com/buke/typescript-go-internal/pkg/tsoptions"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/tsoptions"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 	"github.com/zeebo/xxh3"
 )
 

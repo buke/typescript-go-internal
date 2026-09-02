@@ -6,14 +6,14 @@ import (
 	"sync"
 	"unicode/utf8"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/debug"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/scanner"
-	"github.com/buke/typescript-go-internal/pkg/stringutil"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/debug"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/scanner"
+	"github.com/buke/typescript-go-internal/v7/pkg/stringutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 type ParsingContext int
@@ -84,6 +84,7 @@ type Parser struct {
 	hasDeprecatedTag            bool
 	hasParseError               bool
 
+	identifiers                map[string]string
 	identifierCount            int
 	notParenthesizedArrow      collections.Set[int]
 	nodeSliceArena             core.Arena[*ast.Node]
@@ -95,6 +96,7 @@ type Parser struct {
 	jsdocTagCommentsSpace      []string
 	jsdocTagCommentsPartsSpace []*ast.Node
 	reparseList                []*ast.Node
+	commonJSModuleIndicator    *ast.Node
 
 	currentParent        *ast.Node
 	setParentFromContext ast.Visitor
@@ -182,7 +184,7 @@ func (p *Parser) parseJSONText() *ast.SourceFile {
 				}
 			case ast.KindNumericLiteral, ast.KindStringLiteral:
 				if p.lookAhead(func(p *Parser) bool { return p.nextToken() != ast.KindColonToken }) {
-					expression = p.parseLiteralExpression()
+					expression = p.parseLiteralExpression(false /*intern*/)
 					break
 				}
 				fallthrough
@@ -466,10 +468,12 @@ func (p *Parser) finishSourceFile(result *ast.SourceFile, isDeclarationFile bool
 	p.processPragmasIntoFields(result)
 	result.SetDiagnostics(attachFileToDiagnostics(p.diagnostics, result))
 	result.SetJSDocDiagnostics(attachFileToDiagnostics(p.jsdocDiagnostics, result))
+	result.CommonJSModuleIndicator = p.commonJSModuleIndicator
 	result.IsDeclarationFile = isDeclarationFile
 	result.LanguageVariant = p.languageVariant
 	result.ScriptKind = p.scriptKind
 	result.Flags |= p.sourceFlags
+	result.Identifiers = p.identifiers
 	result.NodeCount = p.factory.NodeCount()
 	result.TextCount = p.factory.TextCount()
 	result.IdentifierCount = p.identifierCount
@@ -2176,7 +2180,7 @@ func (p *Parser) parseAmbientExternalModuleDeclaration(pos int, jsdoc jsdocScann
 		keyword = ast.KindGlobalKeyword
 	} else {
 		// parse string literal
-		name = p.parseLiteralExpression()
+		name = p.parseLiteralExpression(true /*intern*/)
 	}
 	var body *ast.Node
 	if p.token == ast.KindOpenBraceToken {
@@ -2321,7 +2325,8 @@ func (p *Parser) parseExternalModuleReference() *ast.Node {
 
 func (p *Parser) parseModuleSpecifier() *ast.Expression {
 	if p.token == ast.KindStringLiteral {
-		return p.parseLiteralExpression()
+		result := p.parseLiteralExpression(true /*intern*/)
+		return result
 	}
 	// We allow arbitrary expressions here, even though the grammar only allows string
 	// literals.  We check to ensure that it is only a string literal later in the grammar
@@ -2485,7 +2490,7 @@ func (p *Parser) parseModuleExportName(disallowKeywords bool) (node *ast.Node, n
 	nameOk = true
 
 	if p.token == ast.KindStringLiteral {
-		return p.parseLiteralExpression(), nameOk
+		return p.parseLiteralExpression(false /*intern*/), nameOk
 	}
 	if disallowKeywords && ast.IsKeyword(p.token) && !p.isIdentifier() {
 		nameOk = false
@@ -2881,7 +2886,7 @@ func (p *Parser) parseLiteralTypeNode(negative bool) *ast.Node {
 	if p.token == ast.KindTrueKeyword || p.token == ast.KindFalseKeyword || p.token == ast.KindNullKeyword {
 		expression = p.parseKeywordExpression()
 	} else {
-		expression = p.parseLiteralExpression()
+		expression = p.parseLiteralExpression(false /*intern*/)
 	}
 	if negative {
 		expression = p.finishNode(p.factory.NewPrefixUnaryExpression(ast.KindMinusToken, expression), pos)
@@ -2981,7 +2986,7 @@ func (p *Parser) parsePrivateIdentifier() *ast.Node {
 	pos := p.nodePos()
 	text := p.scanner.TokenValue()
 	p.nextToken()
-	return p.finishNode(p.factory.NewPrivateIdentifier(text), pos)
+	return p.finishNode(p.factory.NewPrivateIdentifier(p.internIdentifier(text)), pos)
 }
 
 func (p *Parser) reScanLessThanToken() ast.Kind {
@@ -3071,7 +3076,7 @@ func (p *Parser) parseImportAttribute() *ast.Node {
 	if tokenIsIdentifierOrKeyword(p.token) {
 		name = p.parseIdentifierName()
 	} else if p.token == ast.KindStringLiteral {
-		name = p.parseLiteralExpression()
+		name = p.parseLiteralExpression(false /*intern*/)
 	}
 	if name != nil {
 		p.parseExpected(ast.KindColonToken)
@@ -3453,7 +3458,8 @@ func (p *Parser) parsePropertyName() *ast.Node {
 
 func (p *Parser) parsePropertyNameWorker(allowComputedPropertyNames bool) *ast.Node {
 	if p.token == ast.KindStringLiteral || p.token == ast.KindNumericLiteral || p.token == ast.KindBigIntLiteral {
-		return p.parseLiteralExpression()
+		literal := p.parseLiteralExpression(true /*intern*/)
+		return literal
 	}
 	if allowComputedPropertyNames && p.token == ast.KindOpenBracketToken {
 		return p.parseComputedPropertyName()
@@ -4529,11 +4535,10 @@ func (p *Parser) nextIsUnParenthesizedAsyncArrowFunction() bool {
 			return false
 		}
 		// Check for un-parenthesized AsyncArrowFunction
-		if !p.isIdentifier() {
-			return false
+		expr := p.parseBinaryExpressionOrHigher(ast.OperatorPrecedenceLowest)
+		if !p.hasPrecedingLineBreak() && expr.Kind == ast.KindIdentifier && p.token == ast.KindEqualsGreaterThanToken {
+			return true
 		}
-		p.nextTokenWithoutCheck()
-		return !p.hasPrecedingLineBreak() && p.token == ast.KindEqualsGreaterThanToken
 	}
 	return false
 }
@@ -5030,7 +5035,7 @@ func (p *Parser) parseJsxAttributeName() *ast.Node {
 func (p *Parser) parseJsxAttributeValue() *ast.Expression {
 	if p.token == ast.KindEqualsToken {
 		if p.scanJsxAttributeValue() == ast.KindStringLiteral {
-			return p.parseLiteralExpression()
+			return p.parseLiteralExpression(false /*intern*/)
 		}
 		if p.token == ast.KindOpenBraceToken {
 			return p.parseJsxExpression( /*inExpressionContext*/ true)
@@ -5434,11 +5439,21 @@ func (p *Parser) tryReparseOptionalChain(node *ast.Expression) bool {
 }
 
 func (p *Parser) parseElementAccessExpressionRest(pos int, expression *ast.Expression, questionDotToken *ast.Node) *ast.Node {
-	argumentExpression := p.createMissingIdentifier()
+	var argumentExpression *ast.Expression
 	if p.token == ast.KindCloseBracketToken {
 		p.parseErrorAt(p.nodePos(), p.nodePos(), diagnostics.An_element_access_expression_should_take_an_argument)
+		argumentExpression = p.createMissingIdentifier()
 	} else {
-		argumentExpression = p.parseExpressionAllowIn()
+		argument := p.parseExpressionAllowIn()
+		switch argument.Kind {
+		case ast.KindStringLiteral:
+			argument.AsStringLiteral().Text = p.internIdentifier(argument.Text())
+		case ast.KindNoSubstitutionTemplateLiteral:
+			argument.AsNoSubstitutionTemplateLiteral().Text = p.internIdentifier(argument.Text())
+		case ast.KindNumericLiteral:
+			argument.AsNumericLiteral().Text = p.internIdentifier(argument.Text())
+		}
+		argumentExpression = argument
 	}
 	p.parseExpected(ast.KindCloseBracketToken)
 	isOptionalChain := questionDotToken != nil || p.tryReparseOptionalChain(expression)
@@ -5513,7 +5528,7 @@ func (p *Parser) parseTaggedTemplateRest(pos int, tag *ast.Expression, questionD
 	var template *ast.Expression
 	if p.token == ast.KindNoSubstitutionTemplateLiteral {
 		p.reScanTemplateToken(true /*isTaggedTemplate*/)
-		template = p.parseLiteralExpression()
+		template = p.parseLiteralExpression(false /*intern*/)
 	} else {
 		template = p.parseTemplateExpression(true /*isTaggedTemplate*/)
 	}
@@ -5554,7 +5569,7 @@ func (p *Parser) parsePrimaryExpression() *ast.Expression {
 		}
 		fallthrough
 	case ast.KindNumericLiteral, ast.KindBigIntLiteral, ast.KindStringLiteral:
-		return p.parseLiteralExpression()
+		return p.parseLiteralExpression(false /*intern*/)
 	case ast.KindThisKeyword, ast.KindSuperKeyword, ast.KindNullKeyword, ast.KindTrueKeyword, ast.KindFalseKeyword:
 		return p.parseKeywordExpression()
 	case ast.KindOpenParenToken:
@@ -5581,7 +5596,7 @@ func (p *Parser) parsePrimaryExpression() *ast.Expression {
 		return p.parseNewExpressionOrNewDotTarget()
 	case ast.KindSlashToken, ast.KindSlashEqualsToken:
 		if p.reScanSlashToken() == ast.KindRegularExpressionLiteral {
-			return p.parseLiteralExpression()
+			return p.parseLiteralExpression(false /*intern*/)
 		}
 	case ast.KindTemplateHead:
 		return p.parseTemplateExpression(false /*isTaggedTemplate*/)
@@ -5777,9 +5792,12 @@ func (p *Parser) parseKeywordExpression() *ast.Node {
 	return p.finishNode(result, pos)
 }
 
-func (p *Parser) parseLiteralExpression() *ast.Node {
+func (p *Parser) parseLiteralExpression(intern bool) *ast.Node {
 	pos := p.nodePos()
 	text := p.scanner.TokenValue()
+	if intern {
+		text = p.internIdentifier(text)
+	}
 	tokenFlags := p.scanner.TokenFlags()
 	var result *ast.Node
 	switch p.token {
@@ -5848,7 +5866,7 @@ func (p *Parser) createIdentifierWithDiagnostic(isIdentifier bool, diagnosticMes
 		}
 		text := p.scanner.TokenValue()
 		p.nextTokenWithoutCheck()
-		return p.finishNode(p.newIdentifier(text), pos)
+		return p.finishNode(p.newIdentifier(p.internIdentifier(text)), pos)
 	}
 	if p.token == ast.KindPrivateIdentifier {
 		if privateIdentifierDiagnosticMessage != nil {
@@ -5883,6 +5901,18 @@ func (p *Parser) createIdentifierWithDiagnostic(isIdentifier bool, diagnosticMes
 		}
 	}
 	return p.createMissingIdentifier()
+}
+
+func (p *Parser) internIdentifier(text string) string {
+	if identifier, ok := p.identifiers[text]; ok {
+		return identifier
+	}
+	identifier := text
+	if p.identifiers == nil {
+		p.identifiers = make(map[string]string)
+	}
+	p.identifiers[identifier] = identifier
+	return identifier
 }
 
 func (p *Parser) newNodeList(loc core.TextRange, nodes []*ast.Node) *ast.NodeList {

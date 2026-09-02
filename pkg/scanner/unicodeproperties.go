@@ -1,6 +1,6 @@
 package scanner
 
-import "github.com/buke/typescript-go-internal/pkg/collections"
+import "github.com/buke/typescript-go-internal/v7/pkg/collections"
 
 // Table 66: Non-binary Unicode property aliases and their canonical property names
 // https://tc39.es/ecma262/#table-nonbinary-unicode-properties

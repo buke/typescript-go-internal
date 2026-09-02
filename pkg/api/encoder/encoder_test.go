@@ -8,12 +8,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/api/encoder"
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/parser"
-	"github.com/buke/typescript-go-internal/pkg/repo"
-	"github.com/buke/typescript-go-internal/pkg/testutil/baseline"
+	"github.com/buke/typescript-go-internal/v7/pkg/api/encoder"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/parser"
+	"github.com/buke/typescript-go-internal/v7/pkg/repo"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil/baseline"
 	"gotest.tools/v3/assert"
 )
 

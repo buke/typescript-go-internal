@@ -5,10 +5,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/bundled"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
-	"github.com/buke/typescript-go-internal/pkg/vfs"
-	"github.com/buke/typescript-go-internal/pkg/vfs/osvfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/bundled"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/osvfs"
 	"gotest.tools/v3/assert"
 )
 

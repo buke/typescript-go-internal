@@ -5,15 +5,14 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/bundled"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/locale"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
-	"github.com/buke/typescript-go-internal/pkg/project/logging"
-	"github.com/buke/typescript-go-internal/pkg/tsoptions"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
-	"github.com/buke/typescript-go-internal/pkg/vfs"
-	"github.com/buke/typescript-go-internal/pkg/vfs/vfstest"
+	"github.com/buke/typescript-go-internal/v7/pkg/bundled"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/project/logging"
+	"github.com/buke/typescript-go-internal/v7/pkg/tsoptions"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/vfstest"
 	"gotest.tools/v3/assert"
 )
 
@@ -44,10 +43,6 @@ func (noopClient) SendTelemetry(ctx context.Context, telemetry lsproto.Telemetry
 }
 
 func (noopClient) IsActive() bool { return true }
-
-func (noopClient) GetLocale() locale.Locale { return locale.Default }
-
-func (noopClient) SetLocale(locale string) {}
 
 // TestExtendedConfigCacheOwnership tests the invariant that each ExtendedSourceFile
 // of a config in the ConfigFileRegistry is owned exactly once per snapshot that

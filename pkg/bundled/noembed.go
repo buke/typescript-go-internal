@@ -8,9 +8,9 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/tspath"
-	"github.com/buke/typescript-go-internal/pkg/vfs"
-	"github.com/buke/typescript-go-internal/pkg/vfs/osvfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/osvfs"
 )
 
 const embedded = false

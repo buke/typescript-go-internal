@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
 )
 
 type progressEvent struct {

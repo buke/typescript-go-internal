@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/astnav"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/format"
-	"github.com/buke/typescript-go-internal/pkg/locale"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
-	"github.com/buke/typescript-go-internal/pkg/parser"
-	"github.com/buke/typescript-go-internal/pkg/stringutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/astnav"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/format"
+	"github.com/buke/typescript-go-internal/v7/pkg/locale"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/parser"
+	"github.com/buke/typescript-go-internal/v7/pkg/stringutil"
 )
 
 type docCommentTemplate struct {

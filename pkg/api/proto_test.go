@@ -4,12 +4,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/api"
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/json"
-	"github.com/buke/typescript-go-internal/pkg/parser"
+	"github.com/buke/typescript-go-internal/v7/pkg/api"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/json"
+	"github.com/buke/typescript-go-internal/v7/pkg/parser"
 	"gotest.tools/v3/assert"
 )
 

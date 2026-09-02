@@ -6,8 +6,8 @@ package fourslash_test
 import (
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/fourslash"
-	"github.com/buke/typescript-go-internal/pkg/testutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/fourslash"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil"
 )
 
 func TestCodeFixMissingTypeAnnotationOnExports39_extract_arr_to_variable(t *testing.T) {

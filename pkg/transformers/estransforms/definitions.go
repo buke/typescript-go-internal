@@ -1,8 +1,8 @@
 package estransforms
 
 import (
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/transformers"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/transformers"
 )
 
 var (

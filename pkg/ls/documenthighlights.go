@@ -3,16 +3,16 @@ package ls
 import (
 	"context"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/astnav"
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/compiler"
-	"github.com/buke/typescript-go-internal/pkg/ls/lsconv"
-	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
-	"github.com/buke/typescript-go-internal/pkg/scanner"
-	"github.com/buke/typescript-go-internal/pkg/stringutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/astnav"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/compiler"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/lsconv"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/lsutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/scanner"
+	"github.com/buke/typescript-go-internal/v7/pkg/stringutil"
 
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
 )
 
 func (l *LanguageService) ProvideDocumentHighlights(ctx context.Context, documentUri lsproto.DocumentUri, documentPosition lsproto.Position) (lsproto.DocumentHighlightResponse, error) {

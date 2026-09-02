@@ -7,12 +7,12 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/scanner"
-	"github.com/buke/typescript-go-internal/pkg/sourcemap"
-	"github.com/buke/typescript-go-internal/pkg/stringutil"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/scanner"
+	"github.com/buke/typescript-go-internal/v7/pkg/sourcemap"
+	"github.com/buke/typescript-go-internal/v7/pkg/stringutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 type getLiteralTextFlags int
@@ -646,6 +646,14 @@ func isImmediatelyInvokedFunctionExpressionOrArrowFunction(node *ast.Expression)
 	}
 	node = ast.SkipPartiallyEmittedExpressions(node.Expression())
 	return ast.IsFunctionExpression(node) || ast.IsArrowFunction(node)
+}
+
+func IsFileLevelUniqueName(sourceFile *ast.SourceFile, name string, hasGlobalName func(string) bool) bool {
+	if hasGlobalName != nil && hasGlobalName(name) {
+		return false
+	}
+	_, ok := sourceFile.Identifiers[name]
+	return !ok
 }
 
 func hasLeadingHash(text string) bool {

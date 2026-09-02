@@ -4,11 +4,11 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 func ParseTristate(value any) core.Tristate {
@@ -70,34 +70,19 @@ func parseNumber(value any) *int {
 	return nil
 }
 
-type projectReferenceParseResult struct {
-	reference     core.ProjectReference
-	hasPath       bool
-	pathValid     bool
-	hasCircular   bool
-	circularValid bool
-}
-
-func parseProjectReference(json any) *projectReferenceParseResult {
+func parseProjectReference(json any) []*core.ProjectReference {
+	var result []*core.ProjectReference
 	if v, ok := json.(*collections.OrderedMap[string, any]); ok {
-		result := &projectReferenceParseResult{}
-		if value, ok := v.Get("path"); ok {
-			result.hasPath = true
-			if path, ok := value.(string); ok {
-				result.reference.Path = path
-				result.pathValid = true
-			}
+		var reference core.ProjectReference
+		if v, ok := v.Get("path"); ok {
+			reference.Path = v.(string)
 		}
-		if value, ok := v.Get("circular"); ok {
-			result.hasCircular = true
-			if circular, ok := value.(bool); ok {
-				result.reference.Circular = circular
-				result.circularValid = true
-			}
+		if v, ok := v.Get("circular"); ok {
+			reference.Circular = v.(bool)
 		}
-		return result
+		result = append(result, &reference)
 	}
-	return nil
+	return result
 }
 
 func parseJsonToStringKey(json any) *collections.OrderedMap[string, any] {

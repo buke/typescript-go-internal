@@ -6,14 +6,14 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/module"
-	"github.com/buke/typescript-go-internal/pkg/tracing"
-	"github.com/buke/typescript-go-internal/pkg/tsoptions"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/module"
+	"github.com/buke/typescript-go-internal/v7/pkg/tracing"
+	"github.com/buke/typescript-go-internal/v7/pkg/tsoptions"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 type parseTask struct {

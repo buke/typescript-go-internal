@@ -16,5 +16,5 @@ var M;
 
 //// [declarationEmitDestructuringArrayPattern3.d.ts]
 declare namespace M {
-    var [a, b]: [number, number];
+    var a: number, b: number;
 }

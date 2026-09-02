@@ -3,8 +3,8 @@ package fourslash_test
 import (
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/fourslash"
-	"github.com/buke/typescript-go-internal/pkg/testutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/fourslash"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil"
 )
 
 func TestFormatSelectionInJSDocTypeLiteralNoCrash1(t *testing.T) {

@@ -7,12 +7,12 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/checker"
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/compiler"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/checker"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/compiler"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 type dtsMayChange map[tspath.Path]FileEmitKind
@@ -69,8 +69,8 @@ func (h *affectedFilesHandler) removeDiagnosticsOfLibraryFiles() {
 func (h *affectedFilesHandler) computeDtsSignature(file *ast.SourceFile) string {
 	var signature string
 	h.program.program.Emit(h.ctx, compiler.EmitOptions{
-		TargetSourceFiles: core.SingleElementSlice(file),
-		EmitOnly:          compiler.EmitOnlyForcedDts,
+		TargetSourceFile: file,
+		EmitOnly:         compiler.EmitOnlyForcedDts,
 		WriteFile: func(fileName string, text string, data *compiler.WriteFileData) error {
 			if !tspath.IsDeclarationFileName(fileName) {
 				panic("File extension for signature expected to be dts, got : " + fileName)
@@ -119,7 +119,7 @@ func (h *affectedFilesHandler) getFilesAffectedBy(path tspath.Path) []*ast.Sourc
 
 	if info, _ := h.program.snapshot.fileInfos.Load(file.Path()); info.affectsGlobalScope {
 		h.hasAllFilesExcludingDefaultLibraryFile.Store(true)
-		return h.program.snapshot.getAllFilesExcludingDefaultLibraryFile(h.program.program, file)
+		h.program.snapshot.getAllFilesExcludingDefaultLibraryFile(h.program.program, file)
 	}
 
 	if h.program.snapshot.options.IsolatedModules.IsTrue() {

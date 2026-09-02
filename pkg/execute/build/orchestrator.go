@@ -9,18 +9,18 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/compiler"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/execute/incremental"
-	"github.com/buke/typescript-go-internal/pkg/execute/tsc"
-	"github.com/buke/typescript-go-internal/pkg/execute/watchmanager"
-	"github.com/buke/typescript-go-internal/pkg/fswatch"
-	"github.com/buke/typescript-go-internal/pkg/tsoptions"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
-	"github.com/buke/typescript-go-internal/pkg/vfs/cachedvfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/compiler"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/execute/incremental"
+	"github.com/buke/typescript-go-internal/v7/pkg/execute/tsc"
+	"github.com/buke/typescript-go-internal/v7/pkg/execute/watchmanager"
+	"github.com/buke/typescript-go-internal/v7/pkg/fswatch"
+	"github.com/buke/typescript-go-internal/v7/pkg/tsoptions"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/cachedvfs"
 )
 
 type Options struct {
@@ -417,7 +417,7 @@ func (o *Orchestrator) packageJsonLookupChanged(packageJson string, changedPaths
 }
 
 func (o *Orchestrator) computeDesiredWatches() map[string]bool {
-	desiredDirs := watchmanager.NewDirWatchSet(o.comparePathsOptions)
+	desiredDirs := make(map[string]bool)
 
 	for i := range o.order {
 		config := o.order[i]
@@ -427,7 +427,9 @@ func (o *Orchestrator) computeDesiredWatches() map[string]bool {
 		// Watch config file directory
 		configDir := tspath.GetDirectoryPath(task.config)
 		realConfigDir := o.host.FS().Realpath(configDir)
-		desiredDirs.Set(realConfigDir, false)
+		if _, has := desiredDirs[realConfigDir]; !has {
+			desiredDirs[realConfigDir] = false
+		}
 
 		if task.resolved == nil {
 			continue
@@ -437,21 +439,29 @@ func (o *Orchestrator) computeDesiredWatches() map[string]bool {
 		for _, cfgPath := range task.resolved.ExtendedSourceFiles() {
 			realPath := o.host.FS().Realpath(cfgPath)
 			dir := tspath.GetDirectoryPath(realPath)
-			desiredDirs.Set(dir, false)
+			if _, has := desiredDirs[dir]; !has {
+				desiredDirs[dir] = false
+			}
 		}
 
 		// Wildcard directories from tsconfig
 		for dir, recursive := range task.resolved.WildcardDirectories() {
 			realDir := o.host.FS().Realpath(dir)
-			desiredDirs.Set(realDir, recursive)
+			if existing, has := desiredDirs[realDir]; has {
+				desiredDirs[realDir] = existing || recursive
+			} else {
+				desiredDirs[realDir] = recursive
+			}
 		}
 
 		// Input file directories not already covered
 		for _, fileName := range task.resolved.FileNames() {
 			absPath := tspath.GetNormalizedAbsolutePath(fileName, o.opts.Sys.GetCurrentDirectory())
 			dir := tspath.GetDirectoryPath(absPath)
-			if !desiredDirs.Covered(dir) && watchmanager.CanWatchDirectory(dir) {
-				desiredDirs.Set(dir, false)
+			if !watchmanager.IsDirCoveredByWatch(desiredDirs, dir, o.comparePathsOptions) {
+				if watchmanager.CanWatchDirectory(dir) {
+					desiredDirs[dir] = false
+				}
 			}
 		}
 
@@ -469,8 +479,10 @@ func (o *Orchestrator) computeDesiredWatches() map[string]bool {
 					continue
 				}
 				dir := tspath.GetDirectoryPath(absPath)
-				if !desiredDirs.Covered(dir) && watchmanager.CanWatchDirectory(dir) {
-					desiredDirs.Set(dir, false)
+				if !watchmanager.IsDirCoveredByWatch(desiredDirs, dir, o.comparePathsOptions) {
+					if watchmanager.CanWatchDirectory(dir) {
+						desiredDirs[dir] = false
+					}
 				}
 			}
 			for packageJson := range bi.buildInfo.GetPackageJsons(buildInfoDir) {
@@ -485,16 +497,16 @@ func (o *Orchestrator) computeDesiredWatches() map[string]bool {
 		}
 	}
 
-	return o.wm.ResolveDesiredDirs(desiredDirs.Dirs())
+	return o.wm.ResolveDesiredDirs(desiredDirs)
 }
 
-func (o *Orchestrator) addWatchDir(desiredDirs *watchmanager.DirWatchSet, dir string) {
-	if !desiredDirs.Covered(dir) && watchmanager.CanWatchDirectory(dir) {
-		desiredDirs.Set(dir, false)
+func (o *Orchestrator) addWatchDir(desiredDirs map[string]bool, dir string) {
+	if !watchmanager.IsDirCoveredByWatch(desiredDirs, dir, o.comparePathsOptions) && watchmanager.CanWatchDirectory(dir) {
+		desiredDirs[dir] = false
 	}
 }
 
-func (o *Orchestrator) addPackageJsonWatchDirs(desiredDirs *watchmanager.DirWatchSet, packageJson string) {
+func (o *Orchestrator) addPackageJsonWatchDirs(desiredDirs map[string]bool, packageJson string) {
 	dir := tspath.GetDirectoryPath(packageJson)
 	dirs := []string{dir}
 	foundNodeModules := false

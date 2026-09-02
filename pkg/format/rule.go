@@ -1,6 +1,6 @@
 package format
 
-import "github.com/buke/typescript-go-internal/pkg/ast"
+import "github.com/buke/typescript-go-internal/v7/pkg/ast"
 
 type ruleImpl struct {
 	debugName string

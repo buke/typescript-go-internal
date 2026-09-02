@@ -3,8 +3,8 @@ package incremental
 import (
 	"time"
 
-	"github.com/buke/typescript-go-internal/pkg/compiler"
-	"github.com/buke/typescript-go-internal/pkg/vfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/compiler"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs"
 )
 
 type Host interface {

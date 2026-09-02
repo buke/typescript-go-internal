@@ -5,10 +5,10 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/evaluator"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/evaluator"
 )
 
 //go:generate go run golang.org/x/tools/cmd/stringer@latest -type=SignatureKind -output=stringer_generated.go
@@ -374,11 +374,6 @@ type TypeNodeLinks struct {
 	outerTypeParameters []*Type // Outer type parameters of anonymous object type
 }
 
-type ComputedNameNodeLinks struct {
-	hasName *bool  // If the node has a computable name
-	name    string // Resolved name associated with the type of the node
-}
-
 // Links for enum members
 
 type EnumMemberLinks struct {
@@ -639,8 +634,6 @@ const (
 	ObjectFlagsContainsIntersections      = 1 << 25 // Union contains intersections
 	ObjectFlagsIsUnknownLikeUnionComputed = 1 << 26 // IsUnknownLikeUnion flag has been computed
 	ObjectFlagsIsUnknownLikeUnion         = 1 << 27 // Union of null, undefined, and empty object type
-	ObjectFlagsIsUniformEnumComputed      = 1 << 28 // IsUniformEnum flag has been computed
-	ObjectFlagsIsUniformEnum              = 1 << 29 // Union contains uniform literal types
 	// Flags that require TypeFlags.Intersection
 	ObjectFlagsIsNeverIntersectionComputed = 1 << 25 // IsNeverLike flag has been computed
 	ObjectFlagsIsNeverIntersection         = 1 << 26 // Intersection reduces to never

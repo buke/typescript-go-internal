@@ -6,10 +6,10 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/ls"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 type ProjectCollection struct {

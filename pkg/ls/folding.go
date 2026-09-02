@@ -7,12 +7,12 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/astnav"
-	"github.com/buke/typescript-go-internal/pkg/debug"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
-	"github.com/buke/typescript-go-internal/pkg/printer"
-	"github.com/buke/typescript-go-internal/pkg/scanner"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/astnav"
+	"github.com/buke/typescript-go-internal/v7/pkg/debug"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/printer"
+	"github.com/buke/typescript-go-internal/v7/pkg/scanner"
 )
 
 func (l *LanguageService) ProvideFoldingRange(ctx context.Context, documentURI lsproto.DocumentUri) (lsproto.FoldingRangeResponse, error) {

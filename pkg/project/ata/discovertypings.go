@@ -6,15 +6,15 @@ import (
 	"slices"
 	"unicode/utf8"
 
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/json"
-	"github.com/buke/typescript-go-internal/pkg/packagejson"
-	"github.com/buke/typescript-go-internal/pkg/project/logging"
-	"github.com/buke/typescript-go-internal/pkg/semver"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
-	"github.com/buke/typescript-go-internal/pkg/vfs"
-	"github.com/buke/typescript-go-internal/pkg/vfs/vfsmatch"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/json"
+	"github.com/buke/typescript-go-internal/v7/pkg/packagejson"
+	"github.com/buke/typescript-go-internal/v7/pkg/project/logging"
+	"github.com/buke/typescript-go-internal/v7/pkg/semver"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/vfsmatch"
 )
 
 func isTypingUpToDate(cachedTyping *CachedTyping, availableTypingVersions map[string]string) bool {

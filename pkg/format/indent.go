@@ -5,13 +5,13 @@ import (
 	"slices"
 	"unicode/utf8"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/astnav"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/debug"
-	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
-	"github.com/buke/typescript-go-internal/pkg/scanner"
-	"github.com/buke/typescript-go-internal/pkg/stringutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/astnav"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/debug"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/lsutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/scanner"
+	"github.com/buke/typescript-go-internal/v7/pkg/stringutil"
 )
 
 func GetIndentationForNode(n *ast.Node, ignoreActualIndentationRange *core.TextRange, sourceFile *ast.SourceFile, options lsutil.FormatCodeSettings) int {

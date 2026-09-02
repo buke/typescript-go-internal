@@ -6,9 +6,9 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
 )
 
 // Stores side-table information used during transformation that can be read by the printer to customize emit
@@ -504,14 +504,6 @@ func (c *EmitContext) ParseNode(node *ast.Node) *ast.Node {
 		return node
 	}
 	return nil
-}
-
-func (c *EmitContext) IsFileLevelUniqueName(sourceFile *ast.SourceFile, name string, hasGlobalName func(string) bool) bool {
-	if hasGlobalName != nil && hasGlobalName(name) {
-		return false
-	}
-	sourceFile = c.MostOriginal(sourceFile.AsNode()).AsSourceFile()
-	return !sourceFile.HasIdentifier(name)
 }
 
 //

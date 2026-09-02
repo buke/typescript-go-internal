@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Sync microsoft/typescript-go/internal -> pkg, rewrite imports, and normalize go:generate directives.
+# Sync microsoft/TypeScript/tsc/internal -> pkg, rewrite imports, and normalize go:generate directives.
 # Generation modes:
 #   SYNC_GENERATE=full  (default) run `go generate ./pkg/...` and create a temporary _submodules symlink
 #   SYNC_GENERATE=light skip packages pkg/bundled and pkg/diagnostics
@@ -17,9 +17,10 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-UPSTREAM_SUBMODULE="microsoft/typescript-go"
-UPSTREAM_MOD_FILE="${UPSTREAM_SUBMODULE}/go.mod"
-SRC_DIR="${UPSTREAM_SUBMODULE}/internal"
+UPSTREAM_SUBMODULE="microsoft/TypeScript"
+UPSTREAM_TSC="${UPSTREAM_SUBMODULE}/tsc"
+UPSTREAM_MOD_FILE="${UPSTREAM_TSC}/go.mod"
+SRC_DIR="${UPSTREAM_TSC}/internal"
 DEST_DIR="pkg"
 GENERATE_MODE="${SYNC_GENERATE:-full}"
 MOD_ALIGN_MODE="${SYNC_MOD_ALIGN:-shared}"
@@ -96,9 +97,14 @@ else
   SED_EXT=(-r)
 fi
 
-# Rewrite imports: github.com/microsoft/typescript-go/internal/... -> <module>/pkg/...
+# Rewrite imports from either upstream Go module path into <module>/pkg/...
+# - v7.0.x tags still use github.com/microsoft/typescript-go/internal
+# - later main / future tags use github.com/microsoft/TypeScript/tsc/internal
 echo "Rewriting imports..."
 find "${DEST_DIR}" -type f -name "*.go" -print0 | xargs -0 "${SED_INPLACE[@]}" \
+  -e "s#\"github.com/microsoft/TypeScript/tsc/internal#\"${MODULE_PATH}/pkg#g" \
+  -e "s#'github.com/microsoft/TypeScript/tsc/internal#'${MODULE_PATH}/pkg#g" \
+  -e "s#\`github.com/microsoft/TypeScript/tsc/internal#\`${MODULE_PATH}/pkg#g" \
   -e "s#\"github.com/microsoft/typescript-go/internal#\"${MODULE_PATH}/pkg#g" \
   -e "s#'github.com/microsoft/typescript-go/internal#'${MODULE_PATH}/pkg#g" \
   -e "s#\`github.com/microsoft/typescript-go/internal#\`${MODULE_PATH}/pkg#g"
@@ -133,9 +139,10 @@ find "${DEST_DIR}" -type f -name "*.go" -print0 | xargs -0 "${SED_INPLACE[@]}" \
   -e "s#go run github.com/matryer/moq@latest #go run github.com/matryer/moq@latest -skip-ensure #g"
 
 # Create symlink for generators that need TypeScript data files:
-#   _submodules -> microsoft/typescript-go/_submodules
+#   _submodules -> microsoft/TypeScript/tsc/_submodules
+# (May be absent on some tags / main; skip if missing.)
 ensure_ts_symlink() {
-  local target="${UPSTREAM_SUBMODULE}/_submodules"
+  local target="${UPSTREAM_TSC}/_submodules"
   local link="_submodules"
 
   if [[ "${TS_SYMLINK}" != "1" ]]; then
@@ -180,7 +187,7 @@ cleanup_ts_symlink() {
     if [[ "${TS_SYMLINK_CREATED}" == "1" ]]; then
       rm -f "_submodules"
       echo "Removed symlink: _submodules (created-by-script)"
-    elif [[ "${TS_SYMLINK_EXISTED}" == "1" && "${TS_SYMLINK_POINTS_TARGET}" == "1" && "${TS_SYMLINK_CLEAN_EXISTING}" == "1" && "$cur" == "${UPSTREAM_SUBMODULE}/_submodules" ]]; then
+    elif [[ "${TS_SYMLINK_EXISTED}" == "1" && "${TS_SYMLINK_POINTS_TARGET}" == "1" && "${TS_SYMLINK_CLEAN_EXISTING}" == "1" && "$cur" == "${UPSTREAM_TSC}/_submodules" ]]; then
       rm -f "_submodules"
       echo "Removed symlink: _submodules (pre-existing but points-to-target)"
     fi
@@ -189,7 +196,7 @@ cleanup_ts_symlink() {
 
 # Copy testdata from submodule into repo (self-contained for CI/tests)
 copy_testdata() {
-  local src="${UPSTREAM_SUBMODULE}/testdata"
+  local src="${UPSTREAM_TSC}/testdata"
   local dst="testdata"
   if [[ ! -d "${src}" ]]; then
     echo "Skip testdata copy: source not found: ${src}"

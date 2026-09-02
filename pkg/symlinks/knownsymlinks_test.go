@@ -3,10 +3,10 @@ package symlinks
 import (
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/module"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/module"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 func TestNewKnownSymlink(t *testing.T) {

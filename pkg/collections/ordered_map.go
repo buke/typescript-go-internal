@@ -9,7 +9,7 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/buke/typescript-go-internal/pkg/json"
+	"github.com/buke/typescript-go-internal/v7/pkg/json"
 )
 
 // OrderedMap is an insertion ordered map.

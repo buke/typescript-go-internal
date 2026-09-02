@@ -3,16 +3,16 @@ package compiler
 import (
 	"context"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/module"
-	"github.com/buke/typescript-go-internal/pkg/outputpaths"
-	"github.com/buke/typescript-go-internal/pkg/packagejson"
-	"github.com/buke/typescript-go-internal/pkg/printer"
-	"github.com/buke/typescript-go-internal/pkg/symlinks"
-	"github.com/buke/typescript-go-internal/pkg/transformers/declarations"
-	"github.com/buke/typescript-go-internal/pkg/tsoptions"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/module"
+	"github.com/buke/typescript-go-internal/v7/pkg/outputpaths"
+	"github.com/buke/typescript-go-internal/v7/pkg/packagejson"
+	"github.com/buke/typescript-go-internal/v7/pkg/printer"
+	"github.com/buke/typescript-go-internal/v7/pkg/symlinks"
+	"github.com/buke/typescript-go-internal/v7/pkg/transformers/declarations"
+	"github.com/buke/typescript-go-internal/v7/pkg/tsoptions"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 // NOTE: EmitHost operations must be thread-safe
@@ -93,7 +93,7 @@ func (host *emitHost) GetEffectiveDeclarationFlags(node *ast.Node, flags ast.Mod
 
 func (host *emitHost) GetOutputPathsFor(file *ast.SourceFile, forceDtsPaths bool) declarations.OutputPaths {
 	// TODO: cache
-	return outputpaths.GetOutputPathsFor(file, host.Options(), host, outputpaths.ForceEmitPaths{Dts: forceDtsPaths})
+	return outputpaths.GetOutputPathsFor(file, host.Options(), host, forceDtsPaths)
 }
 
 func (host *emitHost) GetResolutionModeOverride(node *ast.Node) core.ResolutionMode {

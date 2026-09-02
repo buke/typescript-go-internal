@@ -6,16 +6,15 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/astnav"
-	"github.com/buke/typescript-go-internal/pkg/checker"
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
-	"github.com/buke/typescript-go-internal/pkg/nodebuilder"
-	"github.com/buke/typescript-go-internal/pkg/printer"
-	"github.com/buke/typescript-go-internal/pkg/scanner"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/astnav"
+	"github.com/buke/typescript-go-internal/v7/pkg/checker"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/nodebuilder"
+	"github.com/buke/typescript-go-internal/v7/pkg/printer"
+	"github.com/buke/typescript-go-internal/v7/pkg/scanner"
 )
 
 const (
@@ -56,8 +55,7 @@ func (l *LanguageService) ProvideHover(ctx context.Context, params *lsproto.Hove
 		MaxTruncationLength: maxTruncLen,
 	}
 
-	vsCapability := caps.VSSupportsVisualStudioExtensions
-	quickInfo, documentation, vsDocumentation, quickInfoRuns := l.getQuickInfoAndDocumentationForSymbol(c, symbol, rangeNode, contentFormat, vc, vsCapability)
+	quickInfo, documentation := l.getQuickInfoAndDocumentationForSymbol(c, symbol, rangeNode, contentFormat, vc)
 	if quickInfo == "" {
 		return lsproto.HoverOrNull{}, nil
 	}
@@ -84,77 +82,27 @@ func (l *LanguageService) ProvideHover(ctx context.Context, params *lsproto.Hove
 		hover.CanIncreaseVerbosity = vc.CanIncreaseVerbosity && !vc.Truncated
 	}
 
-	// Clients that support Visual Studio extensions (e.g. VS itself, when Corsa/Native TS Preview is
-	// enabled) render `_vs_rawContent` in place of `contents`. Without it, VS shows plain markdown
-	// with no symbol icon and no syntax coloring, unlike the legacy TSServer-backed hover path.
-	if vsCapability && len(quickInfoRuns) > 0 {
-		kind := lsutil.ScriptElementKindKeyword
-		var modifiers lsutil.ScriptElementKindModifier
-		if symbol != nil {
-			// Resolve aliases to their target before computing the icon kind, so e.g. `import { x }`
-			// shows the icon for whatever `x` actually is (const, function, ...) rather than a
-			// generic alias icon. GetSymbolModifiers already accounts for the alias target itself.
-			iconSymbol := symbol
-			if symbol.Flags&ast.SymbolFlagsAlias != 0 {
-				if resolved := c.GetAliasedSymbol(symbol); resolved != nil && resolved != symbol {
-					iconSymbol = resolved
-				}
-			}
-			kind = lsutil.GetSymbolKind(c, iconSymbol, rangeNode)
-			modifiers = lsutil.GetSymbolModifiers(c, symbol)
-		}
-		imageId := getVSHoverImageId(kind, modifiers)
-		var documentationRuns []*lsproto.VSClassifiedTextRun
-		if docText := strings.TrimLeft(vsDocumentation, "\n"); docText != "" {
-			documentationRuns = []*lsproto.VSClassifiedTextRun{{ClassificationTypeName: string(lsproto.ClassificationTypeNameText), Text: docText}}
-		}
-		hover.VSRawContent = buildVSHoverRawContent(imageId, quickInfoRuns, documentationRuns)
-	}
-
 	return lsproto.HoverOrNull{Hover: hover}, nil
 }
 
-func (l *LanguageService) getQuickInfoAndDocumentationForSymbol(c *checker.Checker, symbol *ast.Symbol, node *ast.Node, contentFormat lsproto.MarkupKind, vc *checker.VerbosityContext, vsCapability bool) (string, string, string, []*lsproto.VSClassifiedTextRun) {
-	info := getQuickInfoAndDeclarationAtLocation(c, symbol, node, vc, vsCapability, getMeaningFromLocation(node))
+func (l *LanguageService) getQuickInfoAndDocumentationForSymbol(c *checker.Checker, symbol *ast.Symbol, node *ast.Node, contentFormat lsproto.MarkupKind, vc *checker.VerbosityContext) (string, string) {
+	info := getQuickInfoAndDeclarationAtLocation(c, symbol, node, vc, false /*vsCapability*/, getMeaningFromLocation(node))
 	quickInfo := info.displayParts.String()
 	if quickInfo == "" {
-		return "", "", "", nil
-	}
-	quickInfoRuns := info.displayParts.GetRuns()
-
-	documentation := l.getDocumentationForSymbol(c, symbol, node, info.declaration, contentFormat, false /*commentOnly*/)
-
-	// VS's rich hover (_vs_rawContent) renders documentation as plain colorized text with no Markdown
-	// parser, so it can't use the tag section (@param/@returns/@example/@see, etc.) that
-	// getDocumentationFromDeclaration renders with '*@tag*' bolding and ```-fenced @example blocks --
-	// those would show up as literal asterisks/backticks. This also matches the legacy TSServer-backed
-	// VS hover (TypeScript-VS's HoverService.cs), which only ever surfaced the JSDoc summary
-	// (TSServer's quickinfo `documentation`) and never included the tag section at all (TSServer
-	// exposes tags via a separate `tags` field that legacy VS hover never read). So request
-	// comment-only, plain-text documentation for the VS path instead of reusing `documentation`.
-	var vsDocumentation string
-	if vsCapability {
-		vsDocumentation = l.getDocumentationForSymbol(c, symbol, node, info.declaration, lsproto.MarkupKindPlainText, true /*commentOnly*/)
+		return "", ""
 	}
 
-	return quickInfo, documentation, vsDocumentation, quickInfoRuns
-}
-
-// getDocumentationForSymbol tries each documentation source in turn (call-signature documentation,
-// declaration JSDoc, alias target JSDoc) and returns the first non-empty result, formatted for
-// contentFormat. commentOnly restricts the result to the JSDoc summary, excluding the @tag section.
-func (l *LanguageService) getDocumentationForSymbol(c *checker.Checker, symbol *ast.Symbol, node *ast.Node, declaration *ast.Node, contentFormat lsproto.MarkupKind, commentOnly bool) string {
-	documentation := l.documentationFromSignature(c, symbol, getCallOrNewExpression(node), node, contentFormat, commentOnly)
+	documentation := l.documentationFromSignature(c, symbol, getCallOrNewExpression(node), node, contentFormat, false /*commentOnly*/)
 	if documentation != "" {
-		return documentation
+		return quickInfo, documentation
 	}
 
-	documentation = l.getDocumentationFromDeclaration(c, symbol, declaration, node, contentFormat, commentOnly)
+	documentation = l.getDocumentationFromDeclaration(c, symbol, info.declaration, node, contentFormat, false /*commentOnly*/)
 	if documentation != "" {
-		return documentation
+		return quickInfo, documentation
 	}
 
-	return l.documentationFromAlias(c, symbol, node, contentFormat, commentOnly)
+	return quickInfo, l.documentationFromAlias(c, symbol, node, contentFormat)
 }
 
 func (l *LanguageService) documentationFromSignature(c *checker.Checker, symbol *ast.Symbol, node *ast.Node, location *ast.Node, contentFormat lsproto.MarkupKind, commentOnly bool) string {
@@ -175,7 +123,7 @@ func (l *LanguageService) documentationFromSignature(c *checker.Checker, symbol 
 	return ""
 }
 
-func (l *LanguageService) documentationFromAlias(c *checker.Checker, symbol *ast.Symbol, node *ast.Node, contentFormat lsproto.MarkupKind, commentOnly bool) string {
+func (l *LanguageService) documentationFromAlias(c *checker.Checker, symbol *ast.Symbol, node *ast.Node, contentFormat lsproto.MarkupKind) string {
 	if symbol == nil || symbol.Flags&ast.SymbolFlagsAlias == 0 {
 		return ""
 	}
@@ -196,7 +144,7 @@ func (l *LanguageService) documentationFromAlias(c *checker.Checker, symbol *ast
 			continue
 		}
 
-		if documentation := l.getDocumentationFromDeclaration(c, candidate, aliasedDeclaration, node, contentFormat, commentOnly); documentation != "" {
+		if documentation := l.getDocumentationFromDeclaration(c, candidate, aliasedDeclaration, node, contentFormat, false /*commentOnly*/); documentation != "" {
 			return documentation
 		}
 	}
@@ -210,7 +158,7 @@ func (l *LanguageService) getDocumentationFromDeclaration(c *checker.Checker, sy
 	}
 	isMarkdown := contentFormat == lsproto.MarkupKindMarkdown
 	var b strings.Builder
-	if jsdoc := getJSDocOrTag(c, declaration, &collections.Set[*ast.Symbol]{}); jsdoc != nil && !(declaration.Flags&ast.NodeFlagsReparsed == 0 && containsTypedefTag(jsdoc)) {
+	if jsdoc := getJSDocOrTag(c, declaration); jsdoc != nil && !(declaration.Flags&ast.NodeFlagsReparsed == 0 && containsTypedefTag(jsdoc)) {
 		l.writeComments(&b, c, jsdoc.Comments(), isMarkdown)
 		if jsdoc.Kind == ast.KindJSDoc && !commentOnly {
 			if tags := jsdoc.AsJSDoc().Tags; tags != nil {
@@ -902,10 +850,7 @@ func getJSDoc(node *ast.Node) *ast.Node {
 	return core.LastOrNil(node.JSDoc(nil))
 }
 
-func getJSDocOrTag(c *checker.Checker, node *ast.Node, seenSymbols *collections.Set[*ast.Symbol]) *ast.Node {
-	if node == nil {
-		return nil
-	}
+func getJSDocOrTag(c *checker.Checker, node *ast.Node) *ast.Node {
 	if jsdoc := getJSDoc(node); jsdoc != nil {
 		return jsdoc
 	}
@@ -916,14 +861,14 @@ func getJSDocOrTag(c *checker.Checker, node *ast.Node, seenSymbols *collections.
 			// For binding patterns, match JSDoc @param tags by position rather than by name
 			return getJSDocParameterTagByPosition(c, node)
 		}
-		return getMatchingJSDocTag(c, node.Parent, name.Text(), isMatchingParameterTag, seenSymbols)
+		return getMatchingJSDocTag(c, node.Parent, name.Text(), isMatchingParameterTag)
 	case ast.IsTypeParameterDeclaration(node):
-		return getMatchingJSDocTag(c, node.Parent, node.Name().Text(), isMatchingTemplateTag, seenSymbols)
+		return getMatchingJSDocTag(c, node.Parent, node.Name().Text(), isMatchingTemplateTag)
 	case ast.IsVariableDeclaration(node) && ast.IsVariableDeclarationList(node.Parent) && core.FirstOrNil(node.Parent.AsVariableDeclarationList().Declarations.Nodes) == node:
-		return getJSDocOrTag(c, node.Parent.Parent, seenSymbols)
+		return getJSDocOrTag(c, node.Parent.Parent)
 	case (ast.IsFunctionExpressionOrArrowFunction(node) || ast.IsClassExpression(node)) &&
 		(ast.IsVariableDeclaration(node.Parent) || ast.IsPropertyDeclaration(node.Parent) || ast.IsPropertyAssignment(node.Parent)) && node.Parent.Initializer() == node:
-		return getJSDocOrTag(c, node.Parent, seenSymbols)
+		return getJSDocOrTag(c, node.Parent)
 	case ast.IsBindingElement(node) && ast.IsObjectBindingPattern(node.Parent):
 		if name := node.PropertyNameOrName(); ast.IsIdentifier(name) {
 			if objectType := c.GetTypeAtLocation(node.Parent); objectType != nil {
@@ -941,7 +886,7 @@ func getJSDocOrTag(c *checker.Checker, node *ast.Node, seenSymbols *collections.
 		if ast.IsFunctionDeclaration(node) || ast.IsMethodDeclaration(node) || ast.IsMethodSignatureDeclaration(node) || ast.IsConstructorDeclaration(node) || ast.IsConstructSignatureDeclaration(node) {
 			firstSignature := core.Find(symbol.Declarations, ast.IsFunctionLike)
 			if firstSignature != nil && node != firstSignature {
-				if jsDoc := getJSDocOrTag(c, firstSignature, seenSymbols); jsDoc != nil {
+				if jsDoc := getJSDocOrTag(c, firstSignature); jsDoc != nil {
 					return jsDoc
 				}
 			}
@@ -954,15 +899,15 @@ func getJSDocOrTag(c *checker.Checker, node *ast.Node, seenSymbols *collections.
 				// This correctly handles intersection constructor types from mixins
 				// (e.g., typeof MixinClass & T) by preserving the full intersection.
 				staticBaseType := c.GetApparentType(c.GetBaseConstructorTypeOfClass(classType))
-				if prop := c.GetPropertyOfType(staticBaseType, symbol.Name); prop != nil && prop.ValueDeclaration != nil && seenSymbols.AddIfAbsent(prop) {
-					if jsDoc := getJSDocOrTag(c, prop.ValueDeclaration, seenSymbols); jsDoc != nil {
+				if prop := c.GetPropertyOfType(staticBaseType, symbol.Name); prop != nil && prop.ValueDeclaration != nil {
+					if jsDoc := getJSDocOrTag(c, prop.ValueDeclaration); jsDoc != nil {
 						return jsDoc
 					}
 				}
 			} else {
 				for _, baseType := range c.GetBaseTypes(classType) {
-					if prop := c.GetPropertyOfType(baseType, symbol.Name); prop != nil && prop.ValueDeclaration != nil && seenSymbols.AddIfAbsent(prop) {
-						if jsDoc := getJSDocOrTag(c, prop.ValueDeclaration, seenSymbols); jsDoc != nil {
+					if prop := c.GetPropertyOfType(baseType, symbol.Name); prop != nil && prop.ValueDeclaration != nil {
+						if jsDoc := getJSDocOrTag(c, prop.ValueDeclaration); jsDoc != nil {
 							return jsDoc
 						}
 					}
@@ -973,8 +918,8 @@ func getJSDocOrTag(c *checker.Checker, node *ast.Node, seenSymbols *collections.
 	return nil
 }
 
-func getMatchingJSDocTag(c *checker.Checker, node *ast.Node, name string, match func(*ast.Node, string) bool, seenSymbols *collections.Set[*ast.Symbol]) *ast.Node {
-	if jsdoc := getJSDocOrTag(c, node, seenSymbols); jsdoc != nil && jsdoc.Kind == ast.KindJSDoc {
+func getMatchingJSDocTag(c *checker.Checker, node *ast.Node, name string, match func(*ast.Node, string) bool) *ast.Node {
+	if jsdoc := getJSDocOrTag(c, node); jsdoc != nil && jsdoc.Kind == ast.KindJSDoc {
 		if tags := jsdoc.AsJSDoc().Tags; tags != nil {
 			for _, tag := range tags.Nodes {
 				if match(tag, name) {
@@ -1008,7 +953,7 @@ func getJSDocParameterTagByPosition(c *checker.Checker, param *ast.Node) *ast.No
 	}
 
 	// Get the JSDoc for the parent function/method
-	jsdoc := getJSDocOrTag(c, parent, &collections.Set[*ast.Symbol]{})
+	jsdoc := getJSDocOrTag(c, parent)
 	if jsdoc == nil || jsdoc.Kind != ast.KindJSDoc {
 		return nil
 	}

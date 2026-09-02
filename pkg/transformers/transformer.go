@@ -1,8 +1,8 @@
 package transformers
 
 import (
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/printer"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/printer"
 )
 
 type Transformer struct {

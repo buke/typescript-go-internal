@@ -4,9 +4,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/json"
-	"github.com/buke/typescript-go-internal/pkg/modulespecifiers"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/json"
+	"github.com/buke/typescript-go-internal/v7/pkg/modulespecifiers"
 	"gotest.tools/v3/assert"
 )
 
@@ -424,21 +424,6 @@ func TestUserPreferencesParseUnstable(t *testing.T) {
 	}
 }
 
-func TestUserPreferencesLocale(t *testing.T) {
-	t.Parallel()
-
-	prefs := ParseUserPreferences(map[string]any{
-		"typescript": map[string]any{
-			"locale": "de",
-		},
-		"js/ts": map[string]any{
-			"locale": "fr",
-		},
-	})
-
-	assert.Equal(t, prefs.Locale, "fr")
-}
-
 func TestUserPreferencesReportStyleChecksAsWarnings(t *testing.T) {
 	t.Parallel()
 
@@ -524,21 +509,6 @@ func TestUserPreferencesParseServerFeaturePreferences(t *testing.T) {
 		assert.Equal(t, prefs.EnableFormatting, core.TSTrue)
 		assert.Equal(t, prefs.EnableAutoClosingTags, core.TSTrue)
 	})
-}
-
-func TestParseUserPreferencesEditorFormatting(t *testing.T) {
-	t.Parallel()
-
-	prefs := ParseUserPreferences(map[string]any{
-		"editor": map[string]any{
-			"tabSize":      2,
-			"insertSpaces": false,
-		},
-	})
-
-	assert.Equal(t, prefs.FormatCodeSettings.TabSize, 2)
-	assert.Equal(t, prefs.FormatCodeSettings.IndentSize, 2)
-	assert.Equal(t, prefs.FormatCodeSettings.ConvertTabsToSpaces, core.TSFalse)
 }
 
 func TestUserPreferencesParseJSDocCompletionPreferences(t *testing.T) {

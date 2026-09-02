@@ -3,7 +3,7 @@ package tsoptions
 import (
 	"slices"
 
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
 )
 
 var TscBuildOption = CommandLineOption{

@@ -3,9 +3,9 @@ package astnav
 import (
 	"fmt"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/scanner"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/scanner"
 )
 
 func shouldRescanLessThanLessThanToken(s *scanner.Scanner, containingNode *ast.Node, token ast.Kind) bool {
@@ -553,7 +553,7 @@ func findRightmostValidToken(endPos int, sourceFile *ast.SourceFile, containingN
 				for startPos < min(visitedNode.Pos(), position) {
 					token := scanNavigationToken(scanner, n)
 					tokenStart := scanner.TokenStart()
-					if tokenStart >= min(visitedNode.Pos(), position) {
+					if tokenStart >= position {
 						break
 					}
 					tokenFullStart := scanner.TokenFullStart()
@@ -571,7 +571,7 @@ func findRightmostValidToken(endPos int, sourceFile *ast.SourceFile, containingN
 			for startPos < min(endPos, position) {
 				token := scanNavigationToken(scanner, n)
 				tokenStart := scanner.TokenStart()
-				if tokenStart >= min(endPos, position) {
+				if tokenStart >= position {
 					break
 				}
 				tokenFullStart := scanner.TokenFullStart()

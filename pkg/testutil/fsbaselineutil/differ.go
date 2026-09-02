@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/vfs/iovfs"
-	"github.com/buke/typescript-go-internal/pkg/vfs/vfstest"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/iovfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/vfstest"
 )
 
 type DiffEntry struct {

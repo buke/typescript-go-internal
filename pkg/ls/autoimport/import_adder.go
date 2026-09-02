@@ -6,19 +6,19 @@ import (
 	"maps"
 	"slices"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/checker"
-	"github.com/buke/typescript-go-internal/pkg/compiler"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/debug"
-	"github.com/buke/typescript-go-internal/pkg/locale"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/checker"
+	"github.com/buke/typescript-go-internal/v7/pkg/compiler"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/debug"
+	"github.com/buke/typescript-go-internal/v7/pkg/locale"
 
-	// "github.com/buke/typescript-go-internal/pkg/ls"
-	"github.com/buke/typescript-go-internal/pkg/ls/change"
-	"github.com/buke/typescript-go-internal/pkg/ls/lsconv"
-	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
-	"github.com/buke/typescript-go-internal/pkg/nodebuilder"
+	// "github.com/buke/typescript-go-internal/v7/pkg/ls"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/change"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/lsconv"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/lsutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/nodebuilder"
 )
 
 type ImportAdder interface {

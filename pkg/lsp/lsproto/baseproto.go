@@ -3,7 +3,7 @@ package lsproto
 import (
 	"io"
 
-	"github.com/buke/typescript-go-internal/pkg/jsonrpc"
+	"github.com/buke/typescript-go-internal/v7/pkg/jsonrpc"
 )
 
 // https://microsoft.github.io/language-server-protocol/specifications/base/0.9/specification/

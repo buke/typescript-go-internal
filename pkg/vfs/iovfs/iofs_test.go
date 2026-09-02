@@ -5,9 +5,9 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/buke/typescript-go-internal/pkg/testutil"
-	"github.com/buke/typescript-go-internal/pkg/vfs"
-	"github.com/buke/typescript-go-internal/pkg/vfs/iovfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/iovfs"
 	"gotest.tools/v3/assert"
 )
 

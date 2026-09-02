@@ -3,7 +3,7 @@ package tsctests
 import (
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/testutil/stringtestutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil/stringtestutil"
 )
 
 func TestShowConfig(t *testing.T) {

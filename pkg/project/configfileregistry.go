@@ -4,10 +4,10 @@ import (
 	"iter"
 	"maps"
 
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
-	"github.com/buke/typescript-go-internal/pkg/tsoptions"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/tsoptions"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 type ConfigFileRegistry struct {
@@ -89,11 +89,6 @@ func (c *ConfigFileRegistry) GetConfig(path tspath.Path) *tsoptions.ParsedComman
 		return entry.commandLine
 	}
 	return nil
-}
-
-func (c *ConfigFileRegistry) isTracked(path tspath.Path) bool {
-	_, ok := c.configs[path]
-	return ok
 }
 
 func (c *ConfigFileRegistry) GetConfigFileName(path tspath.Path) string {

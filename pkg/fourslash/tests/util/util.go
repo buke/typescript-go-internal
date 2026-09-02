@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/fourslash"
-	"github.com/buke/typescript-go-internal/pkg/ls"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
-	"github.com/buke/typescript-go-internal/pkg/stringutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/fourslash"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/stringutil"
 )
 
 var Ignored = struct{}{}

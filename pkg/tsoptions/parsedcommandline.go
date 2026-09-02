@@ -7,16 +7,16 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/glob"
-	"github.com/buke/typescript-go-internal/pkg/locale"
-	"github.com/buke/typescript-go-internal/pkg/module"
-	"github.com/buke/typescript-go-internal/pkg/outputpaths"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
-	"github.com/buke/typescript-go-internal/pkg/vfs"
-	"github.com/buke/typescript-go-internal/pkg/vfs/vfsmatch"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/glob"
+	"github.com/buke/typescript-go-internal/v7/pkg/locale"
+	"github.com/buke/typescript-go-internal/v7/pkg/module"
+	"github.com/buke/typescript-go-internal/v7/pkg/outputpaths"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/vfsmatch"
 )
 
 const (

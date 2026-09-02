@@ -38,7 +38,7 @@ function rawr(dino) {
 
 
 //// [stringLiteralTypesAndTuples01.d.ts]
-declare let [hello, brave, newish, world]: [string, string, string, string];
+declare let hello: string, brave: string, newish: string, world: string;
 type RexOrRaptor = "t-rex" | "raptor";
-declare let [im, a, dinosaur]: ["I'm", "a", RexOrRaptor];
+declare let im: "I'm", a: "a", dinosaur: RexOrRaptor;
 declare function rawr(dino: RexOrRaptor): "ROAAAAR!" | "yip yip!";

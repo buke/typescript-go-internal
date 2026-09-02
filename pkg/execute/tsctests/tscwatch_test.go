@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/vfs/vfstest"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/vfstest"
 )
 
 func TestWatch(t *testing.T) {

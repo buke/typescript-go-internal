@@ -4,12 +4,12 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/parser"
-	"github.com/buke/typescript-go-internal/pkg/testutil/fixtures"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
-	"github.com/buke/typescript-go-internal/pkg/vfs/osvfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/parser"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil/fixtures"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/osvfs"
 )
 
 func BenchmarkBind(b *testing.B) {

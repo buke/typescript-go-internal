@@ -5,10 +5,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/fourslash"
-	"github.com/buke/typescript-go-internal/pkg/testutil"
-	"github.com/buke/typescript-go-internal/pkg/testutil/stringtestutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/fourslash"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil/stringtestutil"
 )
 
 func TestFindAllRefsSolutionReferencingDefaultProjectDirectly(t *testing.T) {

@@ -10,26 +10,26 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/binder"
-	"github.com/buke/typescript-go-internal/pkg/checker"
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/json"
-	"github.com/buke/typescript-go-internal/pkg/locale"
-	"github.com/buke/typescript-go-internal/pkg/module"
-	"github.com/buke/typescript-go-internal/pkg/modulespecifiers"
-	"github.com/buke/typescript-go-internal/pkg/outputpaths"
-	"github.com/buke/typescript-go-internal/pkg/packagejson"
-	"github.com/buke/typescript-go-internal/pkg/parser"
-	"github.com/buke/typescript-go-internal/pkg/printer"
-	"github.com/buke/typescript-go-internal/pkg/scanner"
-	"github.com/buke/typescript-go-internal/pkg/sourcemap"
-	"github.com/buke/typescript-go-internal/pkg/symlinks"
-	"github.com/buke/typescript-go-internal/pkg/tracing"
-	"github.com/buke/typescript-go-internal/pkg/tsoptions"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/binder"
+	"github.com/buke/typescript-go-internal/v7/pkg/checker"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/json"
+	"github.com/buke/typescript-go-internal/v7/pkg/locale"
+	"github.com/buke/typescript-go-internal/v7/pkg/module"
+	"github.com/buke/typescript-go-internal/v7/pkg/modulespecifiers"
+	"github.com/buke/typescript-go-internal/v7/pkg/outputpaths"
+	"github.com/buke/typescript-go-internal/v7/pkg/packagejson"
+	"github.com/buke/typescript-go-internal/v7/pkg/parser"
+	"github.com/buke/typescript-go-internal/v7/pkg/printer"
+	"github.com/buke/typescript-go-internal/v7/pkg/scanner"
+	"github.com/buke/typescript-go-internal/v7/pkg/sourcemap"
+	"github.com/buke/typescript-go-internal/v7/pkg/symlinks"
+	"github.com/buke/typescript-go-internal/v7/pkg/tracing"
+	"github.com/buke/typescript-go-internal/v7/pkg/tsoptions"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 type ProgramOptions struct {
@@ -291,25 +291,6 @@ func NewProgram(opts ProgramOptions) *Program {
 // host-side parse caches must release this exact pointer when the old program could not be
 // reused, since it was acquired speculatively before that decision was made.
 func (p *Program) UpdateProgram(changedFilePath tspath.Path, newHost CompilerHost, createCheckerPool func(*Program) CheckerPool) (*Program, *ast.SourceFile, bool) {
-	if result, newFile, reused := p.ReuseProgram(changedFilePath, newHost, createCheckerPool); reused {
-		return result, newFile, true
-	} else {
-		newOpts := p.opts
-		newOpts.Host = newHost
-		if createCheckerPool != nil {
-			newOpts.CreateCheckerPool = createCheckerPool
-		}
-		return NewProgram(newOpts), newFile, false
-	}
-}
-
-// ReuseProgram attempts to produce a new program by replacing only
-// changedFilePath in place, reusing the rest of p. It returns
-// (newProgram, newFile, true) on success, or (nil, newFile, false) when the
-// file cannot be replaced in place. Unlike UpdateProgram, it never constructs a
-// full fallback program, so callers that build their own fallback (e.g. with a
-// different host) do not pay for a discarded program build.
-func (p *Program) ReuseProgram(changedFilePath tspath.Path, newHost CompilerHost, createCheckerPool func(*Program) CheckerPool) (*Program, *ast.SourceFile, bool) {
 	newOpts := p.opts
 	newOpts.Host = newHost
 	if createCheckerPool != nil {
@@ -325,14 +306,14 @@ func (p *Program) ReuseProgram(changedFilePath tspath.Path, newHost CompilerHost
 	_, inRedirectFiles := p.redirectFilesByPath[changedFilePath]
 	_, isRedirectTarget := p.redirectTargetsMap[changedFilePath]
 	if inRedirectFiles || isRedirectTarget {
-		return nil, newFile, false
+		return NewProgram(newOpts), newFile, false
 	}
 
-	if !p.canReplaceFileInProgram(oldFile, newFile) {
-		return nil, newFile, false
+	if !canReplaceFileInProgram(oldFile, newFile) {
+		return NewProgram(newOpts), newFile, false
 	}
 	if oldNeedsImportHelpers := p.importHelpersImportSpecifiers[oldFile.Path()] != nil; oldNeedsImportHelpers != p.needsImportHelpersImportSpecifier(newFile) {
-		return nil, newFile, false
+		return NewProgram(newOpts), newFile, false
 	}
 	// TODO: reverify compiler options when config has changed?
 	result := &Program{
@@ -375,14 +356,11 @@ func (p *Program) GetCheckerPool() CheckerPool {
 	return p.checkerPool
 }
 
-func (p *Program) canReplaceFileInProgram(file1 *ast.SourceFile, file2 *ast.SourceFile) bool {
+func canReplaceFileInProgram(file1 *ast.SourceFile, file2 *ast.SourceFile) bool {
 	return file2 != nil &&
 		file1.ParseOptions() == file2.ParseOptions() &&
 		file1.UsesUriStyleNodeCoreModules == file2.UsesUriStyleNodeCoreModules &&
-		slices.EqualFunc(file1.Imports(), file2.Imports(), func(n1 *ast.Node, n2 *ast.Node) bool {
-			return equalModuleSpecifiers(n1, n2) &&
-				p.GetModeForUsageLocation(file1, n1) == p.GetModeForUsageLocation(file2, n2)
-		}) &&
+		slices.EqualFunc(file1.Imports(), file2.Imports(), equalModuleSpecifiers) &&
 		slices.EqualFunc(file1.ModuleAugmentations, file2.ModuleAugmentations, equalModuleAugmentationNames) &&
 		slices.Equal(file1.AmbientModuleNames, file2.AmbientModuleNames) &&
 		slices.EqualFunc(file1.ReferencedFiles, file2.ReferencedFiles, equalFileReferences) &&
@@ -738,14 +716,14 @@ func (p *Program) canIncludeBindAndCheckDiagnostics(sourceFile *ast.SourceFile) 
 	return isPlainJS || isCheckJS || sourceFile.ScriptKind == core.ScriptKindDeferred
 }
 
-func (p *Program) getSourceFilesToEmit(targetSourceFiles []*ast.SourceFile, forceDtsEmit bool, forceJsEmit bool) []*ast.SourceFile {
-	if targetSourceFiles == nil && !forceDtsEmit && !forceJsEmit {
+func (p *Program) getSourceFilesToEmit(targetSourceFile *ast.SourceFile, forceDtsEmit bool) []*ast.SourceFile {
+	if targetSourceFile == nil && !forceDtsEmit {
 		p.sourceFilesToEmitOnce.Do(func() {
-			p.sourceFilesToEmit = getSourceFilesToEmit(p, nil, false, false)
+			p.sourceFilesToEmit = getSourceFilesToEmit(p, nil, false)
 		})
 		return p.sourceFilesToEmit
 	}
-	return getSourceFilesToEmit(p, targetSourceFiles, forceDtsEmit, forceJsEmit)
+	return getSourceFilesToEmit(p, targetSourceFile, forceDtsEmit)
 }
 
 func (p *Program) verifyCompilerOptions() {
@@ -944,7 +922,7 @@ func (p *Program) verifyCompilerOptions() {
 		}
 
 		for _, file := range p.files {
-			if sourceFileMayBeEmitted(file, p, false, false) && !rootPaths.Has(file.Path()) {
+			if sourceFileMayBeEmitted(file, p, false) && !rootPaths.Has(file.Path()) {
 				p.includeProcessor.addProcessingDiagnostic(&processingDiagnostic{
 					kind: processingDiagnosticKindExplainingFileInclude,
 					data: &includeExplainingDiagnostic{
@@ -1076,7 +1054,7 @@ func (p *Program) verifyCompilerOptions() {
 		dir := p.CommonSourceDirectory()
 		var emittedFiles []string
 		for _, file := range p.files {
-			if !file.IsDeclarationFile && sourceFileMayBeEmitted(file, p, false, false) {
+			if !file.IsDeclarationFile && sourceFileMayBeEmitted(file, p, false) {
 				emittedFiles = append(emittedFiles, file.FileName())
 			}
 		}
@@ -1239,7 +1217,7 @@ func (p *Program) verifyCompilerOptions() {
 			verifyEmitFilePath(emitFileNames.DeclarationFilePath())
 			verifyEmitFilePath(emitFileNames.DeclarationMapPath())
 			return false
-		}, p.getSourceFilesToEmit(nil, false, false), false)
+		}, p.getSourceFilesToEmit(nil, false), false)
 		verifyEmitFilePath(p.opts.Config.GetBuildInfoFileName())
 	}
 }
@@ -1439,7 +1417,11 @@ func (p *Program) getSuggestionDiagnosticsWithChecker(ctx context.Context, fileC
 		return nil
 	}
 
-	return fileChecker.GetSuggestionDiagnostics(ctx, sourceFile)
+	// Checker creation forces binding, so bind suggestion diagnostics will be populated.
+	diags := slices.Clip(sourceFile.BindSuggestionDiagnostics)
+	diags = append(diags, fileChecker.GetSuggestionDiagnostics(ctx, sourceFile)...)
+
+	return diags
 }
 
 func isCommentOrBlankLine(text string, pos int) bool {
@@ -1586,7 +1568,7 @@ func (p *Program) CommonSourceDirectory() string {
 	p.commonSourceDirectoryOnce.Do(func() {
 		files := func() []string {
 			return core.MapFiltered(p.files, func(file *ast.SourceFile) (string, bool) {
-				return file.FileName(), sourceFileMayBeEmitted(file, p, false /*forceDtsEmit*/, false /*forceJsEmit*/) && !file.IsDeclarationFile
+				return file.FileName(), sourceFileMayBeEmitted(file, p, false /*forceDtsEmit*/) && !file.IsDeclarationFile
 			})
 		}
 		p.commonSourceDirectory = outputpaths.GetCommonSourceDirectory(
@@ -1625,16 +1607,14 @@ type WriteFileData struct {
 	BuildInfo       any
 	Diagnostics     []*ast.Diagnostic
 	SkippedDtsWrite bool
-	SourceFile      *ast.SourceFile
 }
 
 type WriteFile func(fileName string, text string, data *WriteFileData) error
 
 type EmitOptions struct {
-	TargetSourceFiles []*ast.SourceFile // Source files to emit. If `nil`, emits all files
-	EmitOnly          EmitOnly
-	ForceEmit         bool
-	WriteFile         WriteFile
+	TargetSourceFile *ast.SourceFile // Single file to emit. If `nil`, emits all files
+	EmitOnly         EmitOnly
+	WriteFile        WriteFile
 }
 
 type EmitResult struct {
@@ -1655,11 +1635,11 @@ func (p *Program) Emit(ctx context.Context, options EmitOptions) *EmitResult {
 		defer tr.Push(tracing.PhaseEmit, "emit", nil, true)()
 	}
 
-	if !options.ForceEmit && options.EmitOnly != EmitOnlyForcedDts {
+	if options.EmitOnly != EmitOnlyForcedDts {
 		result := HandleNoEmitOnError(
 			ctx,
 			p,
-			options.TargetSourceFiles,
+			options.TargetSourceFile,
 		)
 		if result != nil || ctx.Err() != nil {
 			return result
@@ -1674,16 +1654,13 @@ func (p *Program) Emit(ctx context.Context, options EmitOptions) *EmitResult {
 	}
 	wg := core.NewWorkGroup(p.SingleThreaded())
 	var emitters []*emitter
-	forceDtsEmit := options.EmitOnly == EmitOnlyForcedDts || options.ForceEmit && options.EmitOnly == EmitOnlyDts
-	forceJsEmit := options.ForceEmit && options.EmitOnly == EmitOnlyJs
-	sourceFiles := p.getSourceFilesToEmit(options.TargetSourceFiles, forceDtsEmit, forceJsEmit)
+	sourceFiles := p.getSourceFilesToEmit(options.TargetSourceFile, options.EmitOnly == EmitOnlyForcedDts)
 
 	for _, sourceFile := range sourceFiles {
 		emitter := &emitter{
 			writer:     nil,
 			sourceFile: sourceFile,
 			emitOnly:   options.EmitOnly,
-			forceEmit:  options.ForceEmit,
 			writeFile:  options.WriteFile,
 			tr:         p.opts.Tracing,
 		}
@@ -1699,11 +1676,7 @@ func (p *Program) Emit(ctx context.Context, options EmitOptions) *EmitResult {
 
 			// attach writer and perform emit
 			emitter.writer = writer
-			emitter.paths = outputpaths.GetOutputPathsFor(sourceFile, host.Options(), host, outputpaths.ForceEmitPaths{
-				Dts:            forceDtsEmit,
-				Js:             forceJsEmit,
-				DeclarationMap: options.ForceEmit && options.EmitOnly == EmitOnlyDts,
-			})
+			emitter.paths = outputpaths.GetOutputPathsFor(sourceFile, host.Options(), host, options.EmitOnly == EmitOnlyForcedDts)
 			emitter.emit()
 			emitter.writer = nil
 
@@ -1757,7 +1730,7 @@ type ProgramLike interface {
 	Program() *Program
 }
 
-func HandleNoEmitOnError(ctx context.Context, program ProgramLike, files []*ast.SourceFile) *EmitResult {
+func HandleNoEmitOnError(ctx context.Context, program ProgramLike, file *ast.SourceFile) *EmitResult {
 	if !program.Options().NoEmitOnError.IsTrue() {
 		return nil // No emit on error is not set, so we can proceed with emitting
 	}
@@ -1765,7 +1738,7 @@ func HandleNoEmitOnError(ctx context.Context, program ProgramLike, files []*ast.
 	diagnostics := GetDiagnosticsOfAnyProgram(
 		ctx,
 		program,
-		files,
+		file,
 		true,
 		program.GetBindDiagnostics,
 		program.GetSemanticDiagnostics,
@@ -1782,7 +1755,7 @@ func HandleNoEmitOnError(ctx context.Context, program ProgramLike, files []*ast.
 func GetDiagnosticsOfAnyProgram(
 	ctx context.Context,
 	program ProgramLike,
-	files []*ast.SourceFile,
+	file *ast.SourceFile,
 	skipNoEmitCheckForDtsDiagnostics bool,
 	getBindDiagnostics func(context.Context, *ast.SourceFile) []*ast.Diagnostic,
 	getSemanticDiagnostics func(context.Context, *ast.SourceFile) []*ast.Diagnostic,
@@ -1790,17 +1763,7 @@ func GetDiagnosticsOfAnyProgram(
 	allDiagnostics := slices.Clip(program.GetConfigFileParsingDiagnostics())
 	configFileParsingDiagnosticsLength := len(allDiagnostics)
 
-	appendDiagnosticsForAllFiles := func(diagnostics []*ast.Diagnostic, getDiagnostics func(context.Context, *ast.SourceFile) []*ast.Diagnostic) []*ast.Diagnostic {
-		if files == nil {
-			return append(diagnostics, getDiagnostics(ctx, nil)...)
-		}
-		for _, file := range files {
-			diagnostics = append(diagnostics, getDiagnostics(ctx, file)...)
-		}
-		return diagnostics
-	}
-
-	allDiagnostics = appendDiagnosticsForAllFiles(allDiagnostics, program.GetSyntacticDiagnostics)
+	allDiagnostics = append(allDiagnostics, program.GetSyntacticDiagnostics(ctx, file)...)
 
 	// If we didn't have any syntactic errors, then also try getting the program (options),
 	// global and semantic errors.
@@ -1808,19 +1771,19 @@ func GetDiagnosticsOfAnyProgram(
 		allDiagnostics = append(allDiagnostics, program.GetProgramDiagnostics()...)
 
 		// Do binding early so we can track the time.
-		appendDiagnosticsForAllFiles(nil, getBindDiagnostics)
+		getBindDiagnostics(ctx, file)
 
 		if program.Options().ListFilesOnly.IsFalseOrUnknown() {
 			allDiagnostics = append(allDiagnostics, program.GetGlobalDiagnostics(ctx)...)
 
 			if len(allDiagnostics) == configFileParsingDiagnosticsLength {
-				allDiagnostics = appendDiagnosticsForAllFiles(allDiagnostics, getSemanticDiagnostics)
+				allDiagnostics = append(allDiagnostics, getSemanticDiagnostics(ctx, file)...)
 				// Ask for the global diagnostics again (they were empty above); we may have found new during checking, e.g. missing globals.
 				allDiagnostics = append(allDiagnostics, program.GetGlobalDiagnostics(ctx)...)
 			}
 
 			if (skipNoEmitCheckForDtsDiagnostics || program.Options().NoEmit.IsTrue()) && program.Options().GetEmitDeclarations() && len(allDiagnostics) == configFileParsingDiagnosticsLength {
-				allDiagnostics = appendDiagnosticsForAllFiles(allDiagnostics, program.GetDeclarationDiagnostics)
+				allDiagnostics = append(allDiagnostics, program.GetDeclarationDiagnostics(ctx, file)...)
 			}
 		}
 	}
@@ -1967,7 +1930,7 @@ func (p *Program) GetImportHelpersImportSpecifier(path tspath.Path) *ast.Node {
 }
 
 func (p *Program) SourceFileMayBeEmitted(sourceFile *ast.SourceFile, forceDtsEmit bool) bool {
-	return sourceFileMayBeEmitted(sourceFile, p, forceDtsEmit, false)
+	return sourceFileMayBeEmitted(sourceFile, p, forceDtsEmit)
 }
 
 func (p *Program) ResolvedPackageNames() *collections.Set[string] {

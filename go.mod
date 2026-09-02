@@ -1,4 +1,4 @@
-module github.com/buke/typescript-go-internal
+module github.com/buke/typescript-go-internal/v7
 
 go 1.26.0
 

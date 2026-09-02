@@ -4,16 +4,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/binder"
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/debug"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/jsnum"
-	"github.com/buke/typescript-go-internal/pkg/scanner"
-	"github.com/buke/typescript-go-internal/pkg/stringutil"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/binder"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/debug"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/jsnum"
+	"github.com/buke/typescript-go-internal/v7/pkg/scanner"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 func (c *Checker) grammarErrorOnFirstToken(node *ast.Node, message *diagnostics.Message, args ...any) bool {
@@ -788,9 +787,9 @@ func (c *Checker) checkGrammarArrowFunction(node *ast.Node, file *ast.SourceFile
 	}
 
 	equalsGreaterThanToken := arrowFunc.EqualsGreaterThanToken
-	arrowFullText := file.Text()[equalsGreaterThanToken.Pos():equalsGreaterThanToken.End()]
-	return strings.ContainsFunc(arrowFullText, stringutil.IsLineBreak) &&
-		c.grammarErrorOnNode(equalsGreaterThanToken, diagnostics.Line_terminator_not_permitted_before_arrow)
+	startLine := scanner.GetECMALineOfPosition(file, equalsGreaterThanToken.Pos())
+	endLine := scanner.GetECMALineOfPosition(file, equalsGreaterThanToken.End())
+	return startLine != endLine && c.grammarErrorOnNode(equalsGreaterThanToken, diagnostics.Line_terminator_not_permitted_before_arrow)
 }
 
 func (c *Checker) checkGrammarIndexSignatureParameters(node *ast.IndexSignatureDeclaration) bool {

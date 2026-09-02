@@ -1,9 +1,9 @@
 package tstransforms
 
 import (
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/jsnum"
-	"github.com/buke/typescript-go-internal/pkg/printer"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/jsnum"
+	"github.com/buke/typescript-go-internal/v7/pkg/printer"
 )
 
 func constantExpression(value any, factory *printer.NodeFactory) *ast.Expression {

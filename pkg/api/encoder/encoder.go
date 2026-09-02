@@ -7,8 +7,8 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
 	"github.com/zeebo/xxh3"
 )
 

@@ -11,7 +11,7 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/buke/typescript-go-internal/pkg/nativepath"
+	"github.com/buke/typescript-go-internal/v7/pkg/nativepath"
 )
 
 var errNilCallback = errors.New("fswatch: callback must not be nil")

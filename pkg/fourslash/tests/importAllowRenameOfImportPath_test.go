@@ -3,10 +3,10 @@ package fourslash_test
 import (
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/fourslash"
-	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
-	"github.com/buke/typescript-go-internal/pkg/testutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/fourslash"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/lsutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil"
 )
 
 func TestAllowRenameOfImportPath(t *testing.T) {
@@ -45,22 +45,5 @@ const a = require("./[|a|]");
 	f.Configure(t, prefsFalse)
 	f.GoToEachMarker(t, markers, func(marker *fourslash.Marker, index int) {
 		f.VerifyRenameFailed(t, &prefsFalse)
-	})
-}
-
-func TestRenameInfoForImportPathTriggerSpan(t *testing.T) {
-	t.Parallel()
-	defer testutil.RecoverAndFail(t, "Panic on fourslash test")
-	const content = `// @Filename: /library.ts
-export const foo = "bar";
-// @Filename: /index.ts
-export * from "./[|lib/*rename*/rary|]";
-`
-
-	f, done := fourslash.NewFourslash(t, nil /*capabilities*/, content)
-	defer done()
-	f.GoToMarker(t, "rename")
-	f.VerifyRenameRange(t, f.Ranges()[0].LSRange, "library", &lsutil.UserPreferences{
-		AllowRenameOfImportPath: core.TSTrue,
 	})
 }

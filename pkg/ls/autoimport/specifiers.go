@@ -3,7 +3,7 @@ package autoimport
 import (
 	"strings"
 
-	"github.com/buke/typescript-go-internal/pkg/modulespecifiers"
+	"github.com/buke/typescript-go-internal/v7/pkg/modulespecifiers"
 )
 
 func (v *View) GetModuleSpecifier(

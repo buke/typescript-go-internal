@@ -7,9 +7,9 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/debug"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/debug"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 // Atomic ids
@@ -916,25 +916,6 @@ func FindAncestor(node *Node, callback func(*Node) bool) *Node {
 		node = node.Parent
 	}
 	return nil
-}
-
-func FindManyAncestors(node *Node, callbacks ...func(*Node) bool) []*Node {
-	ancestors := make([]*Node, len(callbacks))
-	found := 0
-	for node != nil {
-		for i, callback := range callbacks {
-			if ancestors[i] == nil && callback(node) {
-				ancestors[i] = node
-				found++
-				if found == len(callbacks) {
-					return ancestors
-				}
-				break
-			}
-		}
-		node = node.Parent
-	}
-	return ancestors
 }
 
 // Walks up the parents of a node to find the ancestor that matches the kind

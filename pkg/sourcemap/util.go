@@ -4,7 +4,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/buke/typescript-go-internal/pkg/stringutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/stringutil"
 )
 
 // Tries to find the sourceMappingURL comment at the end of a file.

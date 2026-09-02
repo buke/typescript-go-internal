@@ -3,10 +3,10 @@ package cachedvfs_test
 import (
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/vfs"
-	"github.com/buke/typescript-go-internal/pkg/vfs/cachedvfs"
-	"github.com/buke/typescript-go-internal/pkg/vfs/vfsmock"
-	"github.com/buke/typescript-go-internal/pkg/vfs/vfstest"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/cachedvfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/vfsmock"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/vfstest"
 	"gotest.tools/v3/assert"
 )
 

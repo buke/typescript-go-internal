@@ -11,12 +11,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/buke/typescript-go-internal/pkg/fswatch"
-	"github.com/buke/typescript-go-internal/pkg/ls/lsconv"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
-	"github.com/buke/typescript-go-internal/pkg/project/logging"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
-	"github.com/buke/typescript-go-internal/pkg/vfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/fswatch"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/lsconv"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/project/logging"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs"
 )
 
 // throttleWindow mirrors VS Code's parcel watcher integration: give the

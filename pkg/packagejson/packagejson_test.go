@@ -5,14 +5,14 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/json"
-	"github.com/buke/typescript-go-internal/pkg/packagejson"
-	"github.com/buke/typescript-go-internal/pkg/parser"
-	"github.com/buke/typescript-go-internal/pkg/repo"
-	"github.com/buke/typescript-go-internal/pkg/testutil/filefixture"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/json"
+	"github.com/buke/typescript-go-internal/v7/pkg/packagejson"
+	"github.com/buke/typescript-go-internal/v7/pkg/parser"
+	"github.com/buke/typescript-go-internal/v7/pkg/repo"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil/filefixture"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 	"gotest.tools/v3/assert"
 )
 

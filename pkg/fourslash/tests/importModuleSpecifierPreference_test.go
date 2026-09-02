@@ -3,12 +3,12 @@ package fourslash_test
 import (
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/fourslash"
-	. "github.com/buke/typescript-go-internal/pkg/fourslash/tests/util"
-	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
-	"github.com/buke/typescript-go-internal/pkg/modulespecifiers"
-	"github.com/buke/typescript-go-internal/pkg/testutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/fourslash"
+	. "github.com/buke/typescript-go-internal/v7/pkg/fourslash/tests/util"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/lsutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/modulespecifiers"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil"
 )
 
 func TestImportModuleSpecifierPreferenceShortest(t *testing.T) {

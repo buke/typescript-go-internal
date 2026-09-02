@@ -7,9 +7,9 @@ import (
 	"io"
 	"sync"
 
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/fswatch"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/fswatch"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 type watchedDir struct {
@@ -306,48 +306,17 @@ func (wm *WatchManager) createDirWatches(updates []dirWatchUpdate) error {
 	return nil
 }
 
-// DirWatchSet accumulates the set of directories that should be watched while
-// answering coverage queries efficiently. A directory is "covered" when it is
-// already present in the set, or when it is contained within a recursive watch
-// directory already in the set.
-type DirWatchSet struct {
-	opts tspath.ComparePathsOptions
-	dirs map[string]bool
-}
-
-func NewDirWatchSet(opts tspath.ComparePathsOptions) *DirWatchSet {
-	return &DirWatchSet{
-		opts: opts,
-		dirs: make(map[string]bool),
-	}
-}
-
-func (s *DirWatchSet) canonical(dir string) string {
-	return tspath.GetCanonicalFileName(dir, s.opts.UseCaseSensitiveFileNames)
-}
-
-func (s *DirWatchSet) Set(dir string, recursive bool) {
-	dir = s.canonical(dir)
-	s.dirs[dir] = s.dirs[dir] || recursive
-}
-
-func (s *DirWatchSet) Covered(dir string) bool {
-	dir = s.canonical(dir)
-	if _, has := s.dirs[dir]; has {
-		return true
-	}
-	rootLength := tspath.GetRootLength(dir)
-	for len(dir) > rootLength {
-		dir = tspath.GetDirectoryPath(dir)
-		if s.dirs[dir] {
+func IsDirCoveredByWatch(dirs map[string]bool, dir string, opts tspath.ComparePathsOptions) bool {
+	for wdir, recursive := range dirs {
+		if recursive {
+			if tspath.ContainsPath(wdir, dir, opts) {
+				return true
+			}
+		} else if tspath.ComparePaths(dir, wdir, opts) == 0 {
 			return true
 		}
 	}
 	return false
-}
-
-func (s *DirWatchSet) Dirs() map[string]bool {
-	return s.dirs
 }
 
 func (wm *WatchManager) IsPathUnderWatch(path string, opts tspath.ComparePathsOptions) bool {

@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/stringutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/stringutil"
 )
 
 func TestPositionMapASCII(t *testing.T) {

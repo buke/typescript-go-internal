@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/buke/typescript-go-internal/pkg/vfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs"
 )
 
 // FSMock is a mock implementation of vfs.FS.

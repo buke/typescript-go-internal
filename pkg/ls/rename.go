@@ -5,18 +5,18 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/astnav"
-	"github.com/buke/typescript-go-internal/pkg/checker"
-	"github.com/buke/typescript-go-internal/pkg/compiler"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/locale"
-	"github.com/buke/typescript-go-internal/pkg/ls/lsconv"
-	"github.com/buke/typescript-go-internal/pkg/ls/lsutil"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
-	"github.com/buke/typescript-go-internal/pkg/module"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/astnav"
+	"github.com/buke/typescript-go-internal/v7/pkg/checker"
+	"github.com/buke/typescript-go-internal/v7/pkg/compiler"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/locale"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/lsconv"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/lsutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/module"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 // RenameInfo represents the result of a rename validation check.
@@ -263,7 +263,7 @@ func (l *LanguageService) getRenameInfoForModule(ctx context.Context, newName st
 
 	// Span should only be the last component of the path. + 1 to account for the quote character.
 	indexAfterLastSlash := strings.LastIndex(specifier.Text(), "/") + 1
-	start := astnav.GetStartOfNode(specifier, sourceFile, false /*includeJSDoc*/) + 1 + indexAfterLastSlash
+	start := specifier.Pos() + 1 + indexAfterLastSlash
 	length := len(specifier.Text()) - indexAfterLastSlash
 
 	return RenameInfo{

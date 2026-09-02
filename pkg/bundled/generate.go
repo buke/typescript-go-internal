@@ -14,7 +14,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/buke/typescript-go-internal/pkg/repo"
+	"github.com/buke/typescript-go-internal/v7/pkg/repo"
 )
 
 var (

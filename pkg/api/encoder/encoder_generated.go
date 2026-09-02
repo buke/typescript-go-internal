@@ -5,7 +5,7 @@ package encoder
 import (
 	"fmt"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
 )
 
 func getNodeDataType(node *ast.Node) uint32 {

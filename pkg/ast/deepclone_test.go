@@ -3,8 +3,8 @@ package ast_test
 import (
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/testutil/parsetestutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil/parsetestutil"
 	"gotest.tools/v3/assert"
 )
 

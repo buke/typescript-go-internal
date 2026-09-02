@@ -9,9 +9,9 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/repo"
-	"github.com/buke/typescript-go-internal/pkg/stringutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/repo"
+	"github.com/buke/typescript-go-internal/v7/pkg/stringutil"
 	"github.com/peter-evans/patience"
 )
 

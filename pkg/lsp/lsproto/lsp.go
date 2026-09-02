@@ -7,11 +7,11 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/buke/typescript-go-internal/pkg/bundled"
-	"github.com/buke/typescript-go-internal/pkg/json"
+	"github.com/buke/typescript-go-internal/v7/pkg/bundled"
+	"github.com/buke/typescript-go-internal/v7/pkg/json"
 
-	"github.com/buke/typescript-go-internal/pkg/jsonrpc"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/jsonrpc"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 type DocumentUri string // !!!

@@ -1,24 +1,24 @@
 package compiler
 
 import (
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/binder"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/outputpaths"
-	"github.com/buke/typescript-go-internal/pkg/printer"
-	"github.com/buke/typescript-go-internal/pkg/sourcemap"
-	"github.com/buke/typescript-go-internal/pkg/stringutil"
-	"github.com/buke/typescript-go-internal/pkg/tracing"
-	"github.com/buke/typescript-go-internal/pkg/transformers"
-	"github.com/buke/typescript-go-internal/pkg/transformers/declarations"
-	"github.com/buke/typescript-go-internal/pkg/transformers/estransforms"
-	"github.com/buke/typescript-go-internal/pkg/transformers/inliners"
-	"github.com/buke/typescript-go-internal/pkg/transformers/jsxtransforms"
-	"github.com/buke/typescript-go-internal/pkg/transformers/moduletransforms"
-	"github.com/buke/typescript-go-internal/pkg/transformers/tstransforms"
-	"github.com/buke/typescript-go-internal/pkg/tsoptions"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/binder"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/outputpaths"
+	"github.com/buke/typescript-go-internal/v7/pkg/printer"
+	"github.com/buke/typescript-go-internal/v7/pkg/sourcemap"
+	"github.com/buke/typescript-go-internal/v7/pkg/stringutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/tracing"
+	"github.com/buke/typescript-go-internal/v7/pkg/transformers"
+	"github.com/buke/typescript-go-internal/v7/pkg/transformers/declarations"
+	"github.com/buke/typescript-go-internal/v7/pkg/transformers/estransforms"
+	"github.com/buke/typescript-go-internal/v7/pkg/transformers/inliners"
+	"github.com/buke/typescript-go-internal/v7/pkg/transformers/jsxtransforms"
+	"github.com/buke/typescript-go-internal/v7/pkg/transformers/moduletransforms"
+	"github.com/buke/typescript-go-internal/v7/pkg/transformers/tstransforms"
+	"github.com/buke/typescript-go-internal/v7/pkg/tsoptions"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 type EmitOnly byte
@@ -38,7 +38,6 @@ type emitter struct {
 	paths              *outputpaths.OutputPaths
 	sourceFile         *ast.SourceFile
 	emitResult         EmitResult
-	forceEmit          bool
 	writeFile          func(fileName string, text string, data *WriteFileData) error
 	tr                 *tracing.Tracing
 }
@@ -177,7 +176,7 @@ func (e *emitter) emitJSFile(sourceFile *ast.SourceFile, jsFilePath string, sour
 		return
 	}
 
-	if !e.forceEmit && (options.NoEmit == core.TSTrue || e.host.IsEmitBlocked(jsFilePath)) {
+	if options.NoEmit == core.TSTrue || e.host.IsEmitBlocked(jsFilePath) {
 		e.emitResult.EmitSkipped = true
 		return
 	}
@@ -230,12 +229,12 @@ func (e *emitter) emitDeclarationFile(sourceFile *ast.SourceFile, declarationFil
 		e.emitterDiagnostics.Add(elem)
 	}
 
-	if !e.forceEmit && e.emitOnly != EmitOnlyForcedDts && (options.NoEmit == core.TSTrue || e.host.IsEmitBlocked(declarationFilePath)) {
+	if e.emitOnly != EmitOnlyForcedDts && (options.NoEmit == core.TSTrue || e.host.IsEmitBlocked(declarationFilePath)) {
 		e.emitResult.EmitSkipped = true
 		return
 	}
 
-	declBlocked := len(diags) > 0 && !e.forceEmit && e.emitOnly != EmitOnlyForcedDts
+	declBlocked := len(diags) > 0 && e.emitOnly != EmitOnlyForcedDts
 	if declBlocked {
 		e.emitResult.EmitSkipped = true
 		return
@@ -318,7 +317,7 @@ func (e *emitter) printSourceFile(jsFilePath string, sourceMapFilePath string, s
 		// Write the source map
 		if len(sourceMapFilePath) > 0 {
 			sourceMap := sourceMapGenerator.String()
-			err := e.writeText(sourceMapFilePath, sourceMap, &WriteFileData{SourceFile: e.sourceFile})
+			err := e.writeText(sourceMapFilePath, sourceMap, nil)
 			if err != nil {
 				e.emitterDiagnostics.Add(ast.NewCompilerDiagnostic(diagnostics.Could_not_write_file_0_Colon_1, jsFilePath, err.Error()))
 			} else {
@@ -337,7 +336,6 @@ func (e *emitter) printSourceFile(jsFilePath string, sourceMapFilePath string, s
 	data := &WriteFileData{
 		SourceMapUrlPos: sourceMapUrlPos,
 		Diagnostics:     e.emitterDiagnostics.GetDiagnostics(),
-		SourceFile:      e.sourceFile,
 	}
 	err := e.writeText(jsFilePath, text, data)
 	skippedDtsWrite := data.SkippedDtsWrite
@@ -449,12 +447,12 @@ type SourceFileMayBeEmittedHost interface {
 	SourceFiles() []*ast.SourceFile
 }
 
-func sourceFileMayBeEmitted(sourceFile *ast.SourceFile, host SourceFileMayBeEmittedHost, forceDtsEmit bool, forceJsEmit bool) bool {
+func sourceFileMayBeEmitted(sourceFile *ast.SourceFile, host SourceFileMayBeEmittedHost, forceDtsEmit bool) bool {
 	// TODO: move this to outputpaths?
 
 	options := host.Options()
 	// Js files are emitted only if option is enabled
-	if !forceJsEmit && options.NoEmitForJsFiles.IsTrue() && ast.IsSourceFileJS(sourceFile) {
+	if options.NoEmitForJsFiles.IsTrue() && ast.IsSourceFileJS(sourceFile) {
 		return false
 	}
 
@@ -469,7 +467,7 @@ func sourceFileMayBeEmitted(sourceFile *ast.SourceFile, host SourceFileMayBeEmit
 	}
 
 	// forcing dts emit => file needs to be emitted
-	if forceDtsEmit || forceJsEmit {
+	if forceDtsEmit {
 		return true
 	}
 
@@ -504,12 +502,15 @@ func sourceFileMayBeEmitted(sourceFile *ast.SourceFile, host SourceFileMayBeEmit
 	return true
 }
 
-func getSourceFilesToEmit(host SourceFileMayBeEmittedHost, targetSourceFiles []*ast.SourceFile, forceDtsEmit bool, forceJsEmit bool) []*ast.SourceFile {
-	if targetSourceFiles == nil {
-		targetSourceFiles = host.SourceFiles()
+func getSourceFilesToEmit(host SourceFileMayBeEmittedHost, targetSourceFile *ast.SourceFile, forceDtsEmit bool) []*ast.SourceFile {
+	var sourceFiles []*ast.SourceFile
+	if targetSourceFile != nil {
+		sourceFiles = []*ast.SourceFile{targetSourceFile}
+	} else {
+		sourceFiles = host.SourceFiles()
 	}
-	return core.Filter(targetSourceFiles, func(sourceFile *ast.SourceFile) bool {
-		return sourceFileMayBeEmitted(sourceFile, host, forceDtsEmit, forceJsEmit)
+	return core.Filter(sourceFiles, func(sourceFile *ast.SourceFile) bool {
+		return sourceFileMayBeEmitted(sourceFile, host, forceDtsEmit)
 	})
 }
 
@@ -519,7 +520,7 @@ func isSourceFileNotJson(file *ast.SourceFile) bool {
 
 func getDeclarationDiagnostics(host EmitHost, file *ast.SourceFile) []*ast.Diagnostic {
 	// TODO: use p.getSourceFilesToEmit cache
-	fullFiles := core.Filter(getSourceFilesToEmit(host, core.SingleElementSlice(file), false, false), isSourceFileNotJson)
+	fullFiles := core.Filter(getSourceFilesToEmit(host, file, false), isSourceFileNotJson)
 	if !core.Some(fullFiles, func(f *ast.SourceFile) bool { return f == file }) {
 		return []*ast.Diagnostic{}
 	}

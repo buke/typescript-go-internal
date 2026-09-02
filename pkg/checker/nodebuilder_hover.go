@@ -3,12 +3,12 @@ package checker
 import (
 	"fmt"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/jsnum"
-	"github.com/buke/typescript-go-internal/pkg/nodebuilder"
-	"github.com/buke/typescript-go-internal/pkg/scanner"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/jsnum"
+	"github.com/buke/typescript-go-internal/v7/pkg/nodebuilder"
+	"github.com/buke/typescript-go-internal/v7/pkg/scanner"
 )
 
 // isExpanding returns whether the node builder context is operating in hover-expansion mode.

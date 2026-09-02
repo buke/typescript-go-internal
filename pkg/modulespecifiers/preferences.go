@@ -3,10 +3,10 @@ package modulespecifiers
 import (
 	"strings"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/debug"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/debug"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 // Program errors validate that `noEmit` or `emitDeclarationOnly` is also set,
@@ -174,13 +174,7 @@ func GetAllowedEndingsInPreferredOrder(
 	moduleResolution := compilerOptions.GetModuleResolutionKind()
 	moduleResolutionIsNodeNext := core.ModuleResolutionKindNode16 <= moduleResolution && moduleResolution <= core.ModuleResolutionKindNodeNext
 	allowImportingTsExtension := shouldAllowImportingTsExtension(compilerOptions, importingSourceFile.FileName())
-	// TypeScript uses `(syntaxImpliedNodeFormat ?? impliedNodeFormat)` here - fall back to the
-	// file's default resolution mode when no syntax-implied mode is given.
-	effectiveSyntaxMode := syntaxImpliedNodeFormat
-	if effectiveSyntaxMode == core.ResolutionModeNone {
-		effectiveSyntaxMode = resolutionMode
-	}
-	if effectiveSyntaxMode == core.ResolutionModeESM && moduleResolutionIsNodeNext {
+	if syntaxImpliedNodeFormat == core.ResolutionModeESM && moduleResolutionIsNodeNext {
 		if allowImportingTsExtension {
 			return []ModuleSpecifierEnding{ModuleSpecifierEndingTsExtension, ModuleSpecifierEndingJsExtension}
 		}

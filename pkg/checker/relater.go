@@ -5,14 +5,14 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/binder"
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/jsnum"
-	"github.com/buke/typescript-go-internal/pkg/stringutil"
-	"github.com/buke/typescript-go-internal/pkg/tracing"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/binder"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/jsnum"
+	"github.com/buke/typescript-go-internal/v7/pkg/stringutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/tracing"
 )
 
 type SignatureCheckMode uint32
@@ -4115,8 +4115,7 @@ func (r *Relater) propertiesRelatedTo(source *Type, target *Type, reportErrors b
 			} else {
 				sourceRest = true
 			}
-			targetHasRestElement := target.TargetTupleType().combinedFlags&ElementFlagsRest != 0
-			targetHasVariableElement := target.TargetTupleType().combinedFlags&ElementFlagsVariable != 0
+			targetHasRestElement := target.TargetTupleType().combinedFlags&ElementFlagsVariable != 0
 			var sourceMinLength int
 			if isTupleType(source) {
 				sourceMinLength = source.TargetTupleType().minLength
@@ -4130,13 +4129,13 @@ func (r *Relater) propertiesRelatedTo(source *Type, target *Type, reportErrors b
 				}
 				return TernaryFalse
 			}
-			if !targetHasVariableElement && targetArity < sourceMinLength {
+			if !targetHasRestElement && targetArity < sourceMinLength {
 				if reportErrors {
 					r.reportError(diagnostics.Source_has_0_element_s_but_target_allows_only_1, sourceMinLength, targetArity)
 				}
 				return TernaryFalse
 			}
-			if !targetHasVariableElement && (sourceRest || targetArity < sourceArity) {
+			if !targetHasRestElement && (sourceRest || targetArity < sourceArity) {
 				if reportErrors {
 					if sourceMinLength < targetMinLength {
 						r.reportError(diagnostics.Target_requires_0_element_s_but_source_may_have_fewer, targetMinLength)
@@ -4163,12 +4162,6 @@ func (r *Relater) propertiesRelatedTo(source *Type, target *Type, reportErrors b
 				if targetHasRestElement && sourcePosition >= targetStartCount {
 					targetPosition = targetArity - 1 - min(sourcePositionFromEnd, targetEndCount)
 				} else {
-					if sourcePosition >= targetArity {
-						if reportErrors {
-							r.reportError(diagnostics.Target_allows_only_0_element_s_but_source_may_have_more, targetArity)
-						}
-						return TernaryFalse
-					}
 					targetPosition = sourcePosition
 				}
 				targetFlags := ElementFlagsNone

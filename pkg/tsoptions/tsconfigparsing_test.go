@@ -10,21 +10,21 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/diagnostics"
-	"github.com/buke/typescript-go-internal/pkg/diagnosticwriter"
-	"github.com/buke/typescript-go-internal/pkg/json"
-	"github.com/buke/typescript-go-internal/pkg/locale"
-	"github.com/buke/typescript-go-internal/pkg/parser"
-	"github.com/buke/typescript-go-internal/pkg/repo"
-	"github.com/buke/typescript-go-internal/pkg/scanner"
-	"github.com/buke/typescript-go-internal/pkg/testutil/baseline"
-	"github.com/buke/typescript-go-internal/pkg/tsoptions"
-	"github.com/buke/typescript-go-internal/pkg/tsoptions/tsoptionstest"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
-	"github.com/buke/typescript-go-internal/pkg/vfs"
-	"github.com/buke/typescript-go-internal/pkg/vfs/osvfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnostics"
+	"github.com/buke/typescript-go-internal/v7/pkg/diagnosticwriter"
+	"github.com/buke/typescript-go-internal/v7/pkg/json"
+	"github.com/buke/typescript-go-internal/v7/pkg/locale"
+	"github.com/buke/typescript-go-internal/v7/pkg/parser"
+	"github.com/buke/typescript-go-internal/v7/pkg/repo"
+	"github.com/buke/typescript-go-internal/v7/pkg/scanner"
+	"github.com/buke/typescript-go-internal/v7/pkg/testutil/baseline"
+	"github.com/buke/typescript-go-internal/v7/pkg/tsoptions"
+	"github.com/buke/typescript-go-internal/v7/pkg/tsoptions/tsoptionstest"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/osvfs"
 	"gotest.tools/v3/assert"
 )
 
@@ -489,19 +489,6 @@ var parseJsonConfigFileTests = []parseJsonConfigTestCase{
 			jsonText: `{
 			    "compilerOptions": {
 				"unknown": true
-			    }
-			}`,
-			configFileName: "tsconfig.json",
-			basePath:       "/",
-			allFileList:    map[string]string{"/app.ts": ""},
-		}},
-	},
-	{
-		title: "reports spelling suggestion for an unknown option",
-		input: []testConfig{{
-			jsonText: `{
-			    "compilerOptions": {
-				"targt": 1
 			    }
 			}`,
 			configFileName: "tsconfig.json",

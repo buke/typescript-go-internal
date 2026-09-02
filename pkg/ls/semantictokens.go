@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/checker"
-	"github.com/buke/typescript-go-internal/pkg/compiler"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/ls/lsconv"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
-	"github.com/buke/typescript-go-internal/pkg/scanner"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/checker"
+	"github.com/buke/typescript-go-internal/v7/pkg/compiler"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/lsconv"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/scanner"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
 )
 
 // tokenTypes defines the order of token types for encoding
@@ -258,13 +259,13 @@ func (l *LanguageService) collectSemanticTokensInRange(ctx context.Context, c *c
 							tokenModifier |= tokenModifierLocal
 						}
 						declSourceFile := ast.GetSourceFileOfNode(decl)
-						if declSourceFile != nil && program.IsSourceFileDefaultLibrary(declSourceFile.Path()) {
+						if declSourceFile != nil && program.IsSourceFileDefaultLibrary(tspath.Path(declSourceFile.FileName())) {
 							tokenModifier |= tokenModifierDefaultLibrary
 						}
 					} else if symbol.Declarations != nil {
 						for _, decl := range symbol.Declarations {
 							declSourceFile := ast.GetSourceFileOfNode(decl)
-							if declSourceFile != nil && program.IsSourceFileDefaultLibrary(declSourceFile.Path()) {
+							if declSourceFile != nil && program.IsSourceFileDefaultLibrary(tspath.Path(declSourceFile.FileName())) {
 								tokenModifier |= tokenModifierDefaultLibrary
 								break
 							}

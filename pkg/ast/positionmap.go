@@ -3,7 +3,7 @@ package ast
 import (
 	"unicode/utf8"
 
-	"github.com/buke/typescript-go-internal/pkg/stringutil"
+	"github.com/buke/typescript-go-internal/v7/pkg/stringutil"
 )
 
 // PositionMap provides bidirectional mapping between UTF-8 byte offsets (used by Go)

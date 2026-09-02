@@ -67,7 +67,7 @@ export declare class Foo {
 }
 //// [b.d.ts]
 import * as A from "./a";
-declare const { Foo }: typeof A;
+declare const Foo: typeof A.Foo;
 export default class extends Foo {
 }
 export {};

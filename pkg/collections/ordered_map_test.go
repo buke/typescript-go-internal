@@ -5,8 +5,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/json"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/json"
 	"gotest.tools/v3/assert"
 )
 

@@ -6,14 +6,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/ls/lsconv"
-	"github.com/buke/typescript-go-internal/pkg/lsp/lsproto"
-	"github.com/buke/typescript-go-internal/pkg/project/dirty"
-	"github.com/buke/typescript-go-internal/pkg/tspath"
-	"github.com/buke/typescript-go-internal/pkg/vfs"
-	"github.com/buke/typescript-go-internal/pkg/vfs/cachedvfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/ls/lsconv"
+	"github.com/buke/typescript-go-internal/v7/pkg/lsp/lsproto"
+	"github.com/buke/typescript-go-internal/v7/pkg/project/dirty"
+	"github.com/buke/typescript-go-internal/v7/pkg/tspath"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs"
+	"github.com/buke/typescript-go-internal/v7/pkg/vfs/cachedvfs"
 	"github.com/zeebo/xxh3"
 )
 
@@ -477,33 +477,14 @@ func (s *snapshotFSBuilder) invalidateNodeModulesCache() {
 	})
 }
 
-func (s *snapshotFSBuilder) markDirtyFiles(change FileChangeSummary) FileChangeSummary {
-	if change.Changed.Len() > 0 {
-		var filteredChanged collections.SyncSet[lsproto.DocumentUri]
-		wg := core.NewWorkGroup(false)
-		for uri := range change.Changed.Keys() {
-			path := s.toPath(uri.FileName())
-			if _, ok := s.overlays[path]; ok {
-				filteredChanged.Add(uri)
-				continue
-			}
-			entry, ok := s.diskFiles.Load(path)
-			if !ok {
-				filteredChanged.Add(uri)
-				continue
-			}
-			wg.Queue(func() {
-				if s.reloadEntryIfContentChanged(entry) {
-					filteredChanged.Add(uri)
-				}
+func (s *snapshotFSBuilder) markDirtyFiles(change FileChangeSummary) {
+	for uri := range change.Changed.Keys() {
+		path := s.toPath(uri.FileName())
+		if entry, ok := s.diskFiles.Load(path); ok {
+			entry.Change(func(file *diskFile) {
+				file.needsReload = true
 			})
 		}
-		wg.RunAndWait()
-		newChanged := collections.NewSetWithSizeHint[lsproto.DocumentUri](filteredChanged.Size())
-		for uri := range filteredChanged.Keys() {
-			newChanged.Add(uri)
-		}
-		change.Changed = *newChanged
 	}
 	for uri := range change.Deleted.Keys() {
 		path := s.toPath(uri.FileName())
@@ -511,41 +492,6 @@ func (s *snapshotFSBuilder) markDirtyFiles(change FileChangeSummary) FileChangeS
 			entry.Delete()
 		}
 	}
-	return change
-}
-
-func (s *snapshotFSBuilder) reloadEntryIfContentChanged(entry *dirty.SyncMapEntry[tspath.Path, *diskFile]) (changed bool) {
-	file := entry.Value()
-	if file == nil {
-		return true
-	}
-	content, ok := s.fs.ReadFile(file.fileName)
-	changed = true
-	entry.Locked(func(e dirty.Value[*diskFile]) {
-		cur := e.Value()
-		if cur == nil {
-			return
-		}
-		if !ok {
-			e.Delete()
-			return
-		}
-		if content == cur.content {
-			changed = false
-			if !cur.MatchesDiskText() {
-				e.Change(func(file *diskFile) {
-					file.needsReload = false
-				})
-			}
-			return
-		}
-		e.Change(func(file *diskFile) {
-			file.content = content
-			file.hash = xxh3.HashString128(content)
-			file.needsReload = false
-		})
-	})
-	return changed
 }
 
 // expandRealpathAliases adds synthetic URIs to the Changed and Deleted sets for
@@ -602,13 +548,7 @@ func (s *snapshotFSBuilder) isRelevantFileName(uri lsproto.DocumentUri) bool {
 	if i < 0 {
 		return false
 	}
-	return isRelevantExtension(string(path)[i:])
-}
-
-// isRelevantExtension returns true if the given extension is a known TypeScript
-// or JavaScript extension that can affect the project.
-func isRelevantExtension(ext string) bool {
-	switch ext {
+	switch string(path)[i:] {
 	case ".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".mts", ".cts", ".json":
 		return true
 	}

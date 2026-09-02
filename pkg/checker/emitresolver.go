@@ -5,13 +5,13 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/binder"
-	"github.com/buke/typescript-go-internal/pkg/core"
-	"github.com/buke/typescript-go-internal/pkg/evaluator"
-	"github.com/buke/typescript-go-internal/pkg/jsnum"
-	"github.com/buke/typescript-go-internal/pkg/nodebuilder"
-	"github.com/buke/typescript-go-internal/pkg/printer"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/binder"
+	"github.com/buke/typescript-go-internal/v7/pkg/core"
+	"github.com/buke/typescript-go-internal/v7/pkg/evaluator"
+	"github.com/buke/typescript-go-internal/v7/pkg/jsnum"
+	"github.com/buke/typescript-go-internal/v7/pkg/nodebuilder"
+	"github.com/buke/typescript-go-internal/v7/pkg/printer"
 )
 
 var _ printer.EmitResolver = (*EmitResolver)(nil)
@@ -644,11 +644,7 @@ func (r *EmitResolver) IsLiteralConstDeclaration(node *ast.Node) bool {
 	if isDeclarationReadonly(node) || ast.IsVariableDeclaration(node) && ast.IsVarConst(node) {
 		r.checkerMu.Lock()
 		defer r.checkerMu.Unlock()
-		s := r.checker.getSymbolOfDeclaration(node)
-		if s == nil {
-			return false
-		}
-		return isFreshLiteralType(r.checker.getTypeOfSymbol(s))
+		return isFreshLiteralType(r.checker.getTypeOfSymbol(r.checker.getSymbolOfDeclaration(node)))
 	}
 	return false
 }

@@ -1,8 +1,8 @@
 package packagejson
 
 import (
-	"github.com/buke/typescript-go-internal/pkg/collections"
-	json "github.com/buke/typescript-go-internal/pkg/json"
+	"github.com/buke/typescript-go-internal/v7/pkg/collections"
+	json "github.com/buke/typescript-go-internal/v7/pkg/json"
 )
 
 type HeaderFields struct {

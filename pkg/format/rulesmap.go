@@ -4,8 +4,8 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/buke/typescript-go-internal/pkg/ast"
-	"github.com/buke/typescript-go-internal/pkg/debug"
+	"github.com/buke/typescript-go-internal/v7/pkg/ast"
+	"github.com/buke/typescript-go-internal/v7/pkg/debug"
 )
 
 func getRules(context *FormattingContext, rules []*ruleImpl) []*ruleImpl {

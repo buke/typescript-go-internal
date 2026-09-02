@@ -5,40 +5,53 @@
 [![Test](https://github.com/buke/typescript-go-internal/actions/workflows/go-test.yml/badge.svg)](https://github.com/buke/typescript-go-internal/actions/workflows/go-test.yml)
 [![codecov](https://codecov.io/gh/buke/typescript-go-internal/graph/badge.svg)](https://codecov.io/gh/buke/typescript-go-internal)
 [![Go Report Card](https://goreportcard.com/badge/github.com/buke/typescript-go-internal)](https://goreportcard.com/report/github.com/buke/typescript-go-internal)
-[![Go Reference](https://pkg.go.dev/badge/github.com/buke/typescript-go-internal.svg)](https://pkg.go.dev/github.com/buke/typescript-go-internal)
+[![Go Reference](https://pkg.go.dev/badge/github.com/buke/typescript-go-internal/v7.svg)](https://pkg.go.dev/github.com/buke/typescript-go-internal/v7)
 
-将 `microsoft/typescript-go` 的内部 Go 包以稳定的导入路径对外暴露，使外部模块可以依赖它们。
+将 `microsoft/TypeScript`（`tsc/internal`）的内部 Go 包以稳定的导入路径对外暴露，使外部模块可以依赖它们。
 
 ## 概述
 
-本仓库将 `microsoft/typescript-go/internal` 镜像并适配到 `pkg/...` 目录，使这些包可以通过 `github.com/buke/typescript-go-internal/pkg/...` 导入。它与上游保持紧密同步，同时保持仓库自包含，便于 CI 和外部使用。
+本仓库将 `microsoft/TypeScript/tsc/internal` 镜像并适配到 `pkg/...`，使这些包可以通过 `github.com/buke/typescript-go-internal/v7/pkg/...` 导入。它跟随 TypeScript **7.x 发版 tag**（当前为 `v7.0.2`），并保持仓库自包含，便于 CI 和外部使用。
 
 注意事项：
 - 本项目独立运作，与 Microsoft 无关联。
-- API 接口仍在演进中（v0 语义）：在跟踪上游变化时可能发生破坏性更改。
+- Go 模块主版本与 TypeScript 主版本对齐（`/v7` ↔ TypeScript 7.x）。
+- 迁移前的导入路径（`github.com/buke/typescript-go-internal/pkg/...`）仅存在于历史 tag。
+
+## 安装
+
+```bash
+go get github.com/buke/typescript-go-internal/v7@v7.0.2
+```
+
+```go
+import "github.com/buke/typescript-go-internal/v7/pkg/ast"
+```
 
 ## 仓库内容
 
 - `pkg/` — 镜像的内部包，已公开并可导入。
-- `testdata/` — 从 `microsoft/typescript-go/testdata` 复制的上游测试数据和基线文件，用于可复现的测试。
-- `scripts/sync-internal.sh` — 同步脚本，用于复制源码、重写导入路径、规范化 `//go:generate` 指令并同步测试数据。
-- `.github/workflows/` — CI 工作流，包括测试和覆盖率上传。
+- `testdata/` — 从 `microsoft/TypeScript/tsc/testdata` 复制的上游测试数据与基线。
+- `scripts/sync-internal.sh` — 同步脚本，用于复制源码、重写导入路径、规范化 `//go:generate` 并同步测试数据。
+- `.github/workflows/` — CI、上游同步、发版打 tag 与 GoReleaser。
 
 ## 从上游同步（维护者）
 
-同步脚本执行以下操作：
-- 复制 `microsoft/typescript-go/internal` → `pkg`
-- 重写导入路径：`.../internal/...` → `.../pkg/...`
-- 规范化 `//go:generate` 指令（使用 `go run <module>@latest`）
-- 复制 `microsoft/typescript-go/testdata` → `testdata`
-- 在生成前后运行 `go mod tidy`
+将 `microsoft/TypeScript` 钉到发版 tag 后执行：
 
-命令：
 ```bash
 ./scripts/sync-internal.sh
 ```
 
-同步后正常提交更改即可。基线文件位于 `testdata/baselines` 目录。
+同步脚本会：
+
+- 复制 `microsoft/TypeScript/tsc/internal` → `pkg`
+- 将 `github.com/microsoft/typescript-go/internal` 或 `github.com/microsoft/TypeScript/tsc/internal` 重写为 `<module>/pkg`
+- 规范化 `//go:generate` 指令
+- 复制 `microsoft/TypeScript/tsc/testdata` → `testdata`
+- 在生成前后运行 `go mod tidy`
+
+自动化：**Sync** workflow 会检查新的 TypeScript ≥ 7.0.0 稳定 tag 并开带 `sync` label 的 PR。合入后 **Release Tag** 会推送同名 git tag，**GoReleaser** 会创建 GitHub Release（仅库，无二进制）。
 
 ## 持续集成
 
@@ -52,9 +65,9 @@
 ### 归属声明
 
 本仓库包含基于以下项目的衍生作品：
-- [`microsoft/typescript-go`](https://github.com/microsoft/typescript-go) (Apache 2.0)  
-  Copyright (c) Microsoft Corporation
 - [`microsoft/TypeScript`](https://github.com/microsoft/TypeScript) (Apache 2.0)  
+  Copyright (c) Microsoft Corporation
+- 历史上以 [`microsoft/typescript-go`](https://github.com/microsoft/typescript-go) 发布的暂存树 (Apache 2.0)  
   Copyright (c) Microsoft Corporation
 
 完整归属详情请参见 [NOTICE](./NOTICE)。

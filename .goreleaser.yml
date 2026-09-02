@@ -1,0 +1,34 @@
+# Library-only release: publish a GitHub Release + changelog, no binaries.
+# Go modules are consumed via git tags (proxy.golang.org indexes them automatically).
+version: 2
+
+project_name: typescript-go-internal
+
+builds:
+  - skip: true
+
+checksum:
+  disable: true
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^chore\\(deps\\)"
+      - "^deps:"
+
+release:
+  name_template: "v{{.Version}}"
+  draft: false
+  prerelease: auto
+  mode: replace
+  footer: |
+    ## Go module
+
+    ```
+    go get github.com/buke/typescript-go-internal/v{{ .Major }}@v{{ .Version }}
+    ```
+
+    Import packages as `github.com/buke/typescript-go-internal/v{{ .Major }}/pkg/...`.
+
+    Synced from [microsoft/TypeScript v{{ .Version }}](https://github.com/microsoft/TypeScript/releases/tag/v{{ .Version }}).
