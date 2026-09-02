@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: write
+  actions: write # dispatch GoReleaser (GITHUB_TOKEN tag pushes do not fire workflow push events)
 
 concurrency:
   group: release-tag
@@ -45,6 +46,8 @@ jobs:
           fi
 
       - name: Resolve upstream tag and push matching tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
 
@@ -100,3 +103,8 @@ jobs:
           git tag -a "${UPSTREAM_TAG}" -m "TypeScript ${UPSTREAM_TAG}"
           git push origin "refs/tags/${UPSTREAM_TAG}"
           echo "Pushed tag ${UPSTREAM_TAG}"
+
+          # Tag pushes authenticated with GITHUB_TOKEN do not trigger other
+          # workflows' on.push. Explicitly dispatch GoReleaser instead.
+          gh workflow run goreleaser.yml --ref "${UPSTREAM_TAG}" -f tag="${UPSTREAM_TAG}"
+          echo "Dispatched GoReleaser for ${UPSTREAM_TAG}"
