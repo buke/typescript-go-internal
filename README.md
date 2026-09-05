@@ -50,6 +50,8 @@ The sync script:
 - Normalizes `//go:generate` directives
 - Copies `microsoft/TypeScript/tsc/testdata` → `testdata`
 - Runs `go mod tidy` pre/post generation
+- Runs `scripts/post-sync.sh` to re-apply local harness patches (e.g. stable help-version padding) and refresh version-sensitive baselines
+- Set `SYNC_POST=0` to skip post-sync
 
 Automated sync: the **Sync** workflow checks for new stable TypeScript ≥ 7.0.0 tags and opens a PR labeled `sync`. After merge, **Release Tag** pushes a matching git tag and **GoReleaser** publishes a GitHub Release (library-only; no binaries).
 

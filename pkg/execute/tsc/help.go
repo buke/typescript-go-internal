@@ -13,7 +13,7 @@ import (
 )
 
 func PrintVersion(sys System, locale locale.Locale) {
-	fmt.Fprintln(sys.Writer(), diagnostics.Version_0.Localize(locale, core.Version()))
+	fmt.Fprintln(sys.Writer(), diagnostics.Version_0.Localize(locale, versionForDisplay(sys)))
 }
 
 func PrintHelp(sys System, locale locale.Locale, commandLine *tsoptions.ParsedCommandLine) {
@@ -22,6 +22,17 @@ func PrintHelp(sys System, locale locale.Locale, commandLine *tsoptions.ParsedCo
 	} else {
 		printAllHelp(sys, locale, getOptionsForHelp(commandLine))
 	}
+}
+
+// versionForDisplay returns the version string used in CLI help/version output.
+// Tests may set TS_TEST_VERSION so header padding is computed against the same
+// string later written into baselines (see harnessutil.FakeTSVersion), instead of
+// core.Version() which changes length across releases and shifts spacing.
+func versionForDisplay(sys System) string {
+	if v := sys.GetEnvironmentVariable("TS_TEST_VERSION"); v != "" {
+		return v
+	}
+	return core.Version()
 }
 
 func getOptionsForHelp(commandLine *tsoptions.ParsedCommandLine) []*tsoptions.CommandLineOption {
@@ -74,7 +85,7 @@ func printEasyHelp(sys System, locale locale.Locale, simpleOptions []*tsoptions.
 		output = append(output, "  ", desc.Localize(locale), "\n", "\n")
 	}
 
-	msg := diagnostics.X_tsc_Colon_The_TypeScript_Compiler.Localize(locale) + " - " + diagnostics.Version_0.Localize(locale, core.Version())
+	msg := diagnostics.X_tsc_Colon_The_TypeScript_Compiler.Localize(locale) + " - " + diagnostics.Version_0.Localize(locale, versionForDisplay(sys))
 	output = append(output, getHeader(sys, msg)...)
 
 	output = append(output, colors.bold(diagnostics.COMMON_COMMANDS.Localize(locale)), "\n", "\n")
@@ -109,7 +120,7 @@ func printEasyHelp(sys System, locale locale.Locale, simpleOptions []*tsoptions.
 
 func printAllHelp(sys System, locale locale.Locale, options []*tsoptions.CommandLineOption) {
 	var output []string
-	msg := diagnostics.X_tsc_Colon_The_TypeScript_Compiler.Localize(locale) + " - " + diagnostics.Version_0.Localize(locale, core.Version())
+	msg := diagnostics.X_tsc_Colon_The_TypeScript_Compiler.Localize(locale) + " - " + diagnostics.Version_0.Localize(locale, versionForDisplay(sys))
 	output = append(output, getHeader(sys, msg)...)
 
 	// ALL COMPILER OPTIONS section
@@ -134,7 +145,7 @@ func printAllHelp(sys System, locale locale.Locale, options []*tsoptions.Command
 
 func PrintBuildHelp(sys System, locale locale.Locale, buildOptions []*tsoptions.CommandLineOption) {
 	var output []string
-	output = append(output, getHeader(sys, diagnostics.X_tsc_Colon_The_TypeScript_Compiler.Localize(locale)+" - "+diagnostics.Version_0.Localize(locale, core.Version()))...)
+	output = append(output, getHeader(sys, diagnostics.X_tsc_Colon_The_TypeScript_Compiler.Localize(locale)+" - "+diagnostics.Version_0.Localize(locale, versionForDisplay(sys)))...)
 	before := diagnostics.Using_build_b_will_make_tsc_behave_more_like_a_build_orchestrator_than_a_compiler_This_is_used_to_trigger_building_composite_projects_which_you_can_learn_more_about_at_0.Localize(locale, "https://aka.ms/tsc-composite-builds")
 	options := core.Filter(buildOptions, func(option *tsoptions.CommandLineOption) bool {
 		return option != &tsoptions.TscBuildOption
