@@ -406,4 +406,10 @@ fi
 # Ensure testdata is present in repo (copy from submodule)
 copy_testdata
 
+# Re-apply local harness patches and refresh version-sensitive baselines.
+if [[ "${SYNC_POST:-1}" == "1" ]]; then
+  chmod +x scripts/post-sync.sh
+  ./scripts/post-sync.sh
+fi
+
 echo "Sync complete."

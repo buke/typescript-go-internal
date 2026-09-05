@@ -50,6 +50,8 @@ import "github.com/buke/typescript-go-internal/v7/pkg/ast"
 - 规范化 `//go:generate` 指令
 - 复制 `microsoft/TypeScript/tsc/testdata` → `testdata`
 - 在生成前后运行 `go mod tidy`
+- 运行 `scripts/post-sync.sh`，重新应用本地 harness 补丁（如稳定的 help 版本 padding）并刷新与版本相关的基线
+- 设置 `SYNC_POST=0` 可跳过 post-sync
 
 自动化：**Sync** workflow 会检查新的 TypeScript ≥ 7.0.0 稳定 tag 并开带 `sync` label 的 PR。合入后 **Release Tag** 会推送同名 git tag，**GoReleaser** 会创建 GitHub Release（仅库，无二进制）。
 

@@ -132,6 +132,16 @@ func newTestSys(tscInput *tscInput, forIncrementalCorrectness bool) *TestSys {
 		CurrentDirectory:          cwd,
 	}, currentWrite)
 	sys.env = tscInput.env
+	if sys.env == nil {
+		sys.env = map[string]string{}
+	} else {
+		sys.env = maps.Clone(sys.env)
+	}
+	// Default TS_TEST_VERSION so help/version header padding matches FakeTSVersion
+	// (stable across core.Version() length changes). See scripts/post-sync.sh.
+	if _, ok := sys.env["TS_TEST_VERSION"]; !ok {
+		sys.env["TS_TEST_VERSION"] = harnessutil.FakeTSVersion
+	}
 	sys.forIncrementalCorrectness = forIncrementalCorrectness
 	sys.mockWatchBackend = NewMockWatchBackend()
 	sys.mockWatchBackend.DirectoryExists = sys.fs.FS.DirectoryExists
