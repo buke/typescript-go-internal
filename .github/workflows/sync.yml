@@ -11,6 +11,11 @@ on:
         required: false
         type: string
         default: ""
+      force:
+        description: "Re-run sync even when submodule is already on the target tag"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -35,6 +40,7 @@ jobs:
         id: target
         env:
           INPUT_TAG: ${{ inputs.tag }}
+          FORCE: ${{ inputs.force || false }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
@@ -55,9 +61,36 @@ jobs:
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
           echo "Resolved TypeScript tag: ${TAG}"
 
+          # Skip when main is already pinned to this tag (unless force).
+          # Without this, daily sync re-copies upstream testdata and can reopen
+          # no-op / regressive PRs (e.g. help baseline padding vs Version 7.0.2).
+          # Prefer peeled commit SHA for annotated tags (refs/tags/X^{}).
+          TARGET_SHA="$(git ls-remote --tags https://github.com/microsoft/TypeScript.git "refs/tags/${TAG}" "refs/tags/${TAG}^{}" \
+            | awk '
+              $2 ~ /\^\{\}$/ { print $1; found=1; exit }
+              { commit=$1 }
+              END { if (!found && commit != "") print commit }
+            ')"
+          if [[ -z "${TARGET_SHA}" ]]; then
+            echo "Could not resolve SHA for ${TAG}"
+            exit 1
+          fi
+          CURRENT_SHA="$(git ls-tree HEAD microsoft/TypeScript | awk '{print $3; exit}')"
+          echo "target_sha=${TARGET_SHA}" >> "$GITHUB_OUTPUT"
+          echo "target_sha=${TARGET_SHA}"
+          echo "current_sha=${CURRENT_SHA}"
+          if [[ "${FORCE}" != "true" && -n "${CURRENT_SHA}" && "${CURRENT_SHA}" == "${TARGET_SHA}" ]]; then
+            echo "Already synced to ${TAG} (${CURRENT_SHA}); skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Ensure submodule sparse-checkout at target tag
+        if: steps.target.outputs.skip != 'true'
         env:
           TAG: ${{ steps.target.outputs.tag }}
+          TARGET_SHA: ${{ steps.target.outputs.target_sha }}
         run: |
           set -euo pipefail
           git submodule sync -- microsoft/TypeScript
@@ -68,17 +101,19 @@ jobs:
           git -C microsoft/TypeScript sparse-checkout init --cone || true
           git -C microsoft/TypeScript sparse-checkout set tsc
           git add microsoft/TypeScript .gitmodules
-          CURRENT="$(git -C microsoft/TypeScript describe --tags --exact-match HEAD)"
-          echo "Submodule now at ${CURRENT}"
-          test "${CURRENT}" = "${TAG}"
+          CURRENT_SHA="$(git -C microsoft/TypeScript rev-parse HEAD)"
+          echo "Submodule HEAD ${CURRENT_SHA} (want ${TAG} -> ${TARGET_SHA})"
+          test "${CURRENT_SHA}" = "${TARGET_SHA}"
 
       - name: Set up Go
+        if: steps.target.outputs.skip != 'true'
         uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           cache: true
 
       - name: Run sync script
+        if: steps.target.outputs.skip != 'true'
         env:
           SYNC_GENERATE: full
           SYNC_MOD_ALIGN: shared
@@ -91,6 +126,7 @@ jobs:
           ./scripts/sync-internal.sh
 
       - name: Create PR
+        if: steps.target.outputs.skip != 'true'
         uses: peter-evans/create-pull-request@v8
         with:
           commit-message: "chore(sync): TypeScript ${{ steps.target.outputs.tag }}"
@@ -105,8 +141,8 @@ jobs:
             - `go mod tidy`
 
             After merge (with the `sync` label), `release.yml` will tag this repo `${{ steps.target.outputs.tag }}` and goreleaser will create a GitHub Release.
+          # Stable branch name so a re-run updates the same open PR instead of opening another.
           branch: chore/sync-typescript-${{ steps.target.outputs.tag }}
-          branch-suffix: timestamp
           delete-branch: true
           labels: |
             sync
